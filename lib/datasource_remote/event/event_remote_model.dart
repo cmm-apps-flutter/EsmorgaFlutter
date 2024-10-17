@@ -1,3 +1,5 @@
+import 'package:equatable/equatable.dart';
+
 class EventListWrapperRemoteModel {
   final int remoteTotalEvents;
   final List<EventRemoteModel> remoteEventList;
@@ -15,25 +17,21 @@ class EventListWrapperRemoteModel {
   }
 }
 
-class EventRemoteModel {
+class EventRemoteModel extends Equatable{
   final String remoteId;
   final String remoteName;
   final String remoteDate;
   final String remoteDescription;
-  final String remoteType;
   final String? remoteImageUrl;
   final EventLocationRemoteModel remoteLocation;
-  final List<String>? remoteTags;
 
-  EventRemoteModel({
+  const EventRemoteModel({
     required this.remoteId,
     required this.remoteName,
     required this.remoteDate,
     required this.remoteDescription,
-    required this.remoteType,
     this.remoteImageUrl,
     required this.remoteLocation,
-    this.remoteTags,
   });
 
   factory EventRemoteModel.fromJson(Map<String, dynamic> json) {
@@ -42,20 +40,21 @@ class EventRemoteModel {
       remoteName: json['eventName'],
       remoteDate: json['eventDate'],
       remoteDescription: json['description'],
-      remoteType: json['eventType'],
       remoteImageUrl: json['imageUrl'],
       remoteLocation: EventLocationRemoteModel.fromJson(json['location']),
-      remoteTags: (json['tags'] as List?)?.map((e) => e as String).toList(),
     );
   }
+
+  @override
+  List<Object?> get props => [remoteId, remoteName, remoteDate, remoteDescription, remoteImageUrl, remoteLocation];
 }
 
-class EventLocationRemoteModel {
+class EventLocationRemoteModel extends Equatable{
   final String remoteLocationName;
   final double? remoteLat;
   final double? remoteLong;
 
-  EventLocationRemoteModel({
+  const EventLocationRemoteModel({
     required this.remoteLocationName,
     this.remoteLat,
     this.remoteLong,
@@ -68,4 +67,7 @@ class EventLocationRemoteModel {
       remoteLong: json['long'],
     );
   }
+
+  @override
+  List<Object?> get props => [remoteLocationName, remoteLat, remoteLong];
 }

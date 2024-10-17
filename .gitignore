@@ -18,6 +18,9 @@
 *.iws
 .idea/
 
+# Test coverage files
+coverage/
+
 # Visual Studio Code related
 .vscode/
 
