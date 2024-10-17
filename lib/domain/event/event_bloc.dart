@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 import 'package:esmorga_flutter/datasource_remote/event/event_remote_model.dart';
 import 'package:esmorga_flutter/domain/event/event_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
