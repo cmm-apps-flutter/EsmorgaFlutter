@@ -3,18 +3,24 @@ part of 'event_bloc.dart';
 
 sealed class EventState {}
 
-class EventInitialState extends EventState {}
+class EventInitialState implements EventState {}
 
-class EventLoadingState extends EventState {}
+class EventLoadingState implements EventState {}
 
-class EventLoadSuccessState extends EventState {
+class EventLoadSuccessState extends Equatable implements EventState  {
   final List<EventRemoteModel> events;
 
-  EventLoadSuccessState(this.events);
+  const EventLoadSuccessState(this.events);
+
+  @override
+  List<Object?> get props => events;
 }
 
-class EventLoadFailureState extends EventState {
+class EventLoadFailureState extends Equatable implements EventState {
   final String error;
 
-  EventLoadFailureState(this.error);
+  const EventLoadFailureState(this.error);
+
+  @override
+  List<Object?> get props => [error];
 }
