@@ -22,16 +22,20 @@ class EventRemoteModel extends Equatable{
   final String remoteName;
   final String remoteDate;
   final String remoteDescription;
+  final String remoteType;
   final String? remoteImageUrl;
   final EventLocationRemoteModel remoteLocation;
+  final List<String> remoteTags;
 
   const EventRemoteModel({
     required this.remoteId,
     required this.remoteName,
     required this.remoteDate,
     required this.remoteDescription,
+    required this.remoteType,
     this.remoteImageUrl,
     required this.remoteLocation,
+    required this.remoteTags,
   });
 
   factory EventRemoteModel.fromJson(Map<String, dynamic> json) {
@@ -40,13 +44,15 @@ class EventRemoteModel extends Equatable{
       remoteName: json['eventName'],
       remoteDate: json['eventDate'],
       remoteDescription: json['description'],
+      remoteType: json['eventType'],
       remoteImageUrl: json['imageUrl'],
       remoteLocation: EventLocationRemoteModel.fromJson(json['location']),
+      remoteTags: json['tags'] != null ? List<String>.from(json['tags']) : [],
     );
   }
 
   @override
-  List<Object?> get props => [remoteId, remoteName, remoteDate, remoteDescription, remoteImageUrl, remoteLocation];
+  List<Object?> get props => [remoteId, remoteName, remoteDate, remoteDescription, remoteType, remoteImageUrl, remoteLocation, remoteTags];
 }
 
 class EventLocationRemoteModel extends Equatable{

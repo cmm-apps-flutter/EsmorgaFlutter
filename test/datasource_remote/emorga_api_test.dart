@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:esmorga_flutter/datasource_remote/api/esmorga_api.dart';
+import 'package:esmorga_flutter/datasource_remote/api/esmorga_guest_api.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart';
 import 'package:mocktail/mocktail.dart';
@@ -12,13 +12,18 @@ class MockResponse extends Mock implements Response {}
 void main() {
   late Client httpClient;
   late Response response;
-  late EsmorgaApi esmorgaApi;
+  late EsmorgaGuestApi esmorgaApi;
+
+  setUpAll(() {
+    // Needed for mocktail `any<Uri>()` matcher
+    registerFallbackValue(Uri.parse('https://fallback.local'));
+  });
 
   setUp(() async {
     httpClient = MockHttpClient();
     response = MockResponse();
-    esmorgaApi = EsmorgaApi(httpClient);
-    when(() => httpClient.get(Uri.parse('https://qa.esmorga.canarte.org/v1/events'))).thenAnswer(
+    esmorgaApi = EsmorgaGuestApi(httpClient);
+    when(() => httpClient.get(any())).thenAnswer(
           (_) async => response,
     );
   });

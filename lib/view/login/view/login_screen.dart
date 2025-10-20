@@ -1,0 +1,202 @@
+import 'package:esmorga_flutter/ds/esmorga_button.dart';
+import 'package:esmorga_flutter/ds/esmorga_text.dart';
+import 'package:esmorga_flutter/ds/esmorga_text_field.dart';
+import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
+import 'package:esmorga_flutter/view/login/cubit/login_cubit.dart';
+import 'package:esmorga_flutter/view/login/cubit/login_state.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+class LoginScreen extends StatefulWidget {
+  final String? snackbarMessage; // initial message already passed to cubit
+  final VoidCallback onRegisterClicked;
+  final VoidCallback onForgotPasswordClicked;
+  final VoidCallback onLoginSuccess;
+  final VoidCallback onLoginError;
+  final VoidCallback onBackClicked;
+
+  const LoginScreen({
+    super.key,
+    this.snackbarMessage,
+    required this.onRegisterClicked,
+    required this.onForgotPasswordClicked,
+    required this.onLoginError,
+    required this.onLoginSuccess,
+    required this.onBackClicked,
+  });
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _emailFocusNode = FocusNode();
+  final _passwordFocusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _emailFocusNode.addListener(() {
+      if (!_emailFocusNode.hasFocus) {
+        context.read<LoginCubit>().blurEmail();
+      }
+    });
+    _passwordFocusNode.addListener(() {
+      if (!_passwordFocusNode.hasFocus) {
+        context.read<LoginCubit>().blurPassword();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    context.read<LoginCubit>().submit();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return BlocConsumer<LoginCubit, LoginState>(
+      listener: (context, state) {
+        if (state.initMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.initMessage!)),
+          );
+          context.read<LoginCubit>().consumeInitMessage();
+        }
+        if (state.isSuccess) {
+          widget.onLoginSuccess();
+        } else if (state.isFailure && state.failureMessage != null) {
+          widget.onLoginError();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.failureMessage!)),
+          );
+        }
+        if (state.attemptedSubmit && !state.isFormValid) {
+          if (state.emailError != null) {
+            _emailFocusNode.requestFocus();
+          } else if (state.passwordError != null) {
+            _passwordFocusNode.requestFocus();
+          }
+        }
+      },
+      builder: (context, state) {
+        final showEmailError = (state.emailBlurred || state.attemptedSubmit) ? state.emailError : null;
+        final showPasswordError = (state.passwordBlurred || state.attemptedSubmit) ? state.passwordError : null;
+        return Scaffold(
+          appBar: AppBar(
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: widget.onBackClicked,
+              key: const Key('login_back_button'),
+            ),
+          ),
+          body: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Image.asset(
+                  'assets/images/img_login_header.jpg',
+                  width: double.infinity,
+                  height: MediaQuery.of(context).size.height * 0.3,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: double.infinity,
+                      height: MediaQuery.of(context).size.height * 0.3,
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      child: Icon(
+                        Icons.image_outlined,
+                        size: 64.0,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    );
+                  },
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      EsmorgaText(
+                        text: l10n.screenLoginTitle,
+                        style: EsmorgaTextStyle.heading1,
+                        key: const Key('login_title'),
+                      ),
+                      const SizedBox(height: 16.0),
+                      EsmorgaTextField(
+                        controller: _emailController,
+                        focusNode: _emailFocusNode,
+                        title: l10n.fieldTitleEmail,
+                        placeholder: l10n.placeholderEmail,
+                        errorText: showEmailError,
+                        isEnabled: !state.isSubmitting,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        onChanged: (v) => context.read<LoginCubit>().changeEmail(v),
+                        key: const Key('login_email_input'),
+                      ),
+                      const SizedBox(height: 16.0),
+                      EsmorgaTextField(
+                        controller: _passwordController,
+                        focusNode: _passwordFocusNode,
+                        title: l10n.fieldTitlePassword,
+                        placeholder: l10n.placeholderPassword,
+                        errorText: showPasswordError,
+                        isEnabled: !state.isSubmitting,
+                        obscureText: true,
+                        textInputAction: TextInputAction.done,
+                        onChanged: (v) => context.read<LoginCubit>().changePassword(v),
+                        onSubmitted: (_) => _submit(),
+                        key: const Key('login_password_input'),
+                      ),
+                      const SizedBox(height: 16.0),
+                      EsmorgaButton(
+                        text: l10n.buttonLogin,
+                        isLoading: state.isSubmitting,
+                        onClick: _submit,
+                        key: const Key('login_login_button'),
+                      ),
+                      const SizedBox(height: 16.0),
+                      Center(
+                        child: InkWell(
+                          onTap: state.isSubmitting ? null : widget.onForgotPasswordClicked,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: EsmorgaText(
+                              text: l10n.loginForgotPassword,
+                              style: EsmorgaTextStyle.body1Accent,
+                              key: const Key('login_forgot_password_button'),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16.0),
+                      EsmorgaButton(
+                        text: l10n.buttonCreateAccount,
+                        primary: false,
+                        isEnabled: !state.isSubmitting,
+                        onClick: widget.onRegisterClicked,
+                        key: const Key('login_register_button'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}

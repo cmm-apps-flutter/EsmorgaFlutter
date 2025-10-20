@@ -1,23 +1,63 @@
 import 'dart:convert';
 
+import 'package:esmorga_flutter/datasource_remote/config/environment_config.dart';
 import 'package:esmorga_flutter/datasource_remote/event/event_remote_model.dart';
 import 'package:http/http.dart' as http;
 
 class EsmorgaApi {
-  final http.Client httpClient;
-  static const String baseUrl = 'https://qa.esmorga.canarte.org/v1/';
-  static const String getEventsEndpoint = 'events';
+  final http.Client authenticatedHttpClient;
 
-  EsmorgaApi(this.httpClient);
+  String get baseUrl => EnvironmentConfig.currentBaseUrl;
 
+  EsmorgaApi(this.authenticatedHttpClient);
 
-  Future<List<EventRemoteModel>> getEvents() async {
-    final result = await httpClient.get(Uri.parse('$baseUrl$getEventsEndpoint'));
-    if(result.statusCode == 200){
+  Future<List<EventRemoteModel>> getMyEvents() async {
+    final result = await authenticatedHttpClient.get(
+      Uri.parse('${baseUrl}account/events'),
+    );
+    if (result.statusCode == 200) {
       final eventListWrapper = EventListWrapperRemoteModel.fromJson(json.decode(result.body));
       return eventListWrapper.remoteEventList;
     } else {
-      throw Exception('Failed to load events');
+      throw Exception('Failed to load my events');
+    }
+  }
+
+  Future<void> joinEvent(String eventId) async {
+    final result = await authenticatedHttpClient.post(
+      Uri.parse('${baseUrl}account/events'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'eventId': eventId}),
+    );
+    if (result.statusCode != 204) {
+      throw Exception('Failed to join event');
+    }
+  }
+
+  Future<void> leaveEvent(String eventId) async {
+    final request = http.Request('DELETE', Uri.parse('${baseUrl}account/events'));
+    request.headers['Content-Type'] = 'application/json';
+    request.body = json.encode({'eventId': eventId});
+
+    final streamedResponse = await authenticatedHttpClient.send(request);
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode != 204) {
+      throw Exception('Failed to leave event');
+    }
+  }
+
+  Future<void> changePassword(String oldPassword, String newPassword) async {
+    final result = await authenticatedHttpClient.put(
+      Uri.parse('${baseUrl}account/password'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'currentPassword': oldPassword,
+        'newPassword': newPassword,
+      }),
+    );
+    if (result.statusCode != 200) {
+      throw Exception('Failed to change password');
     }
   }
 }
