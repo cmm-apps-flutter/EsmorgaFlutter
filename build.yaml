@@ -1,0 +1,9 @@
+targets:
+  $default:
+    builders:
+      hive_ce_generator:
+        options:
+          # Add any generator options here if needed
+        generate_for:
+          - lib/datasource_local/**/*.dart
+

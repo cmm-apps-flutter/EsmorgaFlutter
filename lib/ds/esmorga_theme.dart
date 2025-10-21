@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 
 ThemeData getThemeData(BuildContext context) {
-  return ThemeData(useMaterial3: true, colorScheme: MediaQuery.of(context).platformBrightness == Brightness.light ? lightColorScheme : darkColorScheme);
+  return ThemeData(
+    useMaterial3: true,
+    colorScheme: MediaQuery.of(context).platformBrightness == Brightness.light
+        ? lightColorScheme
+        : darkColorScheme,
+  );
 }
 
 const lightColorScheme = ColorScheme(
@@ -36,6 +41,7 @@ const darkColorScheme = ColorScheme(
   surfaceContainerLowest: veryDarkGrey,
 );
 
+// Light theme colors
 const Color claret = Color(0xFF641C34);
 const Color pink = Color(0xFFE8CFD6);
 const Color pearl = Color(0xFFE5DBDE);
@@ -46,6 +52,7 @@ const Color darkGrey = Color(0xFF333333);
 const Color white = Color(0xFFFFFFFF);
 const Color sepia = Color(0xFF9C5C4A);
 
+// Dark theme colors
 const Color darkClaret = Color(0xFF3B0F21);
 const Color darkPink = Color(0xFFE4AFBB);
 const Color darkPearl = Color(0xFF908384);
@@ -54,3 +61,4 @@ const Color nightRider = Color(0xFF2E2828);
 const Color veryDarkGrey = Color(0xFF1E1E1E);
 const Color lightSepia = Color(0xFFF8B493);
 const Color softDarkGrey = Color(0xFF5F5E5E);
+
