@@ -13,6 +13,7 @@ import 'package:esmorga_flutter/datasource_remote/api/esmorga_guest_api.dart';
 import 'package:esmorga_flutter/datasource_remote/api/logging_http_client.dart';
 import 'package:esmorga_flutter/datasource_remote/event/event_remote_datasource.dart';
 import 'package:esmorga_flutter/domain/event/event_repository.dart';
+import 'package:esmorga_flutter/domain/event/model/event.dart';
 import 'package:esmorga_flutter/domain/user/repository/user_repository.dart';
 import 'package:esmorga_flutter/view/change_password/cubit/change_password_cubit.dart';
 import 'package:esmorga_flutter/view/dateformatting/esmorga_date_time_formatter.dart';
@@ -28,6 +29,7 @@ import 'package:esmorga_flutter/view/password/reset_password_cubit.dart';
 import 'package:esmorga_flutter/view/profile/cubit/profile_cubit.dart';
 import 'package:esmorga_flutter/view/registration/cubit/register_cubit.dart';
 import 'package:esmorga_flutter/view/registration/cubit/registration_confirmation_cubit.dart';
+import 'package:esmorga_flutter/view/registration/verify_account/cubit/verify_account_cubit.dart';
 import 'package:esmorga_flutter/view/validation/form_validator.dart';
 import 'package:esmorga_flutter/view/welcome/welcome_cubit.dart';
 import 'package:flutter/material.dart';
@@ -48,7 +50,7 @@ Future<void> setupDi(Locale locale) async {
   }
   final router = getIt<GoRouter>();
   final deepLinkService = DeepLinkService(router);
-  await deepLinkService.init();
+  getIt.registerSingleton<DeepLinkService>(deepLinkService);
 
   final locService = LocalizationService();
   await locService.load(locale);
@@ -156,10 +158,14 @@ Future<void> setupDi(Locale locale) async {
         code: code,
       ));
 
-  getIt.registerFactoryParam<EventDetailCubit, BuildContext, String>((context, eventId) => EventDetailCubit(
+  getIt.registerFactoryParam<EventDetailCubit, BuildContext, Event>((context, event) => EventDetailCubit(
         eventRepository: getIt(),
         userRepository: getIt(),
-        eventId: eventId,
+        event: event,
       ));
 
+  getIt.registerFactoryParam<VerifyAccountCubit, BuildContext, String>((context, verificationCode) => VerifyAccountCubit(
+        userRepository: getIt(),
+        verificationCode: verificationCode,
+      ));
 }

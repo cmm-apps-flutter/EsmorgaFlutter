@@ -1,12 +1,12 @@
-// filepath: lib/view/events/event_detail/view/event_detail_screen_v2.dart
-
+import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
-import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
 import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_cubit.dart';
+import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_effect.dart';
 import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_state.dart';
+import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
+import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:esmorga_flutter/view/navigation/app_routes.dart';
-import 'package:esmorga_flutter/di.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -14,77 +14,72 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EventDetailScreen extends StatelessWidget {
-  final String eventId;
-
-  const EventDetailScreen({Key? key, required this.eventId}) : super(key: key);
+  const EventDetailScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (ctx) => getIt<EventDetailCubit>(param1: ctx, param2: eventId),
-      child: _EventDetailForm(eventId: eventId),
-    );
+    return _EventDetailForm();
   }
 }
 
 class _EventDetailForm extends StatefulWidget {
-  final String eventId;
-  const _EventDetailForm({Key? key, required this.eventId}) : super(key: key);
+  const _EventDetailForm({Key? key}) : super(key: key);
 
   @override
   State<_EventDetailForm> createState() => _EventDetailFormState();
 }
 
 class _EventDetailFormState extends State<_EventDetailForm> {
+  late final EventDetailCubit _cubit;
+
   @override
   void initState() {
     super.initState();
-    context.read<EventDetailCubit>().start();
+    _cubit = context.read<EventDetailCubit>();
+    _cubit.start();
   }
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    return BlocConsumer<EventDetailCubit, EventDetailState>(
-      listenWhen: (prev, curr) => prev.effectId != curr.effectId && curr.effectType != null,
-      listener: (context, state) {
-        switch (state.effectType) {
-          case EventDetailEffectType.navigateBack:
-            context.pop();
-            break;
-          case EventDetailEffectType.navigateToLogin:
-            context.go(AppRoutes.login);
-            break;
-          case EventDetailEffectType.showJoinSuccess:
-            _showSnack(l.snackbarEventJoined);
-            break;
-          case EventDetailEffectType.showLeaveSuccess:
-            _showSnack(l.snackbarEventLeft);
-            break;
-          case EventDetailEffectType.showNoNetwork:
-            _showSnack(l.snackbarNoInternet);
-            break;
-          case EventDetailEffectType.showGenericError:
-            _showSnack(l.defaultErrorTitle);
-            break;
-          case EventDetailEffectType.openMaps:
-            if (state.effectLat != null && state.effectLng != null && state.effectName != null) {
-              _openMaps(state.effectLat!, state.effectLng!, state.effectName!);
+    final l10n = getIt<LocalizationService>().current;
+
+    return StreamBuilder<EventDetailEffect>(
+      stream: _cubit.effects,
+      builder: (context, snapshot) {
+        final effect = snapshot.data;
+        if (effect != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            if (effect is NavigateBackEffect) {
+              context.pop();
+            } else if (effect is NavigateToLoginEffect) {
+              context.go(AppRoutes.login);
+            } else if (effect is ShowJoinSuccessEffect) {
+              _showSnack(l10n.snackbarEventJoined);
+            } else if (effect is ShowLeaveSuccessEffect) {
+              _showSnack(l10n.snackbarEventLeft);
+            } else if (effect is ShowNoNetworkEffect) {
+              _showSnack(l10n.snackbarNoInternet);
+            } else if (effect is ShowGenericErrorEffect) {
+              _showSnack(l10n.defaultErrorTitle);
+            } else if (effect is OpenMapsEffect) {
+              _openMaps(effect.lat, effect.lng, effect.name);
             }
-            break;
-          case null:
-            break;
+          });
         }
-      },
-      builder: (context, state) {
-        return Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () => context.read<EventDetailCubit>().backPressed(),
-            ),
-          ),
-          body: _buildBody(context, state, l),
+
+        return BlocBuilder<EventDetailCubit, EventDetailState>(
+          builder: (context, state) {
+            return Scaffold(
+              appBar: AppBar(
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => _cubit.backPressed(),
+                ),
+              ),
+              body: _buildBody(context, state, l10n),
+            );
+          },
         );
       },
     );
@@ -113,20 +108,15 @@ class _EventDetailFormState extends State<_EventDetailForm> {
             Text(l.defaultErrorTitle),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => context.read<EventDetailCubit>().start(),
+              onPressed: () => _cubit.start(),
               child: Text(l.buttonRetry),
             )
           ],
         ),
       );
     }
-    final e = state.event;
-    if (e == null) {
-      // Should rarely happen (just after init) – show placeholder
-      return const Center(child: CircularProgressIndicator());
-    }
     final formatter = DateFormat.yMMMMd().add_Hm();
-    final dateStr = formatter.format(DateTime.fromMillisecondsSinceEpoch(e.date));
+    final dateStr = formatter.format(DateTime.fromMillisecondsSinceEpoch(state.event.date));
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -135,7 +125,7 @@ class _EventDetailFormState extends State<_EventDetailForm> {
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: Image.network(
-              e.imageUrl ?? '',
+              state.event.imageUrl ?? '',
               width: double.infinity,
               height: 200,
               fit: BoxFit.cover,
@@ -144,46 +134,62 @@ class _EventDetailFormState extends State<_EventDetailForm> {
                 height: 200,
                 alignment: Alignment.center,
                 color: Theme.of(context).colorScheme.surfaceVariant,
-                child: Icon(
-                  Icons.event_outlined,
-                  size: 64,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                child: Image.asset(
+                  'assets/images/event_list_empty.jpg',
+                  width: double.infinity,
+                  height: 200.0,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: double.infinity,
+                      height: 200.0,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(16.0),
+                      ),
+                      child: Icon(
+                        Icons.event_outlined,
+                        size: 64.0,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
           ),
           const SizedBox(height: 24),
           EsmorgaText(
-            text: e.name,
+            text: state.event.name,
             style: EsmorgaTextStyle.heading1,
             key: const Key('event_detail_title'),
           ),
           const SizedBox(height: 8),
           EsmorgaText(text: dateStr, style: EsmorgaTextStyle.body1Accent),
           const SizedBox(height: 8),
-          EsmorgaText(text: e.location.name, style: EsmorgaTextStyle.body1Accent),
+          EsmorgaText(text: state.event.location.name, style: EsmorgaTextStyle.body1Accent),
           const SizedBox(height: 24),
           EsmorgaText(text: l.screenEventDetailsDescription, style: EsmorgaTextStyle.heading2),
           const SizedBox(height: 8),
-          EsmorgaText(text: safeDecode(e.description), style: EsmorgaTextStyle.body1),
+          EsmorgaText(text: safeDecode(state.event.description), style: EsmorgaTextStyle.body1),
           const SizedBox(height: 24),
           EsmorgaText(text: l.screenEventDetailsLocation, style: EsmorgaTextStyle.heading2),
           const SizedBox(height: 8),
-          EsmorgaText(text: e.location.name, style: EsmorgaTextStyle.body1),
-          if (e.location.lat != null && e.location.long != null) ...[
+          EsmorgaText(text: state.event.location.name, style: EsmorgaTextStyle.body1),
+          if (state.event.location.lat != null && state.event.location.long != null) ...[
             const SizedBox(height: 24),
             EsmorgaButton(
               text: l.buttonNavigate,
               primary: false,
-              onClick: () => context.read<EventDetailCubit>().navigatePressed(),
+              onClick: () => _cubit.navigatePressed(),
               key: const Key('event_detail_navigate_button'),
             ),
           ],
           const SizedBox(height: 24),
           EsmorgaButton(
-            text: state.isAuthenticated ? (e.userJoined ? l.buttonLeaveEvent : l.buttonJoinEvent) : l.buttonLoginToJoin,
+            text: state.isAuthenticated ? (state.event.userJoined ? l.buttonLeaveEvent : l.buttonJoinEvent) : l.buttonLoginToJoin,
             isLoading: state.joinLeaving,
-            onClick: () => context.read<EventDetailCubit>().primaryPressed(),
+            onClick: () => _cubit.primaryPressed(),
             key: const Key('event_detail_primary_button'),
           ),
           const SizedBox(height: 48),
@@ -209,4 +215,3 @@ class _EventDetailFormState extends State<_EventDetailForm> {
     }
   }
 }
-

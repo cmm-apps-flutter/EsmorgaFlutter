@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:esmorga_flutter/domain/event/event_repository.dart';
+import 'package:esmorga_flutter/domain/event/model/event.dart';
+import 'package:esmorga_flutter/view/events/event_list/cubit/event_list_effect.dart';
 import 'package:esmorga_flutter/view/events/event_list/mapper/event_list_ui_mapper.dart';
 import 'package:esmorga_flutter/view/events/event_list/model/event_list_ui_model.dart';
 
@@ -11,7 +13,10 @@ part 'event_list_state.dart';
 class EventListCubit extends Cubit<EventListState> {
   final EventRepository eventRepository;
 
-  List<EventListUiModel> _cachedEvents = [];
+  final _effectController = StreamController<EventListEffect>.broadcast();
+  Stream<EventListEffect> get effects => _effectController.stream;
+
+  List<Event> _events = [];
 
   EventListCubit({required this.eventRepository}) : super(const EventListState());
 
@@ -22,11 +27,11 @@ class EventListCubit extends Cubit<EventListState> {
     emit(state.copyWith(loading: true, error: null, showNoNetworkPrompt: false));
     try {
       final events = await eventRepository.getEvents();
-      _cachedEvents = events.toEventUiList();
-      if (_cachedEvents.isEmpty) {
+      _events = events;
+      if (_events.isEmpty) {
         emit(state.copyWith(loading: false, eventList: const [], error: null, showNoNetworkPrompt: false));
       } else {
-        emit(state.copyWith(loading: false, eventList: _cachedEvents, error: null, showNoNetworkPrompt: false));
+        emit(state.copyWith(loading: false, eventList: _events.toEventUiList(), error: null, showNoNetworkPrompt: false));
       }
     } catch (e) {
       final msg = e.toString();
@@ -39,5 +44,19 @@ class EventListCubit extends Cubit<EventListState> {
     if (state.showNoNetworkPrompt) {
       emit(state.copyWith(showNoNetworkPrompt: false));
     }
+  }
+
+  void onEventClicked(String id) {
+    final events = _events.where((e) => e.id == id);
+    if (events.isEmpty) return;
+    _emitEffect(NavigateToEventDetailsEffect(event: events.first));
+  }
+
+  void _emitEffect(EventListEffect effect) => _effectController.add(effect);
+
+  @override
+  Future<void> close() {
+    _effectController.close();
+    return super.close();
   }
 }

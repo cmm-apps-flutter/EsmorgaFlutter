@@ -69,13 +69,12 @@ class EsmorgaAuthApi {
     }
   }
 
-  Future<UserRemoteModel> accountActivation(String email, String code) async {
+  Future<UserRemoteModel> accountActivation(String code) async {
     final result = await httpClient.put(
       Uri.parse('${baseUrl}account/activate'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
-        'email': email,
-        'code': code,
+        'verificationCode': code,
       }),
     );
     if (result.statusCode == 200) {

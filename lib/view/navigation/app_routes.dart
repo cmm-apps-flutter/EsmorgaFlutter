@@ -1,4 +1,7 @@
+import 'package:esmorga_flutter/di.dart';
+import 'package:esmorga_flutter/domain/event/model/event.dart';
 import 'package:esmorga_flutter/view/change_password/view/change_password_screen.dart';
+import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_cubit.dart';
 import 'package:esmorga_flutter/view/events/event_detail/view/event_detail_screen.dart';
 import 'package:esmorga_flutter/view/events/event_list/view/event_list_screen.dart';
 import 'package:esmorga_flutter/view/events/my_events/view/my_events_screen.dart';
@@ -7,9 +10,12 @@ import 'package:esmorga_flutter/view/login/view/login_screen.dart';
 import 'package:esmorga_flutter/view/password/recover_password_screen.dart';
 import 'package:esmorga_flutter/view/password/reset_password_screen.dart';
 import 'package:esmorga_flutter/view/profile/view/profile_screen.dart';
+import 'package:esmorga_flutter/view/registration/verify_account/cubit/verify_account_cubit.dart';
+import 'package:esmorga_flutter/view/registration/verify_account/view/verify_account_screen.dart';
 import 'package:esmorga_flutter/view/registration/view/register_screen.dart';
 import 'package:esmorga_flutter/view/registration/view/registration_confirmation_screen.dart';
 import 'package:esmorga_flutter/view/welcome/welcome_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class AppRoutes {
@@ -24,6 +30,7 @@ class AppRoutes {
   static const String recoverPassword = '/recover-password';
   static const String resetPassword = '/reset-password';
   static const String eventDetail = '/event';
+  static const String verifyAccount = '/verify-account';
 
   static GoRouter createRouter() {
     return GoRouter(
@@ -99,10 +106,24 @@ class AppRoutes {
           },
         ),
         GoRoute(
-          path: '$eventDetail/:id',
+          path: eventDetail,
           builder: (context, state) {
-            final id = state.pathParameters['id']!;
-            return EventDetailScreen(eventId: id);
+            final event = state.extra as Event;
+            return BlocProvider(create: (context) => getIt<EventDetailCubit>(param1: context, param2: event), child: EventDetailScreen());
+          },
+        ),
+        GoRoute(
+          path: verifyAccount,
+          builder: (context, state) {
+            final code = state.uri.queryParameters['code'] ?? '';
+            return BlocProvider(
+              create: (ctx) => getIt<VerifyAccountCubit>(param1: ctx, param2: code),
+              child: VerifyAccountScreen(
+                onAccountVerified: () {
+                  context.go(eventList);
+                },
+              ),
+            );
           },
         ),
         ShellRoute(
@@ -111,8 +132,8 @@ class AppRoutes {
             GoRoute(
               path: eventList,
               builder: (context, state) => EventListScreen(
-                onDetailsClicked: (id) {
-                  context.push('${AppRoutes.eventDetail}/$id');
+                onDetailsClicked: (event) {
+                  context.push(AppRoutes.eventDetail, extra: event);
                 },
               ),
             ),

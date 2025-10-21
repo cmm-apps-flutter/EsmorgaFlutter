@@ -1,15 +1,19 @@
+import 'dart:async';
+
 import 'package:esmorga_flutter/di.dart';
+import 'package:esmorga_flutter/domain/event/model/event.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_loader.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
 import 'package:esmorga_flutter/view/events/event_list/cubit/event_list_cubit.dart';
+import 'package:esmorga_flutter/view/events/event_list/cubit/event_list_effect.dart';
 import 'package:esmorga_flutter/view/events/event_list/model/event_list_ui_model.dart';
 import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class EventListScreen extends StatelessWidget {
-  final ValueChanged<String> onDetailsClicked;
+  final void Function(Event) onDetailsClicked;
 
   const EventListScreen({super.key, required this.onDetailsClicked});
 
@@ -25,7 +29,7 @@ class EventListScreen extends StatelessWidget {
 }
 
 class _EventListForm extends StatefulWidget {
-  final ValueChanged<String> onDetailsClicked;
+  final ValueChanged<Event> onDetailsClicked;
 
   const _EventListForm({required this.onDetailsClicked});
 
@@ -35,16 +39,23 @@ class _EventListForm extends StatefulWidget {
 
 class _EventListFormState extends State<_EventListForm> {
   late final EventListCubit _cubit;
+  StreamSubscription<EventListEffect>? _effectSubscription;
 
   @override
   void initState() {
     super.initState();
     _cubit = context.read<EventListCubit>();
     _cubit.loadEvents();
+    _effectSubscription = _cubit.effects.listen((effect) {
+      if (effect is NavigateToEventDetailsEffect) {
+        widget.onDetailsClicked(effect.event);
+      }
+    });
   }
 
   @override
   void dispose() {
+    _effectSubscription?.cancel();
     super.dispose();
   }
 
@@ -74,7 +85,7 @@ class _EventListFormState extends State<_EventListForm> {
                   onRetry: () => _cubit.loadEvents(),
                 );
               } else {
-                body = EventListWidget(events: state.eventList, onDetailsClicked: widget.onDetailsClicked);
+                body = EventListWidget(events: state.eventList, onDetailsClicked: _cubit.onEventClicked);
               }
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,7 +152,7 @@ class EventListEmptyWidget extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(16.0),
             child: Image.asset(
-              'assets/images/event_list_empty.png',
+              'assets/images/event_list_empty.jpg',
               width: double.infinity,
               height: 200.0,
               fit: BoxFit.cover,
@@ -268,7 +279,7 @@ class EventListWidget extends StatelessWidget {
         final event = events[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: 32.0),
-          child: GestureDetector(
+          child: InkWell(
             onTap: () {
               final id = event.id;
               onDetailsClicked(id);
@@ -291,10 +302,26 @@ class EventListWidget extends StatelessWidget {
                           color: Theme.of(context).colorScheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(16.0),
                         ),
-                        child: Icon(
-                          Icons.event_outlined,
-                          size: 64.0,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        child: Image.asset(
+                          'assets/images/event_list_empty.jpg',
+                          width: double.infinity,
+                          height: 200.0,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              width: double.infinity,
+                              height: 200.0,
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                                borderRadius: BorderRadius.circular(16.0),
+                              ),
+                              child: Icon(
+                                Icons.event_outlined,
+                                size: 64.0,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
+                            );
+                          },
                         ),
                       );
                     },

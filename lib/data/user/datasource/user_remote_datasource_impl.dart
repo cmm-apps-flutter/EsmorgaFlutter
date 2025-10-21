@@ -10,7 +10,7 @@ class UserRemoteDatasourceImpl implements UserDatasource {
   final EsmorgaApi api;
   final AuthDatasource authDatasource;
 
-  UserRemoteDatasourceImpl(this.authApi,this.api, this.authDatasource);
+  UserRemoteDatasourceImpl(this.authApi, this.api, this.authDatasource);
 
   @override
   Future<UserDataModel> login(String email, String password) async {
@@ -41,8 +41,7 @@ class UserRemoteDatasourceImpl implements UserDatasource {
   }
 
   @override
-  Future<void> saveUser(UserDataModel user) async {
-  }
+  Future<void> saveUser(UserDataModel user) async {}
 
   @override
   Future<void> deleteUserSession() async {
@@ -61,7 +60,7 @@ class UserRemoteDatasourceImpl implements UserDatasource {
 
   @override
   Future<UserDataModel> activateAccount(String verificationCode) async {
-    final userRemoteModel = await authApi.accountActivation('', verificationCode);
+    final userRemoteModel = await authApi.accountActivation(verificationCode);
 
     await authDatasource.saveTokens(
       userRemoteModel.accessToken,
@@ -71,9 +70,9 @@ class UserRemoteDatasourceImpl implements UserDatasource {
 
     return UserDataModel(
       dataName: userRemoteModel.name,
-      dataLastName: '',
+      dataLastName: userRemoteModel.lastName,
       dataEmail: userRemoteModel.email,
-      dataRole: RoleType.user,
+      dataRole: RoleTypeExtension.fromString(userRemoteModel.role),
     );
   }
 
@@ -87,4 +86,3 @@ class UserRemoteDatasourceImpl implements UserDatasource {
     await api.changePassword(currentPassword, newPassword);
   }
 }
-

@@ -1,17 +1,21 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:esmorga_flutter/domain/event/event_repository.dart';
+import 'package:esmorga_flutter/domain/event/model/event.dart';
 import 'package:esmorga_flutter/domain/user/repository/user_repository.dart';
+import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_effect.dart';
 import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_state.dart';
 
 class EventDetailCubit extends Cubit<EventDetailState> {
   final EventRepository eventRepository;
   final UserRepository userRepository;
+  final Event event;
 
-  EventDetailCubit(
-      {required this.eventRepository,
-      required this.userRepository,
-      required String eventId})
-      : super(EventDetailState(eventId: eventId));
+  final _effectController = StreamController<EventDetailEffect>.broadcast();
+  Stream<EventDetailEffect> get effects => _effectController.stream;
+
+  EventDetailCubit({required this.eventRepository, required this.userRepository, required this.event}) : super(EventDetailState(event: event));
 
   Future<void> start() async {
     emit(state.copyWith(loading: true, error: null));
@@ -23,8 +27,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
       } catch (_) {
         isAuth = false;
       }
-      final evt = await eventRepository.getEventDetails(state.eventId);
-      emit(state.copyWith(loading: false, event: evt, isAuthenticated: isAuth));
+      emit(state.copyWith(loading: false, event: event, isAuthenticated: isAuth));
     } catch (e) {
       emit(state.copyWith(loading: false, error: e.toString()));
     }
@@ -34,7 +37,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
     final current = state.event;
     if (current == null) return;
     if (!state.isAuthenticated) {
-      _emitEffect(EventDetailEffectType.navigateToLogin);
+      _emitEffect(NavigateToLoginEffect());
       return;
     }
     emit(state.copyWith(joinLeaving: true));
@@ -43,42 +46,37 @@ class EventDetailCubit extends Cubit<EventDetailState> {
         await eventRepository.leaveEvent(current);
         final updated = current.copyWith(userJoined: false);
         emit(state.copyWith(event: updated, joinLeaving: false));
-        _emitEffect(EventDetailEffectType.showLeaveSuccess);
+        _emitEffect(ShowLeaveSuccessEffect());
       } else {
         await eventRepository.joinEvent(current);
         final updated = current.copyWith(userJoined: true);
         emit(state.copyWith(event: updated, joinLeaving: false));
-        _emitEffect(EventDetailEffectType.showJoinSuccess);
+        _emitEffect(ShowJoinSuccessEffect());
       }
     } catch (e) {
       final msg = e.toString().toLowerCase();
-      _emitEffect(msg.contains('network') || msg.contains('connection')
-          ? EventDetailEffectType.showNoNetwork
-          : EventDetailEffectType.showGenericError);
+      if (msg.contains('network') || msg.contains('connection')) {
+        _emitEffect(ShowNoNetworkEffect());
+      } else {
+        _emitEffect(ShowGenericErrorEffect());
+      }
       emit(state.copyWith(joinLeaving: false));
     }
   }
 
   void navigatePressed() {
-    final evt = state.event;
-    if (evt?.location.lat != null && evt?.location.long != null) {
-      _emitEffect(EventDetailEffectType.openMaps,
-          lat: evt!.location.lat!,
-          lng: evt.location.long!,
-          name: evt.location.name);
+    if (event.location.lat != null && event.location.long != null) {
+      _emitEffect(OpenMapsEffect(lat: event.location.lat!, lng: event.location.long!, name: event.location.name));
     }
   }
 
-  void backPressed() => _emitEffect(EventDetailEffectType.navigateBack);
+  void backPressed() => _emitEffect(NavigateBackEffect());
 
-  void _emitEffect(EventDetailEffectType type,
-      {double? lat, double? lng, String? name}) {
-    emit(state.copyWith(
-      effectType: type,
-      effectLat: lat,
-      effectLng: lng,
-      effectName: name,
-      effectId: state.effectId + 1,
-    ));
+  void _emitEffect(EventDetailEffect effect) => _effectController.add(effect);
+
+  @override
+  Future<void> close() {
+    _effectController.close();
+    return super.close();
   }
 }

@@ -39,14 +39,12 @@ void main() {
 
   setUp(() {
     repository = MockEventRepository();
-    if (!getIt.isRegistered<EsmorgaDateTimeFormatter>()) {
-      getIt.registerSingleton<EsmorgaDateTimeFormatter>(FakeFormatter());
-    }
+    getIt.registerSingleton<EsmorgaDateTimeFormatter>(FakeFormatter());
   });
 
   tearDown(() async {
-    // reset mocks
     reset(repository);
+    getIt.reset();
   });
 
   blocTest<EventListCubit, EventListState>(
