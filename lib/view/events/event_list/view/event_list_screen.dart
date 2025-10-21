@@ -1,67 +1,97 @@
-import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
+import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_loader.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
-import 'package:esmorga_flutter/view/events/event_list/cubit/event_cubit.dart';
-import 'package:esmorga_flutter/view/events/event_list/cubit/event_state.dart';
+import 'package:esmorga_flutter/view/events/event_list/cubit/event_list_cubit.dart';
 import 'package:esmorga_flutter/view/events/event_list/model/event_list_ui_model.dart';
-import 'package:esmorga_flutter/view/navigation/app_routes.dart';
+import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
-class EventListScreen extends StatefulWidget {
-  const EventListScreen({super.key});
+class EventListScreen extends StatelessWidget {
+  final ValueChanged<String> onDetailsClicked;
+
+  const EventListScreen({super.key, required this.onDetailsClicked});
 
   @override
-  State<EventListScreen> createState() => _EventListScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (ctx) => getIt<EventListCubit>(),
+      child: _EventListForm(
+        onDetailsClicked: onDetailsClicked,
+      ),
+    );
+  }
 }
 
-class _EventListScreenState extends State<EventListScreen> {
+class _EventListForm extends StatefulWidget {
+  final ValueChanged<String> onDetailsClicked;
+
+  const _EventListForm({required this.onDetailsClicked});
+
+  @override
+  State<_EventListForm> createState() => _EventListFormState();
+}
+
+class _EventListFormState extends State<_EventListForm> {
+  late final EventListCubit _cubit;
+
   @override
   void initState() {
     super.initState();
-    context.read<EventCubit>().loadEvents();
+    _cubit = context.read<EventListCubit>();
+    _cubit.loadEvents();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = getIt<LocalizationService>().current;
     return Scaffold(
       body: SafeArea(
-        child: BlocBuilder<EventCubit, EventState>(
-          builder: (context, state) {
-            Widget body;
-            if (state.loading) {
-              body = EventListLoadingWidget(title: l10n.screenEventListLoading);
-            } else if (state.eventList.isEmpty && state.error == null) {
-              body = EventListEmptyWidget(text: l10n.screenEventListEmptyText);
-            } else if (state.error != null) {
-              body = EventListErrorWidget(
-                title: l10n.defaultErrorTitle,
-                message: l10n.defaultErrorBody,
-                retryText: l10n.buttonRetry,
-                onRetry: () => context.read<EventCubit>().loadEvents(),
-              );
-            } else {
-              body = EventListWidget(events: state.eventList);
-            }
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 32.0, horizontal: 16.0),
-                  child: EsmorgaText(
-                    text: l10n.screenEventListTitle,
-                    style: EsmorgaTextStyle.heading1,
-                    key: const Key('event_list_screen_title'),
-                  ),
-                ),
-                Expanded(child: body),
-              ],
-            );
+        child: BlocListener<EventListCubit, EventListState>(
+          listenWhen: (previous, current) => previous.showNoNetworkPrompt == false && current.showNoNetworkPrompt == true,
+          listener: (context, state) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.snackbarNoInternet)));
+            _cubit.clearNoNetworkPrompt();
           },
+          child: BlocBuilder<EventListCubit, EventListState>(
+            builder: (context, state) {
+              Widget body;
+              if (state.loading) {
+                body = EventListLoadingWidget(title: l10n.screenEventListLoading);
+              } else if (state.eventList.isEmpty && state.error == null) {
+                body = EventListEmptyWidget(text: l10n.screenEventListEmptyText);
+              } else if (state.error != null) {
+                body = EventListErrorWidget(
+                  title: l10n.defaultErrorTitle,
+                  message: l10n.defaultErrorBody,
+                  retryText: l10n.buttonRetry,
+                  onRetry: () => _cubit.loadEvents(),
+                );
+              } else {
+                body = EventListWidget(events: state.eventList, onDetailsClicked: widget.onDetailsClicked);
+              }
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
+                    child: EsmorgaText(
+                      text: l10n.screenEventListTitle,
+                      style: EsmorgaTextStyle.heading1,
+                      key: const Key('event_list_screen_title'),
+                    ),
+                  ),
+                  Expanded(child: body),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -70,7 +100,9 @@ class _EventListScreenState extends State<EventListScreen> {
 
 class EventListLoadingWidget extends StatelessWidget {
   final String title;
+
   const EventListLoadingWidget({super.key, required this.title});
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -97,7 +129,9 @@ class EventListLoadingWidget extends StatelessWidget {
 
 class EventListEmptyWidget extends StatelessWidget {
   final String text;
+
   const EventListEmptyWidget({super.key, required this.text});
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -116,8 +150,7 @@ class EventListEmptyWidget extends StatelessWidget {
                   width: double.infinity,
                   height: 200.0,
                   decoration: BoxDecoration(
-                    color:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(16.0),
                   ),
                   child: Icon(
@@ -130,8 +163,7 @@ class EventListEmptyWidget extends StatelessWidget {
             ),
           ),
           Padding(
-            padding:
-                const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
+            padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
             child: EsmorgaText(
               text: text,
               style: EsmorgaTextStyle.heading2,
@@ -149,6 +181,7 @@ class EventListErrorWidget extends StatelessWidget {
   final String message;
   final String retryText;
   final VoidCallback onRetry;
+
   const EventListErrorWidget({
     super.key,
     required this.title,
@@ -156,6 +189,7 @@ class EventListErrorWidget extends StatelessWidget {
     required this.retryText,
     required this.onRetry,
   });
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -221,7 +255,10 @@ class EventListErrorWidget extends StatelessWidget {
 
 class EventListWidget extends StatelessWidget {
   final List<EventListUiModel> events;
-  const EventListWidget({super.key, required this.events});
+  final ValueChanged<String> onDetailsClicked;
+
+  const EventListWidget({super.key, required this.events, required this.onDetailsClicked});
+
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
@@ -232,7 +269,10 @@ class EventListWidget extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.only(bottom: 32.0),
           child: GestureDetector(
-            onTap: () => context.push('${AppRoutes.eventDetail}/${event.id}'),
+            onTap: () {
+              final id = event.id;
+              onDetailsClicked(id);
+            },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -248,9 +288,7 @@ class EventListWidget extends StatelessWidget {
                         width: double.infinity,
                         height: 200.0,
                         decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerHighest,
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(16.0),
                         ),
                         child: Icon(
@@ -266,9 +304,7 @@ class EventListWidget extends StatelessWidget {
                         width: double.infinity,
                         height: 200.0,
                         decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerHighest,
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(16.0),
                         ),
                         child: const Center(child: CircularProgressIndicator()),

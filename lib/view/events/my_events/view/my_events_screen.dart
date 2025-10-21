@@ -5,23 +5,37 @@ import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
 import 'package:esmorga_flutter/view/events/event_list/model/event_list_ui_model.dart';
 import 'package:esmorga_flutter/view/events/my_events/cubit/my_events_cubit.dart';
 import 'package:esmorga_flutter/view/navigation/app_routes.dart';
+import 'package:esmorga_flutter/di.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-class MyEventsScreen extends StatefulWidget {
+class MyEventsScreen extends StatelessWidget {
   const MyEventsScreen({super.key});
 
   @override
-  State<MyEventsScreen> createState() => _MyEventsScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => getIt<MyEventsCubit>(),
+      child: const _MyEventsForm(),
+    );
+  }
 }
 
-class _MyEventsScreenState extends State<MyEventsScreen> {
+class _MyEventsForm extends StatefulWidget {
+  const _MyEventsForm();
+
+  @override
+  State<_MyEventsForm> createState() => _MyEventsFormState();
+}
+
+class _MyEventsFormState extends State<_MyEventsForm> {
   @override
   void initState() {
     super.initState();
-    context.read<MyEventsCubit>().load();
-    context.read<MyEventsCubit>().effects.listen((effect) {
+    final cubit = context.read<MyEventsCubit>();
+    cubit.load();
+    cubit.effects.listen((effect) {
       if (effect is MyEventsEffectShowNoNetworkPrompt) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppLocalizations.of(context)!.snackbarNoInternet)),

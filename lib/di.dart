@@ -16,11 +16,12 @@ import 'package:esmorga_flutter/domain/event/event_repository.dart';
 import 'package:esmorga_flutter/domain/user/repository/user_repository.dart';
 import 'package:esmorga_flutter/view/change_password/cubit/change_password_cubit.dart';
 import 'package:esmorga_flutter/view/dateformatting/esmorga_date_time_formatter.dart';
-import 'package:esmorga_flutter/view/event_list/cubit/event_list_cubit.dart';
+import 'package:esmorga_flutter/view/deeplink/deep_link_service.dart';
 import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_cubit.dart';
-import 'package:esmorga_flutter/view/events/event_list/cubit/event_cubit.dart';
+import 'package:esmorga_flutter/view/events/event_list/cubit/event_list_cubit.dart';
 import 'package:esmorga_flutter/view/events/my_events/cubit/my_events_cubit.dart';
 import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
+import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:esmorga_flutter/view/login/cubit/login_cubit.dart';
 import 'package:esmorga_flutter/view/navigation/app_routes.dart';
 import 'package:esmorga_flutter/view/password/reset_password_cubit.dart';
@@ -38,7 +39,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 final getIt = GetIt.instance;
 
-Future<void> setupDi() async {
+Future<void> setupDi(Locale locale) async {
+  // -----------------------------
+  // ROUTER
+  // -----------------------------
+  if (!getIt.isRegistered<GoRouter>()) {
+    getIt.registerSingleton<GoRouter>(AppRoutes.createRouter());
+  }
+  final router = getIt<GoRouter>();
+  final deepLinkService = DeepLinkService(router);
+  await deepLinkService.init();
+
+  final locService = LocalizationService();
+  await locService.load(locale);
+  getIt.registerSingleton<LocalizationService>(locService);
+  getIt.registerSingleton<AppLocalizations>(locService.current);
+  getIt.registerSingleton<FormValidator>(FormValidator());
   // -----------------------------
   // STORAGE
   // -----------------------------
@@ -126,36 +142,17 @@ Future<void> setupDi() async {
   // -----------------------------
   // CUBITS
   // -----------------------------
-  getIt.registerFactory(() => EventCubit(eventRepository: getIt()));
-
-  getIt.registerFactory(() => MyEventsCubit(
-        eventRepository: getIt(),
-        userRepository: getIt(),
-      ));
+  getIt.registerFactory(() => MyEventsCubit(eventRepository: getIt(), userRepository: getIt()));
   getIt.registerFactory(() => WelcomeCubit());
   getIt.registerFactory(() => EventListCubit(eventRepository: getIt()));
   getIt.registerFactory(() => ProfileCubit(userRepository: getIt()));
-  getIt.registerFactoryParam<RegisterCubit, BuildContext, void>(
-    (context, _) => RegisterCubit(
-      userRepository: getIt(),
-      validator: getIt<FormValidator>(param1: context),
-    ),
-  );
-  getIt.registerFactoryParam<LoginCubit, BuildContext, String?>((context, initialMessage) => LoginCubit(
-        userRepository: getIt(),
-        validator: getIt<FormValidator>(param1: context),
-        initialMessage: initialMessage,
-      ));
-  getIt.registerFactoryParam<ChangePasswordCubit, BuildContext, void>(
-    (context, _) => ChangePasswordCubit(
-      userRepository: getIt(),
-      validator: getIt<FormValidator>(param1: context),
-    ),
-  );
-
+  getIt.registerFactory(() => LoginCubit(userRepository: getIt(), validator: getIt()));
+  getIt.registerFactory(() => RegisterCubit(userRepository: getIt(), validator: getIt()));
+  getIt.registerFactory(() => ChangePasswordCubit(userRepository: getIt(), validator: getIt()));
+  getIt.registerFactory(() => RegistrationConfirmationCubit(userRepository: getIt()));
   getIt.registerFactoryParam<ResetPasswordCubit, BuildContext, String?>((context, code) => ResetPasswordCubit(
         userRepository: getIt(),
-        validator: getIt<FormValidator>(param1: context),
+        validator: getIt(),
         code: code,
       ));
 
@@ -165,12 +162,4 @@ Future<void> setupDi() async {
         eventId: eventId,
       ));
 
-  getIt.registerFactory(() => RegistrationConfirmationCubit(userRepository: getIt()));
-
-  // -----------------------------
-  // ROUTER
-  // -----------------------------
-  if (!getIt.isRegistered<GoRouter>()) {
-    getIt.registerSingleton<GoRouter>(AppRoutes.createRouter());
-  }
 }

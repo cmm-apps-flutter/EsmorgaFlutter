@@ -68,13 +68,3 @@ class ChangePasswordEditing extends ChangePasswordState {
     );
   }
 }
-
-class ChangePasswordSuccess extends ChangePasswordState {
-  final String messageKey;
-  const ChangePasswordSuccess(this.messageKey);
-}
-
-class ChangePasswordError extends ChangePasswordState {
-  final ChangePasswordFailure failure;
-  const ChangePasswordError(this.failure);
-}

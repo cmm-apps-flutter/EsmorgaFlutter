@@ -1,5 +1,8 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/domain/user/repository/user_repository.dart';
+import 'package:esmorga_flutter/view/l10n/app_localizations_en.dart';
+import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:esmorga_flutter/view/registration/cubit/register_cubit.dart';
 import 'package:esmorga_flutter/view/registration/cubit/register_state.dart';
 import 'package:esmorga_flutter/view/validation/form_validator.dart';
@@ -31,13 +34,23 @@ class _StubValidator extends FormValidator {
   }
 }
 
+class _MockLocalizationService extends Mock implements LocalizationService {}
+
 void main() {
   late _MockUserRepository userRepository;
   late FormValidator validator;
+  late LocalizationService mockL10nService;
 
   setUp(() {
     userRepository = _MockUserRepository();
+    mockL10nService = _MockLocalizationService();
+    getIt.registerSingleton<LocalizationService>(mockL10nService);
+    when(() => mockL10nService.current).thenReturn(AppLocalizationsEn());
     validator = _StubValidator();
+  });
+
+  tearDown(() {
+    getIt.reset();
   });
   group('RegisterCubit', () {
     const name = 'John';

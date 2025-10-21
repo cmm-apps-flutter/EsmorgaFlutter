@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:esmorga_flutter/domain/event/model/event.dart';
 
 class EventListUiState extends Equatable {
   final bool loading;
@@ -34,14 +33,3 @@ class EventListUiModel extends Equatable {
   @override
   List<Object?> get props => [id, imageUrl, cardTitle, cardSubtitle1, cardSubtitle2];
 }
-
-sealed class EventListEffect {}
-
-class ShowNoNetworkPrompt extends EventListEffect {}
-
-class NavigateToEventDetail extends EventListEffect {
-  final Event event;
-
-  NavigateToEventDetail(this.event);
-}
-

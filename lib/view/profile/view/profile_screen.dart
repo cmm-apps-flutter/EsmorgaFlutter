@@ -6,10 +6,11 @@ import 'package:esmorga_flutter/ds/esmorga_text.dart';
 import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
 import 'package:esmorga_flutter/view/profile/cubit/profile_cubit.dart';
 import 'package:esmorga_flutter/view/profile/cubit/profile_state.dart';
+import 'package:esmorga_flutter/di.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends StatelessWidget {
   final VoidCallback onNavigateToLogin;
   final VoidCallback onNavigateToChangePassword;
 
@@ -20,10 +21,31 @@ class ProfileScreen extends StatefulWidget {
   });
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (ctx) => getIt<ProfileCubit>(),
+      child: _ProfileForm(
+        onNavigateToLogin: onNavigateToLogin,
+        onNavigateToChangePassword: onNavigateToChangePassword,
+      ),
+    );
+  }
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileForm extends StatefulWidget {
+  final VoidCallback onNavigateToLogin;
+  final VoidCallback onNavigateToChangePassword;
+
+  const _ProfileForm({
+    required this.onNavigateToLogin,
+    required this.onNavigateToChangePassword,
+  });
+
+  @override
+  State<_ProfileForm> createState() => _ProfileFormState();
+}
+
+class _ProfileFormState extends State<_ProfileForm> {
   @override
   void initState() {
     super.initState();

@@ -1,24 +1,37 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/domain/user/model/role_type.dart';
 import 'package:esmorga_flutter/domain/user/model/user.dart';
 import 'package:esmorga_flutter/domain/user/repository/user_repository.dart';
+import 'package:esmorga_flutter/view/l10n/app_localizations_en.dart';
+import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:esmorga_flutter/view/login/cubit/login_cubit.dart';
 import 'package:esmorga_flutter/view/login/cubit/login_state.dart';
 import 'package:esmorga_flutter/view/validation/form_validator.dart';
-import 'package:esmorga_flutter/view/l10n/app_localizations_en.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 class _MockUserRepository extends Mock implements UserRepository {}
 
+class _MockLocalizationService extends Mock implements LocalizationService {}
+
 void main() {
   late _MockUserRepository userRepository;
   late FormValidator validator;
+  final l10n = AppLocalizationsEn();
+  late _MockLocalizationService mockL10nService;
   const testUser = User(name: 'John', lastName: 'Doe', email: 'user@test.com', role: RoleType.user);
 
   setUp(() {
+    mockL10nService = _MockLocalizationService();
+    getIt.registerSingleton<LocalizationService>(mockL10nService);
     userRepository = _MockUserRepository();
+    when(() => mockL10nService.current).thenReturn(l10n);
     validator = FormValidator();
+  });
+
+  tearDown(() {
+    getIt.reset();
   });
 
   group('LoginCubit', () {
@@ -44,10 +57,7 @@ void main() {
       build: () => LoginCubit(userRepository: userRepository, validator: validator),
       act: (cubit) => cubit.submit(),
       expect: () => [
-        isA<LoginState>()
-            .having((s) => s.status, 'status', LoginStatus.idle)
-            .having((s) => s.emailError, 'emailError', isNotNull)
-            .having((s) => s.passwordError, 'passwordError', isNotNull),
+        isA<LoginState>().having((s) => s.status, 'status', LoginStatus.idle).having((s) => s.emailError, 'emailError', isNotNull).having((s) => s.passwordError, 'passwordError', isNotNull),
       ],
       verify: (_) => verifyNever(() => userRepository.login(any(), any())),
     );
@@ -64,9 +74,7 @@ void main() {
       act: (cubit) => cubit.submit(),
       expect: () => [
         isA<LoginState>().having((s) => s.status, 'status', LoginStatus.submitting),
-        isA<LoginState>()
-            .having((s) => s.status, 'status', LoginStatus.failure)
-            .having((s) => s.failureMessage, 'failureMessage', contains('invalid credentials')),
+        isA<LoginState>().having((s) => s.status, 'status', LoginStatus.failure).having((s) => s.failureMessage, 'failureMessage', contains('invalid credentials')),
       ],
     );
   });

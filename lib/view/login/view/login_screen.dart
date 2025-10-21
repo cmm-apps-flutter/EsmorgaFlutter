@@ -1,3 +1,4 @@
+import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
 import 'package:esmorga_flutter/ds/esmorga_text_field.dart';
@@ -7,7 +8,7 @@ import 'package:esmorga_flutter/view/login/cubit/login_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends StatelessWidget {
   final String? snackbarMessage; // initial message already passed to cubit
   final VoidCallback onRegisterClicked;
   final VoidCallback onForgotPasswordClicked;
@@ -26,26 +27,59 @@ class LoginScreen extends StatefulWidget {
   });
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (ctx) => getIt<LoginCubit>(param1: ctx, param2: snackbarMessage),
+      child: _LoginForm(
+        onRegisterClicked: onRegisterClicked,
+        onForgotPasswordClicked: onForgotPasswordClicked,
+        onLoginSuccess: onLoginSuccess,
+        onLoginError: onLoginError,
+        onBackClicked: onBackClicked,
+      ),
+    );
+  }
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginForm extends StatefulWidget {
+  final VoidCallback onRegisterClicked;
+  final VoidCallback onForgotPasswordClicked;
+  final VoidCallback onLoginSuccess;
+  final VoidCallback onLoginError;
+  final VoidCallback onBackClicked;
+
+  const _LoginForm({
+    required this.onRegisterClicked,
+    required this.onForgotPasswordClicked,
+    required this.onLoginSuccess,
+    required this.onLoginError,
+    required this.onBackClicked,
+  });
+
+  @override
+  State<_LoginForm> createState() => _LoginFormState();
+}
+
+class _LoginFormState extends State<_LoginForm> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _emailFocusNode = FocusNode();
   final _passwordFocusNode = FocusNode();
 
+  late final LoginCubit _cubit;
+
   @override
   void initState() {
     super.initState();
+    _cubit = context.read<LoginCubit>();
     _emailFocusNode.addListener(() {
       if (!_emailFocusNode.hasFocus) {
-        context.read<LoginCubit>().blurEmail();
+        _cubit.blurEmail();
       }
     });
     _passwordFocusNode.addListener(() {
       if (!_passwordFocusNode.hasFocus) {
-        context.read<LoginCubit>().blurPassword();
+        _cubit.blurPassword();
       }
     });
   }
@@ -60,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _submit() {
-    context.read<LoginCubit>().submit();
+    _cubit.submit();
   }
 
   @override
@@ -72,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.initMessage!)),
           );
-          context.read<LoginCubit>().consumeInitMessage();
+          _cubit.consumeInitMessage();
         }
         if (state.isSuccess) {
           widget.onLoginSuccess();
@@ -143,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         isEnabled: !state.isSubmitting,
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
-                        onChanged: (v) => context.read<LoginCubit>().changeEmail(v),
+                        onChanged: (v) => _cubit.changeEmail(v),
                         key: const Key('login_email_input'),
                       ),
                       const SizedBox(height: 16.0),
@@ -156,7 +190,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         isEnabled: !state.isSubmitting,
                         obscureText: true,
                         textInputAction: TextInputAction.done,
-                        onChanged: (v) => context.read<LoginCubit>().changePassword(v),
+                        onChanged: (v) => _cubit.changePassword(v),
                         onSubmitted: (_) => _submit(),
                         key: const Key('login_password_input'),
                       ),

@@ -1,23 +1,18 @@
+import 'dart:ui' as ui;
+
 import 'package:esmorga_flutter/datasource_remote/config/environment_config.dart';
-import 'package:esmorga_flutter/view/deeplink/deep_link_service.dart';
 import 'package:esmorga_flutter/di.dart';
-import 'package:esmorga_flutter/view/events/event_list/cubit/event_cubit.dart';
 import 'package:esmorga_flutter/ds/esmorga_theme.dart';
 import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
-import 'package:esmorga_flutter/view/navigation/app_navigator.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   EnvironmentConfig.initFromDartDefine();
-  await setupDi();
-  final router = getIt<GoRouter>();
-  final deepLinkService = DeepLinkService(router);
-  await deepLinkService.init();
+  final ui.Locale deviceLocale = ui.PlatformDispatcher.instance.locale;
+  await setupDi(deviceLocale);
   runApp(const EsmorgaApp());
 }
 

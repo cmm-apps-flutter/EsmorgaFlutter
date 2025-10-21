@@ -1,3 +1,4 @@
+import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
 import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
@@ -7,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class RegistrationConfirmationScreen extends StatefulWidget {
+class RegistrationConfirmationScreen extends StatelessWidget {
   final String email;
   final VoidCallback onBackClicked;
 
@@ -18,10 +19,25 @@ class RegistrationConfirmationScreen extends StatefulWidget {
   });
 
   @override
-  State<RegistrationConfirmationScreen> createState() => _RegistrationConfirmationScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => getIt<RegistrationConfirmationCubit>(),
+      child: _RegistrationConfirmationForm(email: email, onBackClicked: onBackClicked),
+    );
+  }
 }
 
-class _RegistrationConfirmationScreenState extends State<RegistrationConfirmationScreen> {
+class _RegistrationConfirmationForm extends StatefulWidget {
+  final String email;
+  final VoidCallback onBackClicked;
+
+  const _RegistrationConfirmationForm({required this.email, required this.onBackClicked});
+
+  @override
+  State<_RegistrationConfirmationForm> createState() => _RegistrationConfirmationFormState();
+}
+
+class _RegistrationConfirmationFormState extends State<_RegistrationConfirmationForm> {
   Future<void> _openEmailApp() async {
     final Uri emailLaunchUri = Uri(scheme: 'mailto', path: '');
     if (await canLaunchUrl(emailLaunchUri)) {

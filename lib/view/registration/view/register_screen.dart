@@ -1,20 +1,37 @@
+// filepath: /Users/p.martinez.grela/AndroidStudioProjects/EsmorgaFlutter/lib/view/registration/view/register_screen_v2.dart
+
+import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
 import 'package:esmorga_flutter/ds/esmorga_text_field.dart';
-import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
-import 'package:esmorga_flutter/view/navigation/app_navigator.dart';
-import 'package:esmorga_flutter/view/registration/cubit/register_cubit.dart'; // contiene RegisterCubit
+import 'package:esmorga_flutter/view/l10n/localization_service.dart';
+import 'package:esmorga_flutter/view/navigation/app_routes.dart';
+import 'package:esmorga_flutter/view/registration/cubit/register_cubit.dart';
 import 'package:esmorga_flutter/view/registration/cubit/register_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
-class RegisterScreen extends StatefulWidget {
+class RegisterScreen extends StatelessWidget {
   const RegisterScreen({super.key});
+
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (ctx) => getIt<RegisterCubit>(param1: ctx),
+      child: const _RegisterForm(),
+    );
+  }
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterForm extends StatefulWidget {
+  const _RegisterForm();
+
+  @override
+  State<_RegisterForm> createState() => _RegisterFormState();
+}
+
+class _RegisterFormState extends State<_RegisterForm> {
   final _nameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -27,14 +44,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordFocusNode = FocusNode();
   final _repeatPasswordFocusNode = FocusNode();
 
+  late final RegisterCubit _cubit;
+
   @override
   void initState() {
     super.initState();
-    _nameFocusNode.addListener(() { if (!_nameFocusNode.hasFocus) context.read<RegisterCubit>().onNameUnfocused(); });
-    _lastNameFocusNode.addListener(() { if (!_lastNameFocusNode.hasFocus) context.read<RegisterCubit>().onLastNameUnfocused(); });
-    _emailFocusNode.addListener(() { if (!_emailFocusNode.hasFocus) context.read<RegisterCubit>().onEmailUnfocused(); });
-    _passwordFocusNode.addListener(() { if (!_passwordFocusNode.hasFocus) context.read<RegisterCubit>().onPasswordUnfocused(); });
-    _repeatPasswordFocusNode.addListener(() { if (!_repeatPasswordFocusNode.hasFocus) context.read<RegisterCubit>().onRepeatPasswordUnfocused(); });
+    _cubit = context.read<RegisterCubit>();
+
+    _nameFocusNode.addListener(() {
+      if (!_nameFocusNode.hasFocus) _cubit.onNameUnfocused();
+    });
+    _lastNameFocusNode.addListener(() {
+      if (!_lastNameFocusNode.hasFocus) _cubit.onLastNameUnfocused();
+    });
+    _emailFocusNode.addListener(() {
+      if (!_emailFocusNode.hasFocus) _cubit.onEmailUnfocused();
+    });
+    _passwordFocusNode.addListener(() {
+      if (!_passwordFocusNode.hasFocus) _cubit.onPasswordUnfocused();
+    });
+    _repeatPasswordFocusNode.addListener(() {
+      if (!_repeatPasswordFocusNode.hasFocus) _cubit.onRepeatPasswordUnfocused();
+    });
   }
 
   @override
@@ -52,36 +83,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _onSubmit(BuildContext context) => context.read<RegisterCubit>().submit();
+  void _onSubmit() => _cubit.submit();
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = getIt<LocalizationService>().current;
+
     return BlocConsumer<RegisterCubit, RegisterState>(
       listener: (context, state) {
         if (state.isSuccess && state.successEmail != null) {
-          context.nav.toRegistrationConfirmation(state.successEmail!);
+          context.go('${AppRoutes.registrationConfirmation}?email=${Uri.encodeComponent(state.successEmail!)}');
         } else if (state.isFailure && state.failureMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.failureMessage!)));
         }
+
         if (state.attemptedSubmit) {
-          if (state.nameError != null) _nameFocusNode.requestFocus();
-          else if (state.lastNameError != null) _lastNameFocusNode.requestFocus();
-          else if (state.emailError != null) _emailFocusNode.requestFocus();
-          else if (state.passwordError != null) _passwordFocusNode.requestFocus();
+          if (state.nameError != null)
+            _nameFocusNode.requestFocus();
+          else if (state.lastNameError != null)
+            _lastNameFocusNode.requestFocus();
+          else if (state.emailError != null)
+            _emailFocusNode.requestFocus();
+          else if (state.passwordError != null)
+            _passwordFocusNode.requestFocus();
           else if (state.repeatPasswordError != null) _repeatPasswordFocusNode.requestFocus();
         }
       },
       builder: (context, state) {
         final isLoading = state.isSubmitting;
+
         String? nameError = (state.nameBlurred || state.attemptedSubmit) ? state.nameError : null;
         String? lastNameError = (state.lastNameBlurred || state.attemptedSubmit) ? state.lastNameError : null;
         String? emailError = (state.emailBlurred || state.attemptedSubmit) ? state.emailError : null;
         String? passwordError = (state.passwordBlurred || state.attemptedSubmit) ? state.passwordError : null;
         String? repeatPasswordError = (state.repeatPasswordBlurred || state.attemptedSubmit) ? state.repeatPasswordError : null;
+
         return Scaffold(
           appBar: AppBar(
-            leading: IconButton(onPressed: () => context.nav.back(), icon: const Icon(Icons.arrow_back)),
+            leading: IconButton(onPressed: () => context.pop(), icon: const Icon(Icons.arrow_back)),
           ),
           body: SafeArea(
             child: SingleChildScrollView(
@@ -100,7 +139,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       isEnabled: !isLoading,
                       textInputAction: TextInputAction.next,
                       errorText: nameError,
-                      onChanged: (v) => context.read<RegisterCubit>().onNameChanged(v),
+                      onChanged: _cubit.onNameChanged,
                       key: const Key('registration_name_input'),
                     ),
                     const SizedBox(height: 16.0),
@@ -112,7 +151,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       isEnabled: !isLoading,
                       textInputAction: TextInputAction.next,
                       errorText: lastNameError,
-                      onChanged: (v) => context.read<RegisterCubit>().onLastNameChanged(v),
+                      onChanged: _cubit.onLastNameChanged,
                       key: const Key('registration_last_name_input'),
                     ),
                     const SizedBox(height: 16.0),
@@ -125,7 +164,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
                       errorText: emailError,
-                      onChanged: (v) => context.read<RegisterCubit>().onEmailChanged(v),
+                      onChanged: _cubit.onEmailChanged,
                       key: const Key('registration_email_input'),
                     ),
                     const SizedBox(height: 16.0),
@@ -138,7 +177,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       obscureText: true,
                       textInputAction: TextInputAction.next,
                       errorText: passwordError,
-                      onChanged: (v) => context.read<RegisterCubit>().onPasswordChanged(v),
+                      onChanged: _cubit.onPasswordChanged,
                       key: const Key('registration_password_input'),
                     ),
                     const SizedBox(height: 16.0),
@@ -151,15 +190,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       obscureText: true,
                       textInputAction: TextInputAction.done,
                       errorText: repeatPasswordError,
-                      onChanged: (v) => context.read<RegisterCubit>().onRepeatPasswordChanged(v),
-                      onSubmitted: (_) => _onSubmit(context),
+                      onChanged: _cubit.onRepeatPasswordChanged,
+                      onSubmitted: (_) => _onSubmit(),
                       key: const Key('registration_repeat_password_input'),
                     ),
                     const SizedBox(height: 24.0),
                     EsmorgaButton(
                       text: l10n.buttonRegister,
                       isLoading: isLoading,
-                      onClick: () => _onSubmit(context),
+                      isEnabled: !isLoading,
+                      onClick: _onSubmit,
                       key: const Key('registration_register_button'),
                     ),
                     const SizedBox(height: 16.0),
@@ -173,4 +213,3 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 }
-

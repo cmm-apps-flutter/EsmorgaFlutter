@@ -2,10 +2,11 @@ import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
 import 'package:esmorga_flutter/view/welcome/model/welcome_ui_model.dart';
 import 'package:esmorga_flutter/view/welcome/welcome_cubit.dart';
+import 'package:esmorga_flutter/di.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class WelcomeScreen extends StatefulWidget {
+class WelcomeScreen extends StatelessWidget {
   final VoidCallback onLoginRegisterClicked;
   final VoidCallback onEnterAsGuestClicked;
 
@@ -16,10 +17,31 @@ class WelcomeScreen extends StatefulWidget {
   });
 
   @override
-  State<WelcomeScreen> createState() => _WelcomeScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (ctx) => getIt<WelcomeCubit>(),
+      child: _WelcomeForm(
+        onLoginRegisterClicked: onLoginRegisterClicked,
+        onEnterAsGuestClicked: onEnterAsGuestClicked,
+      ),
+    );
+  }
 }
 
-class _WelcomeScreenState extends State<WelcomeScreen> {
+class _WelcomeForm extends StatefulWidget {
+  final VoidCallback onLoginRegisterClicked;
+  final VoidCallback onEnterAsGuestClicked;
+
+  const _WelcomeForm({
+    required this.onLoginRegisterClicked,
+    required this.onEnterAsGuestClicked,
+  });
+
+  @override
+  State<_WelcomeForm> createState() => _WelcomeFormState();
+}
+
+class _WelcomeFormState extends State<_WelcomeForm> {
   @override
   void initState() {
     super.initState();

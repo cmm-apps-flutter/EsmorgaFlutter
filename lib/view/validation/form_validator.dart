@@ -1,11 +1,12 @@
-import 'package:esmorga_flutter/view/validation/form_validator_strings.dart';
+import 'package:esmorga_flutter/di.dart';
+import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 
 class FormValidator {
   static const String nameRegex = r"^[a-zA-Z\s'-]+$";
-  static const String emailRegex =
-      r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
-  static const String passwordRegex =
-      r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&]).{8,}';
+  static const String emailRegex = r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
+  static const String passwordRegex = r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&]).{8,}';
+
+  final l10n = getIt<LocalizationService>().current;
 
   String? _fieldError({
     required String value,
@@ -23,55 +24,51 @@ class FormValidator {
     return matches ? null : invalidErrorKey;
   }
 
-  String? validateName(String value, {bool acceptsEmpty = true}) =>
-      _fieldError(
+  String? validateName(String value, {bool acceptsEmpty = true}) => _fieldError(
         value: value,
         acceptsEmpty: acceptsEmpty,
         matches: RegExp(nameRegex).hasMatch(value),
-        invalidErrorKey: ValidationStrings.nameInvalid,
-        emptyErrorKey: ValidationStrings.fieldEmpty,
+        invalidErrorKey: l10n.inlineErrorName,
+        emptyErrorKey: l10n.inlineErrorEmptyField,
       );
 
-  String? validateLastName(String value, {bool acceptsEmpty = true}) =>
-      _fieldError(
+  String? validateLastName(String value, {bool acceptsEmpty = true}) => _fieldError(
         value: value,
         acceptsEmpty: acceptsEmpty,
         matches: RegExp(nameRegex).hasMatch(value),
-        invalidErrorKey: ValidationStrings.lastNameInvalid,
-        emptyErrorKey: ValidationStrings.fieldEmpty,
+        invalidErrorKey: l10n.inlineErrorLastName,
+        emptyErrorKey: l10n.inlineErrorEmptyField,
       );
 
-  String? validateEmail(String value, {bool acceptsEmpty = true}) =>
-      _fieldError(
+  String? validateEmail(String value, {bool acceptsEmpty = true}) => _fieldError(
         value: value,
         acceptsEmpty: acceptsEmpty,
         matches: RegExp(emailRegex).hasMatch(value),
-        invalidErrorKey: ValidationStrings.emailInvalid,
-        emptyErrorKey: ValidationStrings.fieldEmpty,
+        invalidErrorKey: l10n.inlineErrorEmail,
+        emptyErrorKey: l10n.inlineErrorEmptyField,
       );
 
-  String? validatePassword(String value, {bool acceptsEmpty = true}) =>
-      _fieldError(
+  String? validatePassword(String value, {bool acceptsEmpty = true}) => _fieldError(
         value: value,
         acceptsEmpty: acceptsEmpty,
         matches: RegExp(passwordRegex).hasMatch(value),
-        invalidErrorKey: ValidationStrings.passwordInvalid,
-        emptyErrorKey: ValidationStrings.fieldEmpty,
+        invalidErrorKey: l10n.inlineErrorPassword,
+        emptyErrorKey: l10n.inlineErrorEmptyField,
       );
 
   String? validateRepeatPassword(
-      String value,
-      String? comparisonField, {
-        bool acceptsEmpty = true,
-      }) {
+    String value,
+    String? comparisonField, {
+    bool acceptsEmpty = true,
+  }) {
     if (!acceptsEmpty && value.isEmpty) {
-      return ValidationStrings.fieldEmpty;
+      return l10n.inlineErrorEmptyField;
     }
     if (value.isEmpty) {
       return null;
     }
     if (value != comparisonField) {
-      return ValidationStrings.passwordMismatch;
+      return l10n.inlineErrorPasswordMismatch;
     }
     return null;
   }

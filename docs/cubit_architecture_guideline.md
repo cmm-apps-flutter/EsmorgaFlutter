@@ -18,8 +18,42 @@ A Cubit MUST:
 A Cubit MUST NOT:
 - Perform navigation (`Navigator`, `go_router`, custom routers) directly.
 - Show UI elements (SnackBar/Dialog) directly.
-- Reach outside through additional `StreamController`s for side‑effects.
 - Depend on widgets or platform channels directly.
+
+Exceptions — one‑off UI effects
+- The previous rule that forbids any `StreamController` usage was intended to avoid mixing UI concerns in business logic. In practice the codebase uses a controlled, explicit "effects" stream pattern (see `ChangePasswordCubit`) to surface one‑off UI events (snackbars, navigation intents) without leaking `BuildContext` into the cubit.
+- It's acceptable to expose a read‑only `Stream<Effect>` from a Cubit using a private `StreamController.broadcast()` when:
+  - the effect represents a UI intent (snackbar, navigation request, ephemeral toast) only, not business logic.
+  - the effect is modeled as a plain data class (e.g. `ShowSnackbarEffect`) or a sealed type.
+  - the Cubit remains framework‑agnostic (no `BuildContext` usage) and side‑effects are triggered by the UI layer after consuming the effect.
+  - the Stream is documented and tested (see Testing section).
+- Prefer transient states for very small sets of side‑effects when those side‑effects can be expressed as distinct finite states (see section 13.1). Use effect streams when you need a simple fire‑and‑forget channel that can be listened to by the UI (for example, snackbars or navigation intents that shouldn't change the main state arena).
+
+Example (approved pattern — effects stream)
+```dart
+// inside cubit
+final _effectController = StreamController<ChangePasswordEffect>.broadcast();
+Stream<ChangePasswordEffect> get effects => _effectController.stream;
+void emitEffect(ChangePasswordEffect effect) => _effectController.add(effect);
+
+// when something happens
+emitEffect(ShowSnackbarEffect(l10n.passwordSetSnackbar, success: true));
+```
+
+UI usage notes
+- UI should not call `showSnackBar` synchronously while building; prefer `StreamBuilder`, `BlocListener` or `WidgetsBinding.instance.addPostFrameCallback` when reacting to an effect.
+- If using `StreamBuilder` in the Widget tree, keep the builder pure and schedule UI interactions (`ScaffoldMessenger`, navigation) with `addPostFrameCallback`.
+- If using a subscription in `initState`, manage lifecycle and cancel subscriptions in `dispose`.
+
+Testing notes for effects streams
+- Tests should subscribe to `cubit.effects` (or call `expectLater(cubit.effects, emits(...))`) before triggering the action that emits the effect to avoid missing the event (race condition).
+- Example (quick sketch):
+```dart
+final effectFuture = cubit.effects.firstWhere((e) => e is ShowSnackbarEffect);
+// trigger
+await cubit.submit();
+final effect = await effectFuture; // now assert effect contents
+```
 
 ---
 ## 2. Folder & File Structure (Per Feature)
@@ -359,4 +393,3 @@ Use the simplest viable state modeling approach; keep Cubits pure and free of UI
 
 ---
 Maintainers: Update this guideline whenever a new reusable pattern (e.g. debounced search, cancellable operations) solidifies in the codebase.
-
