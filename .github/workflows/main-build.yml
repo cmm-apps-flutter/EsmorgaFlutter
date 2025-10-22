@@ -183,7 +183,7 @@ jobs:
           set -euo pipefail
           if [ -n "${KEYCHAIN_NAME:-}" ]; then
             echo "Building IPA with codesign (using installed profile & certificate)"
-            flutter build ipa --export-method ad-hoc
+            flutter build ipa --export-options-plist=ios/ExportOptions.plist
           else
             echo "Credentials not provided: building IPA without codesign"
             flutter build ipa --no-codesign --export-method ad-hoc
