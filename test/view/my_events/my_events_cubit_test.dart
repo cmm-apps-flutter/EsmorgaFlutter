@@ -45,7 +45,7 @@ void main() {
       'empty list after auth when no joined events',
       build: () {
         when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
-        when(() => eventRepository.getEvents(forceRefresh: true)).thenAnswer((_) async => [joinedEvent.copyWith(userJoined: false)]);
+        when(() => eventRepository.getEvents()).thenAnswer((_) async => [joinedEvent.copyWith(userJoined: false)]);
         return MyEventsCubit(eventRepository: eventRepository, userRepository: userRepository);
       },
       act: (c) => c.load(),

@@ -67,33 +67,22 @@ jobs:
           set -euo pipefail
           ROOT=./
           APK_FILE="$ROOT/build/app/outputs/flutter-apk/app-release.apk"
-          # fallback to android gradle output path
-          if [ ! -f "$APK_FILE" ]; then
-            APK_FILE="$ROOT/app/build/outputs/apk/release/app-release.apk"
-          fi
+
           if [ ! -f "$APK_FILE" ]; then
             echo "No APK found at $APK_FILE"
             exit 1
           fi
 
-          GRADLE_FILE="$ROOT/app/build.gradle"
-          if [ ! -f "$GRADLE_FILE" ]; then
-            GRADLE_FILE="$ROOT/app/build.gradle.kts"
-          fi
-
+          # Prefer pubspec.yaml version (format: x.y.z+build)
           versionName="unknown"
           versionCode="0"
-          if [ -f "$GRADLE_FILE" ]; then
-            # attempt to extract versionName and versionCode
-            versionName=$(grep -m1 "versionName" "$GRADLE_FILE" | awk '{print $3}' | tr -d '"\'') || true
-            versionCode=$(grep -m1 "versionCode" "$GRADLE_FILE" | awk '{print $3}' | tr -d '"\'') || true
-          else
-            # try pubspec.yaml fallback
-            if [ -f "$ROOT/pubspec.yaml" ]; then
-              pubver=$(grep "^version:" "$ROOT/pubspec.yaml" | head -n1 | awk '{print $2}') || true
-              if [ -n "$pubver" ]; then
-                versionName="$pubver"
-              fi
+          if [ -f "$ROOT/pubspec.yaml" ]; then
+            pubver=$(grep "^version:" "$ROOT/pubspec.yaml" | head -n1 | awk '{print $2}' || true)
+            if [ -n "$pubver" ]; then
+              # split on + if present
+              versionName=$(echo "$pubver" | cut -d+ -f1)
+              versionCode=$(echo "$pubver" | cut -d+ -f2)
+              versionCode=${versionCode:-0}
             fi
           fi
 
