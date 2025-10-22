@@ -97,24 +97,46 @@ jobs:
           echo "versionCode=$versionCode" >> $GITHUB_OUTPUT
           echo "buildHash=$buildHash" >> $GITHUB_OUTPUT
 
-      - name: Ensure OTAShare helper is executable
-        run: chmod +x .github/otashare_upload.sh
-
-      - name: Upload APK to OTAShare (via helper)
+      - name: Upload APK to OTAShare
         id: upload_apk
         env:
-          BUILD_NUMBER: ${{ github.run_number }}
           OTASHARE_APIKEY: ${{ secrets.OTASHARE_APIKEY }}
           OTASHARE_APIKEY_BUILD: ${{ secrets.OTASHARE_APIKEY_BUILD }}
-          BUIUSER: ${{ secrets.BUIUSER }}
-          BUIPASSWORD: ${{ secrets.BUIPASSWORD }}
-          PROJECT_ID: 2793
+          BUILD_USER: ${{ secrets.BUIUSER }}
+          BUILD_PASSWORD: ${{ secrets.BUIPASSWORD }}
         run: |
           file="${{ steps.meta.outputs.apk_file }}"
           BuildENVL="${BUILD_ENVL:-prod}"
           BuildENVL=$(echo "$BuildENVL" | tr '[:lower:]' '[:upper:]')
-          name="Esmorga [$BuildENVL]"
-          .github/otashare_upload.sh "$file" "$name" "${{ steps.meta.outputs.versionName }}" "${{ steps.meta.outputs.buildHash }}" "$BuildENVL"
+          name="Esmorga Android [$BuildENVL]"
+          versionName="${{ steps.meta.outputs.versionName }}"
+          versionCode="${{ steps.meta.outputs.versionCode }}"
+          buildHash="${{ steps.meta.outputs.buildHash }}"
+          buildType="$BuildENVL"
+          project_id=2793
+          visibleClient=true
+
+          echo "==============================================="
+          echo "=== OTAShare Upload - Android ==="
+          echo "File: $file"
+          echo "Name: $name"
+          echo "Version: $versionName"
+          echo "Build Number: $versionCode"
+          echo "Build Hash: $buildHash"
+          echo "Build Type: $buildType"
+          echo "==============================================="
+
+          curl -vs -F "buiFile=@${file}" \
+              -F "buiName=${name}" \
+              -F "buiVersion=${versionName}" \
+              -F "buiBuildNum=${versionCode}" \
+              -F "buiBuildType=${buildType}" \
+              -F "buiTemplate=0" \
+              -F "buiHash=${buildHash}" \
+              -F "buiVisibleClient=${visibleClient}" \
+              -F "buiChangeLog=none" \
+              -F "buiUser=${BUILD_USER}" -F "buiPassword=${BUILD_PASSWORD}" \
+              "https://otashare-api.mobgen.com/v1/builds/registernewbuild/${project_id}/${OTASHARE_APIKEY}/${OTASHARE_APIKEY_BUILD}"
 
       - name: Upload APK artifact (fallback/save)
         if: always()
@@ -280,24 +302,46 @@ jobs:
           echo "versionCode=$versionCode" >> $GITHUB_OUTPUT
           echo "buildHash=$buildHash" >> $GITHUB_OUTPUT
 
-      - name: Ensure OTAShare helper is executable
-        run: chmod +x .github/otashare_upload.sh
-
-      - name: Upload IPA to OTAShare (via helper)
+      - name: Upload IPA to OTAShare
         id: upload_ipa
         env:
-          BUILD_NUMBER: ${{ github.run_number }}
           OTASHARE_APIKEY: ${{ secrets.OTASHARE_APIKEY }}
           OTASHARE_APIKEY_BUILD: ${{ secrets.OTASHARE_APIKEY_BUILD }}
-          BUIUSER: ${{ secrets.BUIUSER }}
-          BUIPASSWORD: ${{ secrets.BUIPASSWORD }}
-          PROJECT_ID: 2793
+          BUILD_USER: ${{ secrets.BUIUSER }}
+          BUILD_PASSWORD: ${{ secrets.BUIPASSWORD }}
         run: |
           file="${{ steps.meta_ios.outputs.ipa_file }}"
           BuildENVL="${BUILD_ENVL:-prod}"
           BuildENVL=$(echo "$BuildENVL" | tr '[:lower:]' '[:upper:]')
-          name="Esmorga [$BuildENVL]"
-          .github/otashare_upload.sh "$file" "$name" "${{ steps.meta_ios.outputs.versionName }}" "${{ steps.meta_ios.outputs.buildHash }}" "$BuildENVL"
+          name="Esmorga iOS [$BuildENVL]"
+          versionName="${{ steps.meta_ios.outputs.versionName }}"
+          versionCode="${{ steps.meta_ios.outputs.versionCode }}"
+          buildHash="${{ steps.meta_ios.outputs.buildHash }}"
+          buildType="$BuildENVL"
+          project_id=2793
+          visibleClient=true
+
+          echo "==============================================="
+          echo "=== OTAShare Upload - iOS ==="
+          echo "File: $file"
+          echo "Name: $name"
+          echo "Version: $versionName"
+          echo "Build Number: $versionCode"
+          echo "Build Hash: $buildHash"
+          echo "Build Type: $buildType"
+          echo "==============================================="
+
+          curl -vs -F "buiFile=@${file}" \
+              -F "buiName=${name}" \
+              -F "buiVersion=${versionName}" \
+              -F "buiBuildNum=${versionCode}" \
+              -F "buiBuildType=${buildType}" \
+              -F "buiTemplate=0" \
+              -F "buiHash=${buildHash}" \
+              -F "buiVisibleClient=${visibleClient}" \
+              -F "buiChangeLog=none" \
+              -F "buiUser=${BUILD_USER}" -F "buiPassword=${BUILD_PASSWORD}" \
+              "https://otashare-api.mobgen.com/v1/builds/registernewbuild/${project_id}/${OTASHARE_APIKEY}/${OTASHARE_APIKEY_BUILD}"
 
       - name: Upload IPA artifact (fallback/save)
         if: always()
