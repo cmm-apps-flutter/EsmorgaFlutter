@@ -21,7 +21,6 @@ import 'package:esmorga_flutter/view/splash/view/splash_screen.dart';
 import 'package:esmorga_flutter/view/splash/cubit/splash_cubit.dart';
 
 class AppRoutes {
-  static const String welcome = '/';
   static const String splash = '/splash';
   static const String login = '/login';
   static const String registration = '/registration';
@@ -61,11 +60,7 @@ class AppRoutes {
             },
             onLoginError: () {},
             onBackClicked: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go(welcome);
-              }
+              context.pop();
             },
           ),
         ),
@@ -80,11 +75,7 @@ class AppRoutes {
             return RegistrationConfirmationScreen(
               email: email,
               onBackClicked: () {
-                if (context.canPop()) {
-                  context.pop();
-                } else {
-                  context.go(welcome);
-                }
+                context.pop();
               },
             );
           },

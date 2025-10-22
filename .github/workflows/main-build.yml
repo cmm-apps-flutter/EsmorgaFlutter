@@ -66,7 +66,13 @@ jobs:
         run: |
           set -euo pipefail
           ROOT=./
-          APK_FILE="$ROOT/build/app/outputs/flutter-apk/app-release.apk"
+
+          APK_FILE=$(ls $ROOT/build/app/outputs/apk/*/release/*.apk 2>/dev/null | grep -E 'app-.*-release.apk|app-release.apk' | head -n1 || true)
+
+          if [ -z "$APK_FILE" ]; then
+            echo "No APK found under $ROOT/build/app/outputs/apk/*/release/*.apk, trying legacy path"
+            APK_FILE="$ROOT/build/app/outputs/flutter-apk/app-release.apk"
+          fi
 
           if [ ! -f "$APK_FILE" ]; then
             echo "No APK found at $APK_FILE"
@@ -87,14 +93,7 @@ jobs:
           fi
 
           if command -v md5sum >/dev/null 2>&1; then
-            md5_output=$(md5sum "$APK_FILE")
-            echo "=== MD5 Debug ==="
-            echo "Full md5sum output: $md5_output"
-            echo "Column 1 (awk): $(echo "$md5_output" | awk '{print $1}')"
-            echo "Column 4 (awk): $(echo "$md5_output" | awk '{print $4}')"
-            echo "================="
-
-            buildHash=$(echo "$md5_output" | awk '{print $1}')
+            buildHash=$(md5sum "$APK_FILE" | awk '{print $1}')
           else
             buildHash=$(md5 -q "$APK_FILE")
           fi
@@ -123,7 +122,7 @@ jobs:
           BUILD_NUMBER: ${{ github.run_number }}
         run: |
           file="${{ steps.meta.outputs.apk_file }}"
-          BuildENVL="${BUILD_ENVL:-prod}"
+          BuildENVL="${BUILD_ENVL:-qa}"
           BuildENVL=$(echo "$BuildENVL" | tr '[:lower:]' '[:upper:]')
           name="Esmorga Android [$BuildENVL]"
           versionName="${{ steps.meta.outputs.versionName }}"
@@ -145,13 +144,14 @@ jobs:
           echo "Project ID: $project_id"
           echo "==============================================="
 
-          echo "Sending curl request WITHOUT buiHash parameter (test)..."
+          echo "Sending curl request (including buiHash)..."
           RESPONSE=$(curl -vs -w "\n%{http_code}" -F "buiFile=@${file}" \
               -F "buiName=${name}" \
               -F "buiVersion=${versionName}" \
               -F "buiBuildNum=${BUILD_NUMBER}" \
               -F "buiBuildType=${buildType}" \
               -F "buiTemplate=0" \
+              -F "buiHash=${buildHash}" \
               -F "buiVisibleClient=${visibleClient}" \
               -F "buiChangeLog=none" \
               -F "buiUser=${BUILD_USER}" -F "buiPassword=${BUILD_PASSWORD}" \
@@ -345,7 +345,7 @@ jobs:
           BUILD_NUMBER: ${{ github.run_number }}
         run: |
           file="${{ steps.meta_ios.outputs.ipa_file }}"
-          BuildENVL="${BUILD_ENVL:-prod}"
+          BuildENVL="${BUILD_ENVL:-qa}"
           BuildENVL=$(echo "$BuildENVL" | tr '[:lower:]' '[:upper:]')
           name="Esmorga iOS [$BuildENVL]"
           versionName="${{ steps.meta_ios.outputs.versionName }}"
