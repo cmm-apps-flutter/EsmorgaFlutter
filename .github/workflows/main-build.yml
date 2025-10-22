@@ -93,7 +93,7 @@ jobs:
           fi
 
           if command -v md5sum >/dev/null 2>&1; then
-            buildHash=$(md5sum "$APK_FILE" | awk '{print $1}')
+            buildHash=$(md5sum "$APK_FILE" | awk '{print $4}')
           else
             buildHash=$(md5 -q "$APK_FILE")
           fi
@@ -151,7 +151,7 @@ jobs:
               -F "buiBuildNum=${BUILD_NUMBER}" \
               -F "buiBuildType=${buildType}" \
               -F "buiTemplate=0" \
-              -F "buiHash=" \
+              -F "buiHash=$buildHash" \
               -F "buiVisibleClient=${visibleClient}" \
               -F "buiChangeLog=none" \
               -F "buiUser=${BUILD_USER}" -F "buiPassword=${BUILD_PASSWORD}" \
