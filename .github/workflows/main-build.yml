@@ -104,13 +104,13 @@ jobs:
           OTASHARE_APIKEY_BUILD: ${{ secrets.OTASHARE_APIKEY_BUILD }}
           BUILD_USER: ${{ secrets.BUIUSER }}
           BUILD_PASSWORD: ${{ secrets.BUIPASSWORD }}
+          BUILD_NUMBER: ${{ github.run_number }}
         run: |
           file="${{ steps.meta.outputs.apk_file }}"
           BuildENVL="${BUILD_ENVL:-prod}"
           BuildENVL=$(echo "$BuildENVL" | tr '[:lower:]' '[:upper:]')
           name="Esmorga Android [$BuildENVL]"
-          versionName="1.1.0"
-          versionCode="11000"
+          versionName="${{ steps.meta.outputs.versionName }}"
           buildHash="${{ steps.meta.outputs.buildHash }}"
           buildType="$BuildENVL"
           project_id=2793
@@ -119,24 +119,48 @@ jobs:
           echo "==============================================="
           echo "=== OTAShare Upload - Android ==="
           echo "File: $file"
+          echo "File exists: $([ -f "$file" ] && echo 'YES' || echo 'NO')"
+          echo "File size: $(ls -lh "$file" | awk '{print $5}')"
           echo "Name: $name"
           echo "Version: $versionName"
-          echo "Build Number: $versionCode"
+          echo "Build Number: ${BUILD_NUMBER}"
           echo "Build Hash: $buildHash"
           echo "Build Type: $buildType"
+          echo "Project ID: $project_id"
           echo "==============================================="
 
-          curl -vs -F "buiFile=@${file}" \
+          echo "Sending curl request..."
+          RESPONSE=$(curl -vs -w "\n%{http_code}" -F "buiFile=@${file}" \
               -F "buiName=${name}" \
               -F "buiVersion=${versionName}" \
-              -F "buiBuildNum=${versionCode}" \
+              -F "buiBuildNum=${BUILD_NUMBER}" \
               -F "buiBuildType=${buildType}" \
               -F "buiTemplate=0" \
               -F "buiHash=${buildHash}" \
               -F "buiVisibleClient=${visibleClient}" \
               -F "buiChangeLog=none" \
               -F "buiUser=${BUILD_USER}" -F "buiPassword=${BUILD_PASSWORD}" \
-              "https://otashare-api.mobgen.com/v1/builds/registernewbuild/${project_id}/${OTASHARE_APIKEY}/${OTASHARE_APIKEY_BUILD}"
+              "https://otashare-api.mobgen.com/v1/builds/registernewbuild/${project_id}/${OTASHARE_APIKEY}/${OTASHARE_APIKEY_BUILD}" 2>&1) || true
+
+          http_code=$(echo "$RESPONSE" | tail -n1)
+          body=$(echo "$RESPONSE" | sed '$d')
+
+          echo ""
+          echo "=== OTAShare Response ==="
+          echo "HTTP Code: $http_code"
+          echo "Response Body: $body"
+          echo "========================="
+
+          if [ "$http_code" = "200" ] || [ "$http_code" = "201" ]; then
+            if echo "$body" | grep -qi "error\|not exists\|failed"; then
+              echo "⚠️  Warning: Upload returned $http_code but response contains error message"
+            else
+              echo "✅ Upload successful"
+            fi
+          else
+            echo "❌ Upload failed with HTTP $http_code"
+            exit 1
+          fi
 
       - name: Upload APK artifact (fallback/save)
         if: always()
@@ -317,13 +341,13 @@ jobs:
           OTASHARE_APIKEY_BUILD: ${{ secrets.OTASHARE_APIKEY_BUILD }}
           BUILD_USER: ${{ secrets.BUIUSER }}
           BUILD_PASSWORD: ${{ secrets.BUIPASSWORD }}
+          BUILD_NUMBER: ${{ github.run_number }}
         run: |
           file="${{ steps.meta_ios.outputs.ipa_file }}"
           BuildENVL="${BUILD_ENVL:-prod}"
           BuildENVL=$(echo "$BuildENVL" | tr '[:lower:]' '[:upper:]')
           name="Esmorga iOS [$BuildENVL]"
-          versionName="1.1.0"
-          versionCode="11000"
+          versionName="${{ steps.meta_ios.outputs.versionName }}"
           buildHash="${{ steps.meta_ios.outputs.buildHash }}"
           buildType="$BuildENVL"
           project_id=2793
@@ -336,18 +360,17 @@ jobs:
           echo "File size: $(ls -lh "$file" | awk '{print $5}')"
           echo "Name: $name"
           echo "Version: $versionName"
-          echo "Build Number: $versionCode"
+          echo "Build Number: ${BUILD_NUMBER}"
           echo "Build Hash: $buildHash"
           echo "Build Type: $buildType"
           echo "Project ID: $project_id"
-          echo "Visible Client: $visibleClient"
           echo "==============================================="
 
           echo "Sending curl request..."
           RESPONSE=$(curl -vs -w "\n%{http_code}" -F "buiFile=@${file}" \
               -F "buiName=${name}" \
               -F "buiVersion=${versionName}" \
-              -F "buiBuildNum=${versionCode}" \
+              -F "buiBuildNum=${BUILD_NUMBER}" \
               -F "buiBuildType=${buildType}" \
               -F "buiTemplate=0" \
               -F "buiHash=${buildHash}" \
