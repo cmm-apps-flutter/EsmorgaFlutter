@@ -155,21 +155,25 @@ jobs:
           CERTIFICATE_PATH="$RUNNER_TEMP/apple_cert.p12"
           PROFILE_ENT_PATH="$RUNNER_TEMP/ent.mobileprovision"
           KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
-          
+
           # Decode secrets into files
           echo -n "${{ secrets.BUILD_CERTIFICATE_BASE64 }}" | base64 --decode -o "$CERTIFICATE_PATH"
           echo -n "${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}" | base64 --decode -o "$PROFILE_ENT_PATH"
-          
+
           # Create and configure a temporary keychain
           security create-keychain -p "${{ secrets.P12_PASSWORD }}" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
           security unlock-keychain -p "${{ secrets.P12_PASSWORD }}" "$KEYCHAIN_PATH"
-          
+
           # Import the certificate into the keychain
           security import "$CERTIFICATE_PATH" -P "${{ secrets.P12_PASSWORD }}" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
           security set-key-partition-list -S apple-tool:,apple: -s -k "${{ secrets.P12_PASSWORD }}" "$KEYCHAIN_PATH"
-          security list-keychain -d user -s "$KEYCHAIN_PATH"
-          
+          # ensure the keychain is in the user's keychain list (fixed command name)
+          security list-keychains -d user -s "$KEYCHAIN_PATH"
+
+          # Export the keychain path for subsequent steps
+          echo "KEYCHAIN_NAME=$KEYCHAIN_PATH" >> $GITHUB_ENV
+
           # Install provisioning profiles
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp "$PROFILE_ENT_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
