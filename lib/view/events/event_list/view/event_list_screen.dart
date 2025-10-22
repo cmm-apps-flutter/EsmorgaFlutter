@@ -307,21 +307,6 @@ class EventListWidget extends StatelessWidget {
                           width: double.infinity,
                           height: 200.0,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              width: double.infinity,
-                              height: 200.0,
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                                borderRadius: BorderRadius.circular(16.0),
-                              ),
-                              child: Icon(
-                                Icons.event_outlined,
-                                size: 64.0,
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                              ),
-                            );
-                          },
                         ),
                       );
                     },

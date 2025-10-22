@@ -32,11 +32,6 @@ class EventRepositoryImpl implements EventRepository {
   }
 
   @override
-  Future<Event> getEventDetails(String eventId) async {
-    return (await localEventDatasource.getEventById(eventId)).toEvent();
-  }
-
-  @override
   Future<void> joinEvent(Event event) async {
     final updatedEvent = event.copyWith(userJoined: true);
     await remoteEventDatasource.joinEvent(updatedEvent.toEventDataModel());

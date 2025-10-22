@@ -10,7 +10,6 @@ import 'package:esmorga_flutter/view/navigation/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EventDetailScreen extends StatelessWidget {
@@ -85,7 +84,7 @@ class _EventDetailFormState extends State<_EventDetailForm> {
     );
   }
 
-  Widget _buildBody(BuildContext context, EventDetailState state, AppLocalizations l) {
+  Widget _buildBody(BuildContext context, EventDetailState state, AppLocalizations l10n) {
     String safeDecode(String raw) {
       if (!raw.contains('%')) return raw;
       final hasValidPattern = RegExp(r'%[0-9A-Fa-f]{2}').hasMatch(raw);
@@ -105,18 +104,16 @@ class _EventDetailFormState extends State<_EventDetailForm> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(l.defaultErrorTitle),
+            Text(l10n.defaultErrorTitle),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => _cubit.start(),
-              child: Text(l.buttonRetry),
+              child: Text(l10n.buttonRetry),
             )
           ],
         ),
       );
     }
-    final formatter = DateFormat.yMMMMd().add_Hm();
-    final dateStr = formatter.format(DateTime.fromMillisecondsSinceEpoch(state.event.date));
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -139,47 +136,32 @@ class _EventDetailFormState extends State<_EventDetailForm> {
                   width: double.infinity,
                   height: 200.0,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      width: double.infinity,
-                      height: 200.0,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(16.0),
-                      ),
-                      child: Icon(
-                        Icons.event_outlined,
-                        size: 64.0,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    );
-                  },
                 ),
               ),
             ),
           ),
           const SizedBox(height: 24),
           EsmorgaText(
-            text: state.event.name,
+            text: state.event.title,
             style: EsmorgaTextStyle.heading1,
             key: const Key('event_detail_title'),
           ),
           const SizedBox(height: 8),
-          EsmorgaText(text: dateStr, style: EsmorgaTextStyle.body1Accent),
+          EsmorgaText(text: state.event.date, style: EsmorgaTextStyle.body1Accent),
           const SizedBox(height: 8),
-          EsmorgaText(text: state.event.location.name, style: EsmorgaTextStyle.body1Accent),
+          EsmorgaText(text: state.event.locationName, style: EsmorgaTextStyle.body1Accent),
           const SizedBox(height: 24),
-          EsmorgaText(text: l.screenEventDetailsDescription, style: EsmorgaTextStyle.heading2),
+          EsmorgaText(text: l10n.screenEventDetailsDescription, style: EsmorgaTextStyle.heading2),
           const SizedBox(height: 8),
           EsmorgaText(text: safeDecode(state.event.description), style: EsmorgaTextStyle.body1),
           const SizedBox(height: 24),
-          EsmorgaText(text: l.screenEventDetailsLocation, style: EsmorgaTextStyle.heading2),
+          EsmorgaText(text: l10n.screenEventDetailsLocation, style: EsmorgaTextStyle.heading2),
           const SizedBox(height: 8),
-          EsmorgaText(text: state.event.location.name, style: EsmorgaTextStyle.body1),
-          if (state.event.location.lat != null && state.event.location.long != null) ...[
+          EsmorgaText(text: state.event.locationName, style: EsmorgaTextStyle.body1),
+          if (state.event.showNavigateButton) ...[
             const SizedBox(height: 24),
             EsmorgaButton(
-              text: l.buttonNavigate,
+              text: l10n.buttonNavigate,
               primary: false,
               onClick: () => _cubit.navigatePressed(),
               key: const Key('event_detail_navigate_button'),
@@ -187,7 +169,7 @@ class _EventDetailFormState extends State<_EventDetailForm> {
           ],
           const SizedBox(height: 24),
           EsmorgaButton(
-            text: state.isAuthenticated ? (state.event.userJoined ? l.buttonLeaveEvent : l.buttonJoinEvent) : l.buttonLoginToJoin,
+            text: state.isAuthenticated ? (state.event.userJoined ? l10n.buttonLeaveEvent : l10n.buttonJoinEvent) : l10n.buttonLoginToJoin,
             isLoading: state.joinLeaving,
             onClick: () => _cubit.primaryPressed(),
             key: const Key('event_detail_primary_button'),

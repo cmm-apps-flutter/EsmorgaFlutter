@@ -6,6 +6,7 @@ import 'package:esmorga_flutter/domain/event/model/event.dart';
 import 'package:esmorga_flutter/domain/user/repository/user_repository.dart';
 import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_effect.dart';
 import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_state.dart';
+import 'package:esmorga_flutter/view/events/event_detail/model/event_detail_ui_model.dart';
 
 class EventDetailCubit extends Cubit<EventDetailState> {
   final EventRepository eventRepository;
@@ -15,7 +16,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
   final _effectController = StreamController<EventDetailEffect>.broadcast();
   Stream<EventDetailEffect> get effects => _effectController.stream;
 
-  EventDetailCubit({required this.eventRepository, required this.userRepository, required this.event}) : super(EventDetailState(event: event));
+  EventDetailCubit({required this.eventRepository, required this.userRepository, required this.event}) : super(EventDetailState(event: event.toEventDetailUiModel()));
 
   Future<void> start() async {
     emit(state.copyWith(loading: true, error: null));
@@ -27,7 +28,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
       } catch (_) {
         isAuth = false;
       }
-      emit(state.copyWith(loading: false, event: event, isAuthenticated: isAuth));
+      emit(state.copyWith(loading: false, event: event.toEventDetailUiModel(), isAuthenticated: isAuth));
     } catch (e) {
       emit(state.copyWith(loading: false, error: e.toString()));
     }
@@ -43,14 +44,14 @@ class EventDetailCubit extends Cubit<EventDetailState> {
     emit(state.copyWith(joinLeaving: true));
     try {
       if (current.userJoined) {
-        await eventRepository.leaveEvent(current);
-        final updated = current.copyWith(userJoined: false);
-        emit(state.copyWith(event: updated, joinLeaving: false));
+        await eventRepository.leaveEvent(event);
+        final updated = event.copyWith(userJoined: false);
+        emit(state.copyWith(event: updated.toEventDetailUiModel(), joinLeaving: false));
         _emitEffect(ShowLeaveSuccessEffect());
       } else {
-        await eventRepository.joinEvent(current);
-        final updated = current.copyWith(userJoined: true);
-        emit(state.copyWith(event: updated, joinLeaving: false));
+        await eventRepository.joinEvent(event);
+        final updated = event.copyWith(userJoined: true);
+        emit(state.copyWith(event: updated.toEventDetailUiModel(), joinLeaving: false));
         _emitEffect(ShowJoinSuccessEffect());
       }
     } catch (e) {

@@ -36,7 +36,7 @@ class MyEventsCubit extends Cubit<MyEventsState> {
       return;
     }
     try {
-      final events = await eventRepository.getEvents(forceRefresh: true);
+      final events = await eventRepository.getEvents(forceRefresh: false);
       _myEvents = events.where((e) => e.userJoined).toList();
       if (_myEvents.isEmpty) {
         emit(const MyEventsState(loading: false, error: MyEventsEffectType.emptyList));

@@ -8,12 +8,13 @@ class EsmorgaApi {
   final http.Client authenticatedHttpClient;
 
   String get baseUrl => EnvironmentConfig.currentBaseUrl;
+  String eventsEndpoint = 'account/events';
 
   EsmorgaApi(this.authenticatedHttpClient);
 
   Future<List<EventRemoteModel>> getMyEvents() async {
     final result = await authenticatedHttpClient.get(
-      Uri.parse('${baseUrl}account/events'),
+      Uri.parse('$baseUrl$eventsEndpoint'),
     );
     if (result.statusCode == 200) {
       final eventListWrapper = EventListWrapperRemoteModel.fromJson(json.decode(result.body));
@@ -25,7 +26,7 @@ class EsmorgaApi {
 
   Future<void> joinEvent(String eventId) async {
     final result = await authenticatedHttpClient.post(
-      Uri.parse('${baseUrl}account/events'),
+      Uri.parse('$baseUrl$eventsEndpoint'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({'eventId': eventId}),
     );
@@ -35,7 +36,7 @@ class EsmorgaApi {
   }
 
   Future<void> leaveEvent(String eventId) async {
-    final request = http.Request('DELETE', Uri.parse('${baseUrl}account/events'));
+    final request = http.Request('DELETE', Uri.parse('$baseUrl$eventsEndpoint'));
     request.headers['Content-Type'] = 'application/json';
     request.body = json.encode({'eventId': eventId});
 

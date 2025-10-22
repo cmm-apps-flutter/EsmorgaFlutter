@@ -1,29 +1,34 @@
+import 'package:esmorga_flutter/di.dart';
+import 'package:esmorga_flutter/domain/event/model/event.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_loader.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
-import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
 import 'package:esmorga_flutter/view/events/event_list/model/event_list_ui_model.dart';
 import 'package:esmorga_flutter/view/events/my_events/cubit/my_events_cubit.dart';
-import 'package:esmorga_flutter/view/navigation/app_routes.dart';
-import 'package:esmorga_flutter/di.dart';
+import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
 class MyEventsScreen extends StatelessWidget {
-  const MyEventsScreen({super.key});
+  final void Function(Event) onDetailsClicked;
+  final void Function() onSignInClicked;
+
+  const MyEventsScreen({super.key, required this.onDetailsClicked, required this.onSignInClicked});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => getIt<MyEventsCubit>(),
-      child: const _MyEventsForm(),
+      child: _MyEventsForm(onDetailsClicked, onSignInClicked),
     );
   }
 }
 
 class _MyEventsForm extends StatefulWidget {
-  const _MyEventsForm();
+  final void Function(Event) onDetailsClicked;
+  final void Function() onSignInClicked;
+
+  const _MyEventsForm(this.onDetailsClicked, this.onSignInClicked);
 
   @override
   State<_MyEventsForm> createState() => _MyEventsFormState();
@@ -41,10 +46,9 @@ class _MyEventsFormState extends State<_MyEventsForm> {
           SnackBar(content: Text(AppLocalizations.of(context)!.snackbarNoInternet)),
         );
       } else if (effect is MyEventsEffectNavigateToEventDetail) {
-        final id = effect.event.id;
-        context.push('${AppRoutes.eventDetail}/$id');
+        widget.onDetailsClicked(effect.event);
       } else if (effect is MyEventsEffectNavigateToSignIn) {
-        context.go(AppRoutes.login);
+        widget.onSignInClicked();
       }
     });
   }
@@ -142,25 +146,10 @@ class _MyEventsEmpty extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(16.0),
             child: Image.asset(
-              'assets/images/event_list_empty.png',
+              'assets/images/event_list_empty.jpg',
               width: double.infinity,
               height: 200.0,
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  width: double.infinity,
-                  height: 200.0,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(16.0),
-                  ),
-                  child: Icon(
-                    Icons.event_outlined,
-                    size: 64.0,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                );
-              },
             ),
           ),
           Padding(

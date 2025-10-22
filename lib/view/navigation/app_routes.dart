@@ -139,7 +139,14 @@ class AppRoutes {
             ),
             GoRoute(
               path: myEvents,
-              builder: (context, state) => const MyEventsScreen(),
+              builder: (context, state) => MyEventsScreen(
+                onDetailsClicked: (event) {
+                  context.push(AppRoutes.eventDetail, extra: event);
+                },
+                onSignInClicked: () {
+                  context.go(login);
+                },
+              ),
             ),
             GoRoute(
               path: profile,
