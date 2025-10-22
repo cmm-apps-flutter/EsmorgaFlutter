@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
     <key>method</key>
-    <string>development</string>
+    <string>enterprise</string>
     <key>teamID</key>
     <string>49934BYA74</string>
     <key>provisioningProfiles</key>
