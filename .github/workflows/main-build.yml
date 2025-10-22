@@ -92,6 +92,14 @@ jobs:
             buildHash=$(md5 -q "$APK_FILE")
           fi
 
+          echo "=== APK Metadata Debug ==="
+          echo "APK File: $APK_FILE"
+          echo "Version Name: $versionName"
+          echo "Version Code: $versionCode"
+          echo "Build Hash: $buildHash"
+          echo "Source: pubspec.yaml"
+          echo "=========================="
+
           echo "apk_file=$APK_FILE" >> $GITHUB_OUTPUT
           echo "versionName=$versionName" >> $GITHUB_OUTPUT
           echo "versionCode=$versionCode" >> $GITHUB_OUTPUT
@@ -279,42 +287,28 @@ jobs:
         run: |
           set -euo pipefail
           ROOT=./
+
+          # Find IPA file
           IPA_FILE=$(ls $ROOT/build/ios/ipa/*.ipa 2>/dev/null | head -n1 || true)
-          if [ -z "$IPA_FILE" ] && [ -d "$ROOT/build/ios/runner.xcarchive" ]; then
-            # try to export an ipa from the archive
-            IPA_FILE=$(ls $ROOT/build/ios/ipa/*.ipa 2>/dev/null | head -n1 || true)
-          fi
           if [ -z "$IPA_FILE" ]; then
             echo "No IPA found in build/ios/ipa"
             exit 1
           fi
 
-          # extract Info.plist from ipa
-          TMP_DIR=$(mktemp -d)
-          unzip -q "$IPA_FILE" -d "$TMP_DIR"
-          INFO_PLIST_PATH=$(find "$TMP_DIR/Payload" -name "Info.plist" | head -n1)
-
+          # Extract version from pubspec.yaml (more reliable than Info.plist)
           versionName="unknown"
           versionCode="0"
-          if [ -n "$INFO_PLIST_PATH" ]; then
-            if [ -x "/usr/libexec/PlistBuddy" ]; then
-              versionName=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$INFO_PLIST_PATH" 2>/dev/null || true)
-              versionCode=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$INFO_PLIST_PATH" 2>/dev/null || true)
-            else
-              # try plutil
-              versionName=$(plutil -extract CFBundleShortVersionString xml1 -o - "$INFO_PLIST_PATH" 2>/dev/null | xmllint --xpath 'string(//string)' - 2>/dev/null || true)
-              versionCode=$(plutil -extract CFBundleVersion xml1 -o - "$INFO_PLIST_PATH" 2>/dev/null | xmllint --xpath 'string(//string)' - 2>/dev/null || true)
-            fi
-          else
-            # fallback to pubspec.yaml
-            if [ -f "$ROOT/pubspec.yaml" ]; then
-              pubver=$(grep "^version:" "$ROOT/pubspec.yaml" | head -n1 | awk '{print $2}') || true
-              if [ -n "$pubver" ]; then
-                versionName="$pubver"
-              fi
+          if [ -f "$ROOT/pubspec.yaml" ]; then
+            pubver=$(grep "^version:" "$ROOT/pubspec.yaml" | head -n1 | awk '{print $2}' || true)
+            if [ -n "$pubver" ]; then
+              # Split version and build number (format: 1.0.0+1)
+              versionName=$(echo "$pubver" | cut -d+ -f1)
+              versionCode=$(echo "$pubver" | cut -d+ -f2)
+              versionCode=${versionCode:-0}
             fi
           fi
 
+          # Calculate hash
           if command -v md5sum >/dev/null 2>&1; then
             buildHash=$(md5sum "$IPA_FILE" | awk '{print $1}')
           else
@@ -326,7 +320,7 @@ jobs:
           echo "Version Name: $versionName"
           echo "Version Code: $versionCode"
           echo "Build Hash: $buildHash"
-          echo "Info.plist Path: $INFO_PLIST_PATH"
+          echo "Source: pubspec.yaml"
           echo "=========================="
 
           echo "ipa_file=$IPA_FILE" >> $GITHUB_OUTPUT
