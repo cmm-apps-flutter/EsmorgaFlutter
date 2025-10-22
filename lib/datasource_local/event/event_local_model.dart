@@ -17,21 +17,18 @@ class EventLocalModel extends HiveObject {
   final String localDescription;
 
   @HiveField(4)
-  final String localType;
-
-  @HiveField(5)
   final String? localImageUrl;
 
-  @HiveField(6)
+  @HiveField(5)
   final EventLocationLocalModel localLocation;
 
-  @HiveField(7)
+  @HiveField(6)
   final List<String> localTags;
 
-  @HiveField(8)
+  @HiveField(7)
   final int localCreationTime;
 
-  @HiveField(9)
+  @HiveField(8)
   final bool localUserJoined;
 
   EventLocalModel({
@@ -39,7 +36,6 @@ class EventLocalModel extends HiveObject {
     required this.localName,
     required this.localDate,
     required this.localDescription,
-    required this.localType,
     this.localImageUrl,
     required this.localLocation,
     required this.localTags,

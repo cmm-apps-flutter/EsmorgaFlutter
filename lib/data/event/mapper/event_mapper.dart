@@ -9,7 +9,6 @@ extension EventDataModelMapper on EventDataModel {
       name: dataName,
       date: dataDate,
       description: dataDescription,
-      type: dataType,
       imageUrl: dataImageUrl,
       location: EventLocation(
         name: dataLocation.name,
@@ -35,7 +34,6 @@ extension EventMapper on Event {
       dataName: name,
       dataDate: date,
       dataDescription: description,
-      dataType: type,
       dataImageUrl: imageUrl != null ? Uri.encodeComponent(imageUrl!) : null,
       dataLocation: EventLocationDataModel(
         name: location.name,
@@ -48,4 +46,3 @@ extension EventMapper on Event {
     );
   }
 }
-

@@ -1,12 +1,10 @@
 import 'package:esmorga_flutter/domain/event/model/event_location.dart';
-import 'package:esmorga_flutter/domain/event/model/event_type.dart';
 
 class Event {
   final String id;
   final String name;
   final int date;
   final String description;
-  final EventType type;
   final String? imageUrl;
   final EventLocation location;
   final List<String> tags;
@@ -17,7 +15,6 @@ class Event {
     required this.name,
     required this.date,
     required this.description,
-    required this.type,
     this.imageUrl,
     required this.location,
     this.tags = const [],
@@ -29,7 +26,6 @@ class Event {
     String? name,
     int? date,
     String? description,
-    EventType? type,
     String? imageUrl,
     EventLocation? location,
     List<String>? tags,
@@ -40,7 +36,6 @@ class Event {
       name: name ?? this.name,
       date: date ?? this.date,
       description: description ?? this.description,
-      type: type ?? this.type,
       imageUrl: imageUrl ?? this.imageUrl,
       location: location ?? this.location,
       tags: tags ?? this.tags,
@@ -48,4 +43,3 @@ class Event {
     );
   }
 }
-

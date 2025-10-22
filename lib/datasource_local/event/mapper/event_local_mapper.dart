@@ -1,6 +1,5 @@
 import 'package:esmorga_flutter/data/event/model/event_data_model.dart';
 import 'package:esmorga_flutter/datasource_local/event/event_local_model.dart';
-import 'package:esmorga_flutter/domain/event/model/event_type.dart';
 
 extension EventLocalModelMapper on EventLocalModel {
   EventDataModel toEventDataModel() {
@@ -9,7 +8,6 @@ extension EventLocalModelMapper on EventLocalModel {
       dataName: localName,
       dataDate: localDate,
       dataDescription: localDescription,
-      dataType: EventTypeExtension.fromString(localType),
       dataImageUrl: localImageUrl,
       dataLocation: EventLocationDataModel(
         name: localLocation.name,
@@ -30,7 +28,6 @@ extension EventDataModelToLocalMapper on EventDataModel {
       localName: dataName,
       localDate: dataDate,
       localDescription: dataDescription,
-      localType: dataType.name,
       localImageUrl: dataImageUrl,
       localLocation: EventLocationLocalModel(
         name: dataLocation.name,

@@ -2,7 +2,6 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:esmorga_flutter/domain/event/event_repository.dart';
 import 'package:esmorga_flutter/domain/event/model/event.dart';
 import 'package:esmorga_flutter/domain/event/model/event_location.dart';
-import 'package:esmorga_flutter/domain/event/model/event_type.dart';
 import 'package:esmorga_flutter/domain/user/model/role_type.dart';
 import 'package:esmorga_flutter/domain/user/model/user.dart';
 import 'package:esmorga_flutter/domain/user/repository/user_repository.dart';
@@ -27,7 +26,6 @@ void main() {
     name: 'Event',
     date: 0,
     description: 'A description',
-    type: EventType.party,
     location: const EventLocation(name: 'Loc', lat: 10.0, long: 20.0),
     userJoined: false,
     imageUrl: null,

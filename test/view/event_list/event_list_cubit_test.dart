@@ -3,7 +3,6 @@ import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/domain/event/event_repository.dart';
 import 'package:esmorga_flutter/domain/event/model/event.dart';
 import 'package:esmorga_flutter/domain/event/model/event_location.dart';
-import 'package:esmorga_flutter/domain/event/model/event_type.dart';
 import 'package:esmorga_flutter/view/dateformatting/esmorga_date_time_formatter.dart';
 import 'package:esmorga_flutter/view/events/event_list/cubit/event_list_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -27,7 +26,6 @@ final event = Event(
   name: 'Event 1',
   date: DateTime(2025, 1, 1).millisecondsSinceEpoch,
   description: 'desc',
-  type: EventType.party,
   imageUrl: 'https://image',
   location: const EventLocation(name: 'Location'),
   tags: const [],

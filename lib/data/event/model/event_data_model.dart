@@ -1,12 +1,10 @@
 import 'package:esmorga_flutter/datasource_remote/event/event_remote_model.dart';
-import 'package:esmorga_flutter/domain/event/model/event_type.dart';
 
 class EventDataModel {
   final String dataId;
   final String dataName;
   final int dataDate;
   final String dataDescription;
-  final EventType dataType;
   final String? dataImageUrl;
   final EventLocationDataModel dataLocation;
   final List<String> dataTags;
@@ -18,7 +16,6 @@ class EventDataModel {
     required this.dataName,
     required this.dataDate,
     required this.dataDescription,
-    required this.dataType,
     this.dataImageUrl,
     required this.dataLocation,
     this.dataTags = const [],
@@ -32,7 +29,6 @@ class EventDataModel {
       dataName: remote.remoteName,
       dataDate: _parseDateToMillis(remote.remoteDate),
       dataDescription: remote.remoteDescription,
-      dataType: EventTypeExtension.fromString(remote.remoteType),
       dataImageUrl: remote.remoteImageUrl,
       dataLocation: EventLocationDataModel.fromRemoteModel(remote.remoteLocation),
       dataTags: remote.remoteTags,
@@ -46,7 +42,6 @@ class EventDataModel {
     String? dataName,
     int? dataDate,
     String? dataDescription,
-    EventType? dataType,
     String? dataImageUrl,
     EventLocationDataModel? dataLocation,
     List<String>? dataTags,
@@ -58,7 +53,6 @@ class EventDataModel {
       dataName: dataName ?? this.dataName,
       dataDate: dataDate ?? this.dataDate,
       dataDescription: dataDescription ?? this.dataDescription,
-      dataType: dataType ?? this.dataType,
       dataImageUrl: dataImageUrl ?? this.dataImageUrl,
       dataLocation: dataLocation ?? this.dataLocation,
       dataTags: dataTags ?? this.dataTags,
@@ -95,4 +89,3 @@ class EventLocationDataModel {
     );
   }
 }
-
