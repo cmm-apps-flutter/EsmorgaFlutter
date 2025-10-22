@@ -203,6 +203,7 @@ jobs:
 
           echo ""
           echo "=== Certificate Info ==="
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
           security find-identity -v -p codesigning "$KEYCHAIN_PATH"
 
       - name: Build IPA (signed if credentials present)
