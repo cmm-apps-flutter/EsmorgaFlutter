@@ -178,6 +178,33 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp "$PROFILE_ENT_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
 
+      - name: Inspect provisioning profile and certificate
+        run: |
+          set -euo pipefail
+          PROFILE_ENT_PATH="$RUNNER_TEMP/ent.mobileprovision"
+
+          echo "=== Provisioning Profile Info ==="
+          security cms -D -i "$PROFILE_ENT_PATH" > "$RUNNER_TEMP/profile.plist"
+
+          echo "Profile Name:"
+          /usr/libexec/PlistBuddy -c "Print :Name" "$RUNNER_TEMP/profile.plist" || true
+
+          echo "Profile Type (ProvisionsAllDevices indicates Enterprise):"
+          /usr/libexec/PlistBuddy -c "Print :ProvisionsAllDevices" "$RUNNER_TEMP/profile.plist" 2>/dev/null || echo "Not Enterprise"
+
+          echo "Provisioned Devices count (0 or not present = App Store/Enterprise):"
+          /usr/libexec/PlistBuddy -c "Print :ProvisionedDevices" "$RUNNER_TEMP/profile.plist" 2>/dev/null | wc -l || echo "0"
+
+          echo "Team Name:"
+          /usr/libexec/PlistBuddy -c "Print :TeamName" "$RUNNER_TEMP/profile.plist" || true
+
+          echo "Entitlements:"
+          /usr/libexec/PlistBuddy -c "Print :Entitlements" "$RUNNER_TEMP/profile.plist" || true
+
+          echo ""
+          echo "=== Certificate Info ==="
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+
       - name: Build IPA (signed if credentials present)
         run: |
           set -euo pipefail
