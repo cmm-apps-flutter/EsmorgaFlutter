@@ -87,7 +87,14 @@ jobs:
           fi
 
           if command -v md5sum >/dev/null 2>&1; then
-            buildHash=$(md5sum "$APK_FILE" | awk '{print $1}')
+            md5_output=$(md5sum "$APK_FILE")
+            echo "=== MD5 Debug ==="
+            echo "Full md5sum output: $md5_output"
+            echo "Column 1 (awk): $(echo "$md5_output" | awk '{print $1}')"
+            echo "Column 4 (awk): $(echo "$md5_output" | awk '{print $4}')"
+            echo "================="
+
+            buildHash=$(echo "$md5_output" | awk '{print $1}')
           else
             buildHash=$(md5 -q "$APK_FILE")
           fi
@@ -97,6 +104,7 @@ jobs:
           echo "Version Name: $versionName"
           echo "Version Code: $versionCode"
           echo "Build Hash: $buildHash"
+          echo "Build Hash Length: ${#buildHash}"
           echo "Source: pubspec.yaml"
           echo "=========================="
 
@@ -137,14 +145,13 @@ jobs:
           echo "Project ID: $project_id"
           echo "==============================================="
 
-          echo "Sending curl request..."
+          echo "Sending curl request WITHOUT buiHash parameter (test)..."
           RESPONSE=$(curl -vs -w "\n%{http_code}" -F "buiFile=@${file}" \
               -F "buiName=${name}" \
               -F "buiVersion=${versionName}" \
               -F "buiBuildNum=${BUILD_NUMBER}" \
               -F "buiBuildType=${buildType}" \
               -F "buiTemplate=0" \
-              -F "buiHash=${buildHash}" \
               -F "buiVisibleClient=${visibleClient}" \
               -F "buiChangeLog=none" \
               -F "buiUser=${BUILD_USER}" -F "buiPassword=${BUILD_PASSWORD}" \
@@ -355,9 +362,9 @@ jobs:
           echo "Name: $name"
           echo "Version: $versionName"
           echo "Build Number: ${BUILD_NUMBER}"
-          echo "Build Hash: $buildHash"
           echo "Build Type: $buildType"
           echo "Project ID: $project_id"
+          echo "NOTE: Not sending buiHash parameter (based on working example)"
           echo "==============================================="
 
           echo "Sending curl request..."
@@ -367,9 +374,8 @@ jobs:
               -F "buiBuildNum=${BUILD_NUMBER}" \
               -F "buiBuildType=${buildType}" \
               -F "buiTemplate=0" \
-              -F "buiHash=${buildHash}" \
               -F "buiVisibleClient=${visibleClient}" \
-              -F "buiChangeLog=none" \
+              -F "buiChangeLog=" \
               -F "buiUser=${BUILD_USER}" -F "buiPassword=${BUILD_PASSWORD}" \
               "https://otashare-api.mobgen.com/v1/builds/registernewbuild/${project_id}/${OTASHARE_APIKEY}/${OTASHARE_APIKEY_BUILD}" 2>&1) || true
 
