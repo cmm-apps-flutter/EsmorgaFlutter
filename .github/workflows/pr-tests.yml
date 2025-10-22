@@ -28,6 +28,9 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Run code generation
+        run: dart run build_runner build --delete-conflicting-outputs
+
       - name: Run tests
         run: flutter test --coverage
 
@@ -37,4 +40,3 @@ jobs:
         with:
           name: coverage
           path: coverage
-
