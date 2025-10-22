@@ -38,19 +38,6 @@ jobs:
           flutter-version: 'stable'
           channel: 'stable'
 
-      - name: Create google-services.json (if provided)
-        if: ${{ secrets.GOOGLE_SERVICES_JSON }}
-        run: |
-          echo "Creating google-services.json from secret"
-          if [ -d "android/app" ]; then
-            TARGET_DIR="android/app"
-          else
-            TARGET_DIR="app"
-          fi
-          mkdir -p "$TARGET_DIR"
-          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" > "$TARGET_DIR/google-services.json"
-          echo "Wrote google-services.json to $TARGET_DIR/google-services.json"
-
       - name: Decode Keystore (if provided)
         if: ${{ secrets.BUILD_KEYSTORE }}
         env:
