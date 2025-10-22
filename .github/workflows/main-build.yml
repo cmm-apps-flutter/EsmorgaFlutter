@@ -1,0 +1,240 @@
+name: Main - Build APK & IPA
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Platform to build: android, ios, or both'
+        required: true
+        default: 'both'
+      build_env:
+        description: 'Build environment (e.g., qa, prod)'
+        required: false
+        default: 'qa'
+
+jobs:
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.platform == 'android' || github.event.inputs.platform == 'both' }}
+    env:
+      BUILD_ENVL: ${{ github.event.inputs.build_env }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'stable'
+          channel: 'stable'
+
+      - name: Create google-services.json (if provided)
+        if: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          echo "Creating google-services.json from secret"
+          if [ -d "android/app" ]; then
+            TARGET_DIR="android/app"
+          else
+            TARGET_DIR="app"
+          fi
+          mkdir -p "$TARGET_DIR"
+          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" > "$TARGET_DIR/google-services.json"
+          echo "Wrote google-services.json to $TARGET_DIR/google-services.json"
+
+      - name: Decode Keystore (if provided)
+        if: ${{ secrets.BUILD_KEYSTORE }}
+        env:
+          BUILD_KEYSTORE: ${{ secrets.BUILD_KEYSTORE }}
+        run: |
+          echo "Decoding keystore to esmorgabuild.keystore.jks"
+          echo "$BUILD_KEYSTORE" | base64 --decode > esmorgabuild.keystore.jks
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build APK (release)
+        run: flutter build apk --release --no-shrink
+
+      - name: Determine APK path and build metadata
+        id: meta
+        run: |
+          set -euo pipefail
+          ROOT=./
+          APK_FILE="$ROOT/build/app/outputs/flutter-apk/app-release.apk"
+          # fallback to android gradle output path
+          if [ ! -f "$APK_FILE" ]; then
+            APK_FILE="$ROOT/app/build/outputs/apk/release/app-release.apk"
+          fi
+          if [ ! -f "$APK_FILE" ]; then
+            echo "No APK found at $APK_FILE"
+            exit 1
+          fi
+
+          GRADLE_FILE="$ROOT/app/build.gradle"
+          if [ ! -f "$GRADLE_FILE" ]; then
+            GRADLE_FILE="$ROOT/app/build.gradle.kts"
+          fi
+
+          versionName="unknown"
+          versionCode="0"
+          if [ -f "$GRADLE_FILE" ]; then
+            # attempt to extract versionName and versionCode
+            versionName=$(grep -m1 "versionName" "$GRADLE_FILE" | awk '{print $3}' | tr -d '"\'') || true
+            versionCode=$(grep -m1 "versionCode" "$GRADLE_FILE" | awk '{print $3}' | tr -d '"\'') || true
+          else
+            # try pubspec.yaml fallback
+            if [ -f "$ROOT/pubspec.yaml" ]; then
+              pubver=$(grep "^version:" "$ROOT/pubspec.yaml" | head -n1 | awk '{print $2}') || true
+              if [ -n "$pubver" ]; then
+                versionName="$pubver"
+              fi
+            fi
+          fi
+
+          if command -v md5sum >/dev/null 2>&1; then
+            buildHash=$(md5sum "$APK_FILE" | awk '{print $1}')
+          else
+            buildHash=$(md5 -q "$APK_FILE")
+          fi
+
+          echo "apk_file=$APK_FILE" >> $GITHUB_OUTPUT
+          echo "versionName=$versionName" >> $GITHUB_OUTPUT
+          echo "versionCode=$versionCode" >> $GITHUB_OUTPUT
+          echo "buildHash=$buildHash" >> $GITHUB_OUTPUT
+
+      - name: Ensure OTAShare helper is executable
+        run: chmod +x .github/otashare_upload.sh
+
+      - name: Upload APK to OTAShare (via helper)
+        id: upload_apk
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+          OTASHARE_APIKEY: ${{ secrets.OTASHARE_APIKEY }}
+          OTASHARE_APIKEY_BUILD: ${{ secrets.OTASHARE_APIKEY_BUILD }}
+          BUIUSER: ${{ secrets.BUIUSER }}
+          BUIPASSWORD: ${{ secrets.BUIPASSWORD }}
+          PROJECT_ID: 2793
+        run: |
+          file="${{ steps.meta.outputs.apk_file }}"
+          BuildENVL="${BUILD_ENVL:-prod}"
+          BuildENVL=$(echo "$BuildENVL" | tr '[:lower:]' '[:upper:]')
+          name="Esmorga [$BuildENVL]"
+          .github/otashare_upload.sh "$file" "$name" "${{ steps.meta.outputs.versionName }}" "${{ steps.meta.outputs.buildHash }}" "$BuildENVL"
+
+      - name: Upload APK artifact (fallback/save)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: ${{ steps.meta.outputs.apk_file }}
+
+  build-ios:
+    name: Build iOS IPA
+    runs-on: macos-latest
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'both' }}
+    env:
+      BUILD_ENVL: ${{ github.event.inputs.build_env }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build IPA (archive)
+        run: |
+          set -o pipefail
+          flutter build ipa --no-codesign --export-method ad-hoc
+
+      - name: Determine IPA path and metadata
+        id: meta_ios
+        run: |
+          set -euo pipefail
+          ROOT=./
+          IPA_FILE=$(ls $ROOT/build/ios/ipa/*.ipa 2>/dev/null | head -n1 || true)
+          if [ -z "$IPA_FILE" ] && [ -d "$ROOT/build/ios/runner.xcarchive" ]; then
+            # try to export an ipa from the archive
+            IPA_FILE=$(ls $ROOT/build/ios/ipa/*.ipa 2>/dev/null | head -n1 || true)
+          fi
+          if [ -z "$IPA_FILE" ]; then
+            echo "No IPA found in build/ios/ipa"
+            exit 1
+          fi
+
+          # extract Info.plist from ipa
+          TMP_DIR=$(mktemp -d)
+          unzip -q "$IPA_FILE" -d "$TMP_DIR"
+          INFO_PLIST_PATH=$(find "$TMP_DIR/Payload" -name "Info.plist" | head -n1)
+
+          versionName="unknown"
+          versionCode="0"
+          if [ -n "$INFO_PLIST_PATH" ]; then
+            if [ -x "/usr/libexec/PlistBuddy" ]; then
+              versionName=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$INFO_PLIST_PATH" 2>/dev/null || true)
+              versionCode=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$INFO_PLIST_PATH" 2>/dev/null || true)
+            else
+              # try plutil
+              versionName=$(plutil -extract CFBundleShortVersionString xml1 -o - "$INFO_PLIST_PATH" 2>/dev/null | xmllint --xpath 'string(//string)' - 2>/dev/null || true)
+              versionCode=$(plutil -extract CFBundleVersion xml1 -o - "$INFO_PLIST_PATH" 2>/dev/null | xmllint --xpath 'string(//string)' - 2>/dev/null || true)
+            fi
+          else
+            # fallback to pubspec.yaml
+            if [ -f "$ROOT/pubspec.yaml" ]; then
+              pubver=$(grep "^version:" "$ROOT/pubspec.yaml" | head -n1 | awk '{print $2}') || true
+              if [ -n "$pubver" ]; then
+                versionName="$pubver"
+              fi
+            fi
+          fi
+
+          if command -v md5sum >/dev/null 2>&1; then
+            buildHash=$(md5sum "$IPA_FILE" | awk '{print $1}')
+          else
+            buildHash=$(md5 -q "$IPA_FILE")
+          fi
+
+          echo "ipa_file=$IPA_FILE" >> $GITHUB_OUTPUT
+          echo "versionName=$versionName" >> $GITHUB_OUTPUT
+          echo "versionCode=$versionCode" >> $GITHUB_OUTPUT
+          echo "buildHash=$buildHash" >> $GITHUB_OUTPUT
+
+      - name: Ensure OTAShare helper is executable
+        run: chmod +x .github/otashare_upload.sh
+
+      - name: Upload IPA to OTAShare (via helper)
+        id: upload_ipa
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+          OTASHARE_APIKEY: ${{ secrets.OTASHARE_APIKEY }}
+          OTASHARE_APIKEY_BUILD: ${{ secrets.OTASHARE_APIKEY_BUILD }}
+          BUIUSER: ${{ secrets.BUIUSER }}
+          BUIPASSWORD: ${{ secrets.BUIPASSWORD }}
+          PROJECT_ID: 2793
+        run: |
+          file="${{ steps.meta_ios.outputs.ipa_file }}"
+          BuildENVL="${BUILD_ENVL:-prod}"
+          BuildENVL=$(echo "$BuildENVL" | tr '[:lower:]' '[:upper:]')
+          name="Esmorga [$BuildENVL]"
+          .github/otashare_upload.sh "$file" "$name" "${{ steps.meta_ios.outputs.versionName }}" "${{ steps.meta_ios.outputs.buildHash }}" "$BuildENVL"
+
+      - name: Upload IPA artifact (fallback/save)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-artifacts
+          path: ${{ steps.meta_ios.outputs.ipa_file }}
