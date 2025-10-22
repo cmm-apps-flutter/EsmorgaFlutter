@@ -17,8 +17,26 @@ fi
 PROJECT_ID=${PROJECT_ID:-2793}
 BUILD_NUMBER=${BUILD_NUMBER:-0}
 
+echo "==============================================="
+echo "=== OTAShare Upload Debug Info ==="
+echo "==============================================="
+echo "File: $file"
+echo "File size: $(ls -lh "$file" | awk '{print $5}')"
+echo "Name: $name"
+echo "Version: $versionName"
+echo "Build Number: $BUILD_NUMBER"
+echo "Build Type: $buildType"
+echo "Build Hash: $buildHash"
+echo "Project ID: $PROJECT_ID"
+echo "API URL: https://otashare-api.mobgen.com/v1/builds/registernewbuild/${PROJECT_ID}/[APIKEY]/[APIKEY_BUILD]"
+echo "User: $BUIUSER"
+echo "==============================================="
+
 for i in 1 2 3; do
+  echo ""
   echo "Attempt $i uploading $file"
+  echo "Executing curl command..."
+
   OUT=$(curl -s -w "\n%{http_code}" --max-time 300 -F "buiFile=@${file}" \
     -F "buiName=${name}" \
     -F "buiVersion=${versionName}" \
@@ -33,23 +51,41 @@ for i in 1 2 3; do
 
   http_code=$(echo "$OUT" | tail -n1)
   body=$(echo "$OUT" | sed '$d')
-  echo "upload http_code=$http_code"
+
+  echo "=== Response Details ==="
+  echo "HTTP Code: $http_code"
+  echo "Response Body:"
+  echo "$body"
+  echo "======================="
   if [ "$http_code" = "200" ] || [ "$http_code" = "201" ]; then
+    echo ""
+    echo "✅ Upload successful!"
     echo "response=$body" >> "$GITHUB_OUTPUT"
     echo "http_code=$http_code" >> "$GITHUB_OUTPUT"
     url=$(echo "$body" | grep -o 'https://[^\" ]*' || true)
-    echo "url=$url" >> "$GITHUB_OUTPUT"
+    if [ -n "$url" ]; then
+      echo "Download URL: $url"
+      echo "url=$url" >> "$GITHUB_OUTPUT"
+    else
+      echo "⚠️  Warning: No URL found in response body"
+      echo "url=" >> "$GITHUB_OUTPUT"
+    fi
     exit 0
   fi
-  echo "Upload failed (code=$http_code), retrying in 5s..."
+  echo "❌ Upload failed (code=$http_code), retrying in 5s..."
   sleep 5
 done
 
 # All attempts failed
+echo ""
+echo "❌ Upload failed after all retries"
+echo "Final HTTP Code: $http_code"
+echo "Final Response Body:"
+echo "$body"
+echo ""
 echo "response=$body" >> "$GITHUB_OUTPUT"
 echo "http_code=$http_code" >> "$GITHUB_OUTPUT"
 url=$(echo "$body" | grep -o 'https://[^\" ]*' || true)
 echo "url=$url" >> "$GITHUB_OUTPUT"
-echo "Upload failed after retries" >&2
 exit 1
 
