@@ -149,59 +149,30 @@ jobs:
           set -o pipefail
           # If we have provisioning + certificate secrets, we'll let later steps decide how to build.
           echo "Will build IPA in next step (codesign if credentials present)."
-
-      - name: Install signing assets (provisioning & certificate) if provided
-        env:
-          BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
-          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
-          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+      - name: Install certificates
         run: |
-          set -euo pipefail
-          if [ -n "${BUILD_PROVISION_PROFILE_BASE64:-}" ] && [ -n "${BUILD_CERTIFICATE_BASE64:-}" ] && [ -n "${P12_PASSWORD:-}" ]; then
-            echo "Installing provisioning profile and certificate for codesigning"
-            # Decode provisioning profile
-            PROFILE_TMP=/tmp/profile.mobileprovision
-            echo "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode > "$PROFILE_TMP"
-            # Extract UUID from provisioning profile
-            /usr/bin/security cms -D -i "$PROFILE_TMP" > /tmp/profile.plist || true
-            UUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' /tmp/profile.plist 2>/dev/null || true)
-            if [ -z "$UUID" ]; then
-              # fallback: try to grep a UUID-like string
-              UUID=$(grep -a -o -E '[0-9A-Fa-f-]{36}' "$PROFILE_TMP" | head -n1 || true)
-            fi
-            if [ -z "$UUID" ]; then
-              echo "Could not determine provisioning UUID, aborting install" >&2
-              exit 1
-            fi
-            mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-            cp "$PROFILE_TMP" "$HOME/Library/MobileDevice/Provisioning Profiles/${UUID}.mobileprovision"
-            echo "Installed provisioning profile to $HOME/Library/MobileDevice/Provisioning Profiles/${UUID}.mobileprovision"
-
-            # Decode certificate (p12)
-            P12_TMP=/tmp/cert.p12
-            echo "$BUILD_CERTIFICATE_BASE64" | base64 --decode > "$P12_TMP"
-
-            # Create temporary keychain
-            # Generate a random password for the temporary keychain (won't be stored as a secret)
-            KEYCHAIN_PASSWORD=$(openssl rand -hex 16)
-            KEYCHAIN_NAME="build-$(date +%s)-keychain"
-            security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
-            security set-keychain-settings -t 3600 -u "$KEYCHAIN_NAME"
-            security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
-
-            # Import the p12 into the keychain
-            security import "$P12_TMP" -k "$KEYCHAIN_NAME" -P "$P12_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security || true
-
-            # Add keychain to the search list
-            EXISTING=$(security list-keychains -d user | sed -e 's/[" ]//g' | tr '\n' ' ')
-            security list-keychains -s "$KEYCHAIN_NAME" $EXISTING
-            security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME" || true
-
-            # Export keychain name for later cleanup (do not export the password)
-            echo "KEYCHAIN_NAME=$KEYCHAIN_NAME" >> $GITHUB_ENV
-          else
-            echo "Signing assets not provided; skipping installation of provisioning profile and certificate"
-          fi
+          # Set up paths
+          CERTIFICATE_PATH="$RUNNER_TEMP/apple_cert.p12"
+          PROFILE_ENT_PATH="$RUNNER_TEMP/ent.mobileprovision"
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+          
+          # Decode secrets into files
+          echo -n "${{ secrets.BUILD_CERTIFICATE_BASE64 }}" | base64 --decode -o "$CERTIFICATE_PATH"
+          echo -n "${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}" | base64 --decode -o "$PROFILE_ENT_PATH"
+          
+          # Create and configure a temporary keychain
+          security create-keychain -p "${{ secrets.P12_PASSWORD }}" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "${{ secrets.P12_PASSWORD }}" "$KEYCHAIN_PATH"
+          
+          # Import the certificate into the keychain
+          security import "$CERTIFICATE_PATH" -P "${{ secrets.P12_PASSWORD }}" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "${{ secrets.P12_PASSWORD }}" "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
+          
+          # Install provisioning profiles
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp "$PROFILE_ENT_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
 
       - name: Build IPA (signed if credentials present)
         run: |
