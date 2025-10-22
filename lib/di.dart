@@ -30,8 +30,8 @@ import 'package:esmorga_flutter/view/profile/cubit/profile_cubit.dart';
 import 'package:esmorga_flutter/view/registration/cubit/register_cubit.dart';
 import 'package:esmorga_flutter/view/registration/cubit/registration_confirmation_cubit.dart';
 import 'package:esmorga_flutter/view/registration/verify_account/cubit/verify_account_cubit.dart';
+import 'package:esmorga_flutter/view/splash/cubit/splash_cubit.dart';
 import 'package:esmorga_flutter/view/validation/form_validator.dart';
-import 'package:esmorga_flutter/view/welcome/welcome_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
@@ -144,8 +144,8 @@ Future<void> setupDi(Locale locale) async {
   // -----------------------------
   // CUBITS
   // -----------------------------
+  getIt.registerFactory(() => SplashCubit());
   getIt.registerFactory(() => MyEventsCubit(eventRepository: getIt(), userRepository: getIt()));
-  getIt.registerFactory(() => WelcomeCubit());
   getIt.registerFactory(() => EventListCubit(eventRepository: getIt()));
   getIt.registerFactory(() => ProfileCubit(userRepository: getIt()));
   getIt.registerFactory(() => LoginCubit(userRepository: getIt(), validator: getIt()));

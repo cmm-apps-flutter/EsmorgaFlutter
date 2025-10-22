@@ -14,12 +14,15 @@ import 'package:esmorga_flutter/view/registration/verify_account/cubit/verify_ac
 import 'package:esmorga_flutter/view/registration/verify_account/view/verify_account_screen.dart';
 import 'package:esmorga_flutter/view/registration/view/register_screen.dart';
 import 'package:esmorga_flutter/view/registration/view/registration_confirmation_screen.dart';
-import 'package:esmorga_flutter/view/welcome/welcome_screen.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:esmorga_flutter/view/splash/view/splash_screen.dart';
+import 'package:esmorga_flutter/view/splash/cubit/splash_cubit.dart';
 
 class AppRoutes {
   static const String welcome = '/';
+  static const String splash = '/splash';
   static const String login = '/login';
   static const String registration = '/registration';
   static const String registrationConfirmation = '/registration-confirmation';
@@ -34,17 +37,13 @@ class AppRoutes {
 
   static GoRouter createRouter() {
     return GoRouter(
-      initialLocation: welcome,
+      initialLocation: splash,
       routes: [
         GoRoute(
-          path: welcome,
-          builder: (context, state) => WelcomeScreen(
-            onLoginRegisterClicked: () {
-              context.push(login);
-            },
-            onEnterAsGuestClicked: () {
-              context.go(eventList);
-            },
+          path: splash,
+          builder: (context, state) => BlocProvider(
+            create: (_) => getIt<SplashCubit>(),
+            child: SplashScreen(onFinished: () => context.go(eventList)),
           ),
         ),
         GoRoute(
@@ -131,31 +130,49 @@ class AppRoutes {
           routes: [
             GoRoute(
               path: eventList,
-              builder: (context, state) => EventListScreen(
-                onDetailsClicked: (event) {
-                  context.push(AppRoutes.eventDetail, extra: event);
+              pageBuilder: (context, state) => CustomTransitionPage(
+                key: state.pageKey,
+                child: EventListScreen(
+                  onDetailsClicked: (event) {
+                    context.push(AppRoutes.eventDetail, extra: event);
+                  },
+                ),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
                 },
               ),
             ),
             GoRoute(
               path: myEvents,
-              builder: (context, state) => MyEventsScreen(
-                onDetailsClicked: (event) {
-                  context.push(AppRoutes.eventDetail, extra: event);
-                },
-                onSignInClicked: () {
-                  context.go(login);
+              pageBuilder: (context, state) => CustomTransitionPage(
+                key: state.pageKey,
+                child: MyEventsScreen(
+                  onDetailsClicked: (event) {
+                    context.push(AppRoutes.eventDetail, extra: event);
+                  },
+                  onSignInClicked: () {
+                    context.go(login);
+                  },
+                ),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
                 },
               ),
             ),
             GoRoute(
               path: profile,
-              builder: (context, state) => ProfileScreen(
-                onNavigateToLogin: () {
-                  context.go(login);
-                },
-                onNavigateToChangePassword: () {
-                  context.push(changePassword);
+              pageBuilder: (context, state) => CustomTransitionPage(
+                key: state.pageKey,
+                child: ProfileScreen(
+                  onNavigateToLogin: () {
+                    context.go(login);
+                  },
+                  onNavigateToChangePassword: () {
+                    context.push(changePassword);
+                  },
+                ),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
                 },
               ),
             ),
