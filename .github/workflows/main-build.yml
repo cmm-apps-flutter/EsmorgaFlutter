@@ -147,7 +147,7 @@ jobs:
               -F "buiVisibleClient=true" \
               -F "buiChangeLog=" \
               -F "buiUser=${{ secrets.BUILD_USER }}" -F "buiPassword=${{ secrets.BUILD_PASSWORD }}" \
-              "https://otashare-api.mobgen.com/v1/builds/registernewbuild/${project_id}/${OTASHARE_APIKEY}/${OTASHARE_APIKEY_BUILD}" 2>&1) || true
+              "https://otashare-api.mobgen.com/v1/builds/registernewbuild/${project_id}/${OTASHARE_APIKEY}/${OTASHARE_APIKEY_BUILD}"
 
 
       - name: Upload APK artifact (fallback/save)
