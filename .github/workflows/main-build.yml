@@ -135,7 +135,9 @@ jobs:
           echo "Build Hash: $buildHash"
           echo "Build Type: $buildType"
           echo "Project ID: $project_id"
+          echo "1"
           md5sum $file | awk '{print $1}'
+          echo "4"
           md5sum $file | awk '{print $4}'
           echo "==============================================="
 
@@ -146,9 +148,9 @@ jobs:
               -F "buiBuildNum=${BUILD_NUMBER}" \
               -F "buiBuildType=${buildType}" \
               -F "buiTemplate=0" \
-              -F "buiHash=${buildHash}" \
+              -F "buiHash=" \
               -F "buiVisibleClient=true" \
-              -F "buiChangeLog=none" \
+              -F "buiChangeLog=" \
               -F "buiUser=${BUILD_USER}" \
               -F "buiPassword=${BUILD_PASSWORD}" \
               "https://otashare-api.mobgen.com/v1/builds/registernewbuild/${project_id}/${OTASHARE_APIKEY}/${OTASHARE_APIKEY_BUILD}" \
