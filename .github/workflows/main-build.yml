@@ -121,9 +121,9 @@ jobs:
           versionName="${{ steps.meta.outputs.versionName }}"
           buildHash=$(md5sum $file | awk '{print $1}')
           buildType="$BuildENVL"
-          project_id=2793
+          project_id=2796
           visibleClient=true
-
+        
           echo "==============================================="
           echo "=== OTAShare Upload - Android ==="
           echo "File: $file"
@@ -135,6 +135,8 @@ jobs:
           echo "Build Hash: $buildHash"
           echo "Build Type: $buildType"
           echo "Project ID: $project_id"
+          md5sum $file | awk '{print $1}'
+          md5sum $file | awk '{print $4}'
           echo "==============================================="
 
           OUT=$(curl -f -L -v --http1.1 \
@@ -327,7 +329,7 @@ jobs:
           versionName="${{ steps.meta_ios.outputs.versionName }}"
           buildHash="${{ steps.meta_ios.outputs.buildHash }}"
           buildType="$BuildENVL"
-          project_id=2793
+          project_id=2796
           visibleClient=true
 
           echo "==============================================="
