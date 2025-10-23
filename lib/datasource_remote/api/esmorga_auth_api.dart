@@ -103,11 +103,11 @@ class EsmorgaAuthApi {
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'email': email,
-        'code': code,
-        'newPassword': newPassword,
+        'forgotPasswordCode': code,
+        'password': newPassword,
       }),
     );
-    if (result.statusCode != 200) {
+    if (result.statusCode != 204) {
       throw Exception('Failed to reset password');
     }
   }

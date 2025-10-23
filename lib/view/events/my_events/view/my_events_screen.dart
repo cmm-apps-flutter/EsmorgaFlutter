@@ -5,9 +5,11 @@ import 'package:esmorga_flutter/ds/esmorga_loader.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
 import 'package:esmorga_flutter/view/events/event_list/model/event_list_ui_model.dart';
 import 'package:esmorga_flutter/view/events/my_events/cubit/my_events_cubit.dart';
+import 'package:esmorga_flutter/view/home/logged_out_view.dart';
 import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lottie/lottie.dart';
 
 class MyEventsScreen extends StatelessWidget {
   final void Function(Event) onDetailsClicked;
@@ -35,12 +37,14 @@ class _MyEventsForm extends StatefulWidget {
 }
 
 class _MyEventsFormState extends State<_MyEventsForm> {
+  late MyEventsCubit _cubit;
+
   @override
   void initState() {
     super.initState();
-    final cubit = context.read<MyEventsCubit>();
-    cubit.load();
-    cubit.effects.listen((effect) {
+    _cubit = context.read<MyEventsCubit>();
+    _cubit.load();
+    _cubit.effects.listen((effect) {
       if (effect is MyEventsEffectShowNoNetworkPrompt) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppLocalizations.of(context)!.snackbarNoInternet)),
@@ -79,8 +83,8 @@ class _MyEventsFormState extends State<_MyEventsForm> {
                   if (state.error != null) {
                     switch (state.error!) {
                       case MyEventsEffectType.notLoggedIn:
-                        return _MyEventsLoggedOut(
-                          onSignIn: () => context.read<MyEventsCubit>().signIn(),
+                        return LoggedOutView(
+                          onSignIn: () => _cubit.signIn(),
                         );
                       case MyEventsEffectType.emptyList:
                         return _MyEventsEmpty(localizations.screenMyEventsEmptyText);
@@ -89,11 +93,15 @@ class _MyEventsFormState extends State<_MyEventsForm> {
                           title: localizations.defaultErrorTitle,
                           body: localizations.defaultErrorBody,
                           buttonLabel: localizations.buttonRetry,
-                          onRetry: () => context.read<MyEventsCubit>().load(),
+                          onRetry: () => _cubit.load(),
                         );
                     }
                   }
-                  return _MyEventsList(events: state.eventList);
+                  return _MyEventsList(
+                      events: state.eventList,
+                      onEventClick: (eventId) {
+                        _cubit.onEventClick(eventId);
+                      });
                 },
               ),
             ),
@@ -139,29 +147,27 @@ class _MyEventsEmpty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Column(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16.0),
-            child: Image.asset(
-              'assets/images/event_list_empty.jpg',
-              width: double.infinity,
-              height: 200.0,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: EsmorgaText(
+              text: text,
+              style: EsmorgaTextStyle.heading1,
+            )),
+        Expanded(
+          child: Align(
+            alignment: Alignment.bottomLeft,
+            child: Lottie.asset(
+              'assets/animations/empty.json',
+              width: 150,
+              height: 150,
               fit: BoxFit.cover,
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
-            child: EsmorgaText(
-              text: text,
-              style: EsmorgaTextStyle.heading2,
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -242,75 +248,11 @@ class _MyEventsError extends StatelessWidget {
   }
 }
 
-class _MyEventsLoggedOut extends StatelessWidget {
-  final VoidCallback onSignIn;
-
-  const _MyEventsLoggedOut({required this.onSignIn});
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12.0),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerLowest,
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: 48.0,
-                  height: 48.0,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  child: Icon(
-                    Icons.lock_outline,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4.0),
-                          child: EsmorgaText(
-                            text: l.unauthenticatedErrorMessage,
-                            style: EsmorgaTextStyle.heading2,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 32.0),
-          EsmorgaButton(
-            text: l.buttonLogin,
-            onClick: onSignIn,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _MyEventsList extends StatelessWidget {
   final List<EventListUiModel> events;
+  final Function(String) onEventClick;
 
-  const _MyEventsList({required this.events});
+  const _MyEventsList({required this.events, required this.onEventClick});
 
   @override
   Widget build(BuildContext context) {
@@ -321,9 +263,9 @@ class _MyEventsList extends StatelessWidget {
         final event = events[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: 32.0),
-          child: GestureDetector(
+          child: InkWell(
             onTap: () {
-              context.read<MyEventsCubit>().onEventClick(event.id);
+              onEventClick(event.id);
             },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
