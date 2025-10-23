@@ -144,7 +144,7 @@ jobs:
               -F "buiBuildNum=${BUILD_NUMBER}" \
               -F "buiBuildType=${buildType}" \
               -F "buiTemplate=0" \
-              -F "buiHash=$buildHash" \
+              -F "buiHash=" \
               -F "buiVisibleClient=${visibleClient}" \
               -F "buiChangeLog=none" \
               -F "buiUser=${BUILD_USER}" -F "buiPassword=${BUILD_PASSWORD}" \
