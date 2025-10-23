@@ -149,7 +149,7 @@ jobs:
                 -F "buiVisibleClient=true" \
                 -F "buiChangeLog=none" \
                 -F "buiUser=${BUILD_USER}" -F "buiPassword=${BUILD_PASSWORD}" \
-                "https://otashare-api.mobgen.com/v1/builds/registernewbuild/${project_id}/${api_key}/${api_key_build}"
+                "https://otashare-api.mobgen.com/v1/builds/registernewbuild/${project_id}/${OTASHARE_APIKEY}/${OTASHARE_APIKEY_BUILD}"
           }
           OUT=$(main)
           echo "url=$(echo "$OUT" | grep https)" >> $GITHUB_OUTPUT
