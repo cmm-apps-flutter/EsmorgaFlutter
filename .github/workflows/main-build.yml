@@ -119,7 +119,7 @@ jobs:
           BuildENVL=$(echo "$BuildENVL" | tr '[:lower:]' '[:upper:]')
           name="Esmorga Android [$BuildENVL]"
           versionName="${{ steps.meta.outputs.versionName }}"
-          buildHash="${{ steps.meta.outputs.buildHash }}"
+          buildHash=$(md5sum $file | awk '{print $1}')
           buildType="$BuildENVL"
           project_id=2793
           visibleClient=true
@@ -137,18 +137,22 @@ jobs:
           echo "Project ID: $project_id"
           echo "==============================================="
 
-          curl -vvv -F "buiFile=@${file}" \
-              -F "buiName=${name}" \
-              -F "buiVersion=${versionName}" \
-              -F "buiBuildNum=${BUILD_NUMBER}" \
-              -F "buiBuildType=${buildType}" \
-              -F "buiTemplate=0" \
-              -F "buiHash=" \
-              -F "buiVisibleClient=true" \
-              -F "buiChangeLog=" \
-              -F "buiUser=${{ secrets.BUIUSER }}" -F "buiPassword=${{ secrets.BUIPASSWORD }}" \
-              "https://otashare-api.mobgen.com/v1/builds/registernewbuild/${project_id}/${OTASHARE_APIKEY}/${OTASHARE_APIKEY_BUILD}"
-
+          function main
+          {
+            curl -vs -F "buiFile=@${file}" \
+                -F "buiName=${name}" \
+                -F "buiVersion=${versionName}" \
+                -F "buiBuildNum=${BUILD_NUMBER}" \
+                -F "buiBuildType=${buildType}" \
+                -F "buiTemplate=0" \
+                -F "buiHash=${buildHash}" \
+                -F "buiVisibleClient=true" \
+                -F "buiChangeLog=none" \
+                -F "buiUser=${BUILD_USER}" -F "buiPassword=${BUILD_PASSWORD}" \
+                "https://otashare-api.mobgen.com/v1/builds/registernewbuild/${project_id}/${api_key}/${api_key_build}"
+          }
+          OUT=$(main)
+          echo "url=$(echo "$OUT" | grep https)" >> $GITHUB_OUTPUT
 
       - name: Upload APK artifact (fallback/save)
         if: always()
