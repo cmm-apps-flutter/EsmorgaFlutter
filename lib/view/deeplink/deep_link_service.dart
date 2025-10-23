@@ -10,8 +10,6 @@ class DeepLinkService {
   late final AppLinks _appLinks;
   StreamSubscription<Uri?>? _sub;
   bool _initialized = false;
-  String? _lastForgotCode;
-  String? _lastVerificationCode;
 
   DeepLinkService(this._router);
 
@@ -33,38 +31,31 @@ class DeepLinkService {
   void _handleUri(Uri uri) {
     final code = uri.queryParameters['forgotPasswordCode'];
     final verificationCode = uri.queryParameters['verificationCode'];
-    if (verificationCode != null && verificationCode.isNotEmpty && verificationCode != _lastVerificationCode) {
-      _lastVerificationCode = verificationCode;
+    if (verificationCode != null && verificationCode.isNotEmpty) {
       final encoded = Uri.encodeComponent(verificationCode);
-      _safeNavigate('${AppRoutes.verifyAccount}?code=$encoded');
+      _safeNavigate(AppRoutes.eventList);
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _safeNavigate('${AppRoutes.verifyAccount}?code=$encoded', usePush: true);
+      });
       return;
     }
-    if (code != null && code.isNotEmpty && code != _lastForgotCode) {
-      _lastForgotCode = code;
+    if (code != null && code.isNotEmpty) {
       final encoded = Uri.encodeComponent(code);
-      _safeNavigate('${AppRoutes.resetPassword}?code=$encoded');
+      _safeNavigate(AppRoutes.eventList);
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _safeNavigate('${AppRoutes.resetPassword}?code=$encoded', usePush: true);
+      });
     }
   }
 
-  void _safeNavigate(String location, {int attempt = 0}) {
+  void _safeNavigate(String location, {int attempt = 0, bool usePush = false}) {
     try {
-      _router.go(location);
-
       Future.delayed(const Duration(milliseconds: 50), () async {
         try {
-          final navCtx = _router.routerDelegate.navigatorKey.currentContext;
-          if (navCtx != null) {
-            try {
-              GoRouter.of(navCtx).go(location);
-              return;
-            } catch (e) {
-              // Do nothing
-            }
-          }
-          try {
+          if (usePush) {
             _router.push(location);
-          } catch (e) {
-            // Do nothing
+          } else {
+            _router.go(location);
           }
         } catch (e) {
           // Do nothing
@@ -75,7 +66,7 @@ class DeepLinkService {
         final delay = Duration(milliseconds: 200 * (attempt + 1));
         Future.delayed(delay, () {
           if (!_initialized) return;
-          _safeNavigate(location, attempt: attempt + 1);
+          _safeNavigate(location, attempt: attempt + 1, usePush: usePush);
         });
       } else {}
     }

@@ -25,6 +25,7 @@ import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
 import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:esmorga_flutter/view/login/cubit/login_cubit.dart';
 import 'package:esmorga_flutter/view/navigation/app_routes.dart';
+import 'package:esmorga_flutter/view/password/recover_password_cubit.dart';
 import 'package:esmorga_flutter/view/password/reset_password_cubit.dart';
 import 'package:esmorga_flutter/view/profile/cubit/profile_cubit.dart';
 import 'package:esmorga_flutter/view/registration/cubit/register_cubit.dart';
@@ -152,6 +153,7 @@ Future<void> setupDi(Locale locale) async {
   getIt.registerFactory(() => RegisterCubit(userRepository: getIt(), validator: getIt()));
   getIt.registerFactory(() => ChangePasswordCubit(userRepository: getIt(), validator: getIt()));
   getIt.registerFactory(() => RegistrationConfirmationCubit(userRepository: getIt()));
+  getIt.registerFactory(() => RecoverPasswordCubit(userRepository: getIt(), validator: getIt()));
   getIt.registerFactoryParam<ResetPasswordCubit, BuildContext, String?>((context, code) => ResetPasswordCubit(
         userRepository: getIt(),
         validator: getIt(),
