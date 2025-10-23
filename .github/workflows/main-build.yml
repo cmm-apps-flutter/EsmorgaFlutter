@@ -146,7 +146,7 @@ jobs:
               -F "buiHash=" \
               -F "buiVisibleClient=true" \
               -F "buiChangeLog=" \
-              -F "buiUser=${{ secrets.BUILD_USER }}" -F "buiPassword=${{ secrets.BUILD_PASSWORD }}" \
+              -F "buiUser=${{ secrets.BUIUSER }}" -F "buiPassword=${{ secrets.BUIPASSWORD }}" \
               "https://otashare-api.mobgen.com/v1/builds/registernewbuild/${project_id}/${OTASHARE_APIKEY}/${OTASHARE_APIKEY_BUILD}"
 
 
