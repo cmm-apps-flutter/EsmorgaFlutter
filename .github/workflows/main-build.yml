@@ -92,11 +92,7 @@ jobs:
             fi
           fi
 
-          if command -v md5sum >/dev/null 2>&1; then
-            buildHash=$(md5sum "$APK_FILE" | awk '{print $4}')
-          else
-            buildHash=$(md5 -q "$APK_FILE")
-          fi
+          buildHash=$(md5sum $APK_FILE | awk '{print $4}')
 
           echo "=== APK Metadata Debug ==="
           echo "APK File: $APK_FILE"
