@@ -69,10 +69,7 @@ jobs:
 
           APK_FILE=$(ls $ROOT/build/app/outputs/apk/*/release/*.apk 2>/dev/null | grep -E 'app-.*-release.apk|app-release.apk' | head -n1 || true)
 
-          if [ -z "$APK_FILE" ]; then
-            echo "No APK found under $ROOT/build/app/outputs/apk/*/release/*.apk, trying legacy path"
-            APK_FILE="$ROOT/build/app/outputs/flutter-apk/app-release.apk"
-          fi
+          APK_FILE="$ROOT/build/app/outputs/flutter-apk/app-release.apk"
 
           if [ ! -f "$APK_FILE" ]; then
             echo "No APK found at $APK_FILE"
@@ -92,7 +89,7 @@ jobs:
             fi
           fi
 
-          buildHash=$(md5sum $APK_FILE | awk '{print $4}')
+          buildHash=$(md5sum $APK_FILE | awk '{print $1}')
 
           echo "=== APK Metadata Debug ==="
           echo "APK File: $APK_FILE"
