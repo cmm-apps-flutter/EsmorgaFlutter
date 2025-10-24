@@ -1,0 +1,387 @@
+name: Main - Build APK & IPA
+
+on:
+  push:
+    branches:
+      - main
+      - pipelines
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Platform to build: android, ios, or both'
+        required: true
+        default: 'both'
+      build_env:
+        description: 'Build environment (e.g., qa, prod)'
+        required: false
+        default: 'qa'
+
+jobs:
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.platform == 'android' || github.event.inputs.platform == 'both' }}
+    env:
+      BUILD_ENVL: ${{ github.event.inputs.build_env }}
+      BUILD_KEY_ALIAS: ${{ secrets.BUILD_KEY_ALIAS }}
+      BUILD_KEY_PASSWORD: ${{ secrets.BUILD_KEY_PASSWORD }}
+      BUILD_STORE_PASSWORD: ${{ secrets.BUILD_STORE_PASSWORD }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.35.3"
+
+      - name: Decode Keystore (if provided)
+        env:
+          BUILD_KEYSTORE: ${{ secrets.BUILD_KEYSTORE }}
+        run: |
+          if [ -n "${BUILD_KEYSTORE:-}" ]; then
+            echo "Decoding keystore to esmorgabuild.keystore.jks"
+            echo "$BUILD_KEYSTORE" | base64 --decode > esmorgabuild.keystore.jks
+          else
+            echo "No BUILD_KEYSTORE provided; skipping keystore decode"
+          fi
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run code generation
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Build APK (release)
+        run: flutter build apk --release --no-shrink
+
+      - name: Determine APK path and build metadata
+        id: meta
+        run: |
+          set -euo pipefail
+          ROOT=./
+
+          APK_FILE=$(ls $ROOT/build/app/outputs/apk/*/release/*.apk 2>/dev/null | grep -E 'app-.*-release.apk|app-release.apk' | head -n1 || true)
+
+          APK_FILE="$ROOT/build/app/outputs/flutter-apk/app-release.apk"
+
+          if [ ! -f "$APK_FILE" ]; then
+            echo "No APK found at $APK_FILE"
+            exit 1
+          fi
+
+          # Prefer pubspec.yaml version (format: x.y.z+build)
+          versionName="unknown"
+          versionCode="0"
+          if [ -f "$ROOT/pubspec.yaml" ]; then
+            pubver=$(grep "^version:" "$ROOT/pubspec.yaml" | head -n1 | awk '{print $2}' || true)
+            if [ -n "$pubver" ]; then
+              # split on + if present
+              versionName=$(echo "$pubver" | cut -d+ -f1)
+              versionCode=$(echo "$pubver" | cut -d+ -f2)
+              versionCode=${versionCode:-0}
+            fi
+          fi
+
+          buildHash=$(md5sum $APK_FILE | awk '{print $1}')
+
+          echo "=== APK Metadata Debug ==="
+          echo "APK File: $APK_FILE"
+          echo "Version Name: $versionName"
+          echo "Version Code: $versionCode"
+          echo "Build Hash: $buildHash"
+          echo "Build Hash Length: ${#buildHash}"
+          echo "Source: pubspec.yaml"
+          echo "=========================="
+
+          echo "apk_file=$APK_FILE" >> $GITHUB_OUTPUT
+          echo "versionName=$versionName" >> $GITHUB_OUTPUT
+          echo "versionCode=$versionCode" >> $GITHUB_OUTPUT
+          echo "buildHash=$buildHash" >> $GITHUB_OUTPUT
+
+      - name: Upload APK to OTAShare
+        id: upload_apk
+        env:
+          OTASHARE_APIKEY: ${{ secrets.OTASHARE_APIKEY }}
+          OTASHARE_APIKEY_BUILD: ${{ secrets.OTASHARE_APIKEY_BUILD }}
+          BUILD_USER: ${{ secrets.BUIUSER }}
+          BUILD_PASSWORD: ${{ secrets.BUIPASSWORD }}
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          file="${{ steps.meta.outputs.apk_file }}"
+          BuildENVL="${BUILD_ENVL:-qa}"
+          BuildENVL=$(echo "$BuildENVL" | tr '[:lower:]' '[:upper:]')
+          name="Esmorga Android [$BuildENVL]"
+          versionName="${{ steps.meta.outputs.versionName }}"
+          buildHash=$(md5sum $file | awk '{print $1}')
+          buildType="$BuildENVL"
+          project_id=2796
+          visibleClient=true
+        
+          echo "==============================================="
+          echo "=== OTAShare Upload - Android ==="
+          echo "File: $file"
+          echo "File exists: $([ -f "$file" ] && echo 'YES' || echo 'NO')"
+          echo "File size: $(ls -lh "$file" | awk '{print $5}')"
+          echo "Name: $name"
+          echo "Version: $versionName"
+          echo "Build Number: ${BUILD_NUMBER}"
+          echo "Build Hash: $buildHash"
+          echo "Build Type: $buildType"
+          echo "Project ID: $project_id"
+          echo "1"
+          md5sum $file | awk '{print $1}'
+          echo "4"
+          md5sum $file | awk '{print $4}'
+          echo "==============================================="
+
+          OUT=$(curl -f -L -v --http1.1 \
+              -F "buiFile=@${file}" \
+              -F "buiName=${name}" \
+              -F "buiVersion=${versionName}" \
+              -F "buiBuildNum=${BUILD_NUMBER}" \
+              -F "buiBuildType=${buildType}" \
+              -F "buiTemplate=0" \
+              -F "buiHash=" \
+              -F "buiVisibleClient=true" \
+              -F "buiChangeLog=" \
+              -F "buiUser=${BUILD_USER}" \
+              -F "buiPassword=${BUILD_PASSWORD}" \
+              "https://otashare-api.mobgen.com/v1/builds/registernewbuild/${project_id}/${OTASHARE_APIKEY}/${OTASHARE_APIKEY_BUILD}" \
+              )
+          echo "Curl raw output: $OUT"
+
+      - name: Upload APK artifact (fallback/save)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: ${{ steps.meta.outputs.apk_file }}
+
+  build-ios:
+    name: Build iOS IPA
+    runs-on: macos-latest
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'both' }}
+    env:
+      BUILD_ENVL: ${{ github.event.inputs.build_env }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.35.3"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run code generation
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Build IPA (archive)
+        run: |
+          set -o pipefail
+          # If we have provisioning + certificate secrets, we'll let later steps decide how to build.
+          echo "Will build IPA in next step (codesign if credentials present)."
+      - name: Install certificates
+        run: |
+          # Set up paths
+          CERTIFICATE_PATH="$RUNNER_TEMP/apple_cert.p12"
+          PROFILE_ENT_PATH="$RUNNER_TEMP/ent.mobileprovision"
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+
+          # Decode secrets into files
+          echo -n "${{ secrets.BUILD_CERTIFICATE_BASE64 }}" | base64 --decode -o "$CERTIFICATE_PATH"
+          echo -n "${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}" | base64 --decode -o "$PROFILE_ENT_PATH"
+
+          # Create and configure a temporary keychain
+          security create-keychain -p "${{ secrets.P12_PASSWORD }}" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "${{ secrets.P12_PASSWORD }}" "$KEYCHAIN_PATH"
+
+          # Import the certificate into the keychain
+          security import "$CERTIFICATE_PATH" -P "${{ secrets.P12_PASSWORD }}" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "${{ secrets.P12_PASSWORD }}" "$KEYCHAIN_PATH"
+          # ensure the keychain is in the user's keychain list (fixed command name)
+          security list-keychains -d user -s "$KEYCHAIN_PATH"
+
+          # Export the keychain path for subsequent steps
+          echo "KEYCHAIN_NAME=$KEYCHAIN_PATH" >> $GITHUB_ENV
+
+          # Install provisioning profiles
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp "$PROFILE_ENT_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
+
+      - name: Inspect provisioning profile and certificate
+        run: |
+          set -euo pipefail
+          PROFILE_ENT_PATH="$RUNNER_TEMP/ent.mobileprovision"
+
+          echo "=== Provisioning Profile Info ==="
+          security cms -D -i "$PROFILE_ENT_PATH" > "$RUNNER_TEMP/profile.plist"
+
+          echo "Profile Name:"
+          /usr/libexec/PlistBuddy -c "Print :Name" "$RUNNER_TEMP/profile.plist" || true
+
+          echo "Profile Type (ProvisionsAllDevices indicates Enterprise):"
+          /usr/libexec/PlistBuddy -c "Print :ProvisionsAllDevices" "$RUNNER_TEMP/profile.plist" 2>/dev/null || echo "Not Enterprise"
+
+          echo "Provisioned Devices count (0 or not present = App Store/Enterprise):"
+          /usr/libexec/PlistBuddy -c "Print :ProvisionedDevices" "$RUNNER_TEMP/profile.plist" 2>/dev/null | wc -l || echo "0"
+
+          echo "Team Name:"
+          /usr/libexec/PlistBuddy -c "Print :TeamName" "$RUNNER_TEMP/profile.plist" || true
+
+          echo "Entitlements:"
+          /usr/libexec/PlistBuddy -c "Print :Entitlements" "$RUNNER_TEMP/profile.plist" || true
+
+          echo ""
+          echo "=== Certificate Info ==="
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+
+      - name: Build IPA (signed if credentials present)
+        run: |
+          set -euo pipefail
+          if [ -n "${KEYCHAIN_NAME:-}" ]; then
+            echo "Building IPA with codesign (using installed profile & certificate)"
+            flutter build ipa --export-options-plist=ios/ExportOptions.plist
+          else
+            echo "Credentials not provided: building IPA without codesign"
+            flutter build ipa --no-codesign --export-method ad-hoc
+          fi
+
+      - name: Cleanup keychain (if created)
+        if: always()
+        run: |
+          set -euo pipefail
+          if [ -n "${KEYCHAIN_NAME:-}" ]; then
+            echo "Removing temporary keychain $KEYCHAIN_NAME"
+            security delete-keychain "$KEYCHAIN_NAME" || true
+          else
+            echo "No temporary keychain to remove"
+          fi
+
+      - name: Determine IPA path and metadata
+        id: meta_ios
+        run: |
+          set -euo pipefail
+          ROOT=./
+
+          # Find IPA file
+          IPA_FILE=$(ls $ROOT/build/ios/ipa/*.ipa 2>/dev/null | head -n1 || true)
+          if [ -z "$IPA_FILE" ]; then
+            echo "No IPA found in build/ios/ipa"
+            exit 1
+          fi
+
+          # Extract version from pubspec.yaml (more reliable than Info.plist)
+          versionName="unknown"
+          versionCode="0"
+          if [ -f "$ROOT/pubspec.yaml" ]; then
+            pubver=$(grep "^version:" "$ROOT/pubspec.yaml" | head -n1 | awk '{print $2}' || true)
+            if [ -n "$pubver" ]; then
+              # Split version and build number (format: 1.0.0+1)
+              versionName=$(echo "$pubver" | cut -d+ -f1)
+              versionCode=$(echo "$pubver" | cut -d+ -f2)
+              versionCode=${versionCode:-0}
+            fi
+          fi
+
+          # Calculate hash
+          if command -v md5sum >/dev/null 2>&1; then
+            buildHash=$(md5sum "$IPA_FILE" | awk '{print $1}')
+          else
+            buildHash=$(md5 -q "$IPA_FILE")
+          fi
+
+          echo "=== IPA Metadata Debug ==="
+          echo "IPA File: $IPA_FILE"
+          echo "Version Name: $versionName"
+          echo "Version Code: $versionCode"
+          echo "Build Hash: $buildHash"
+          echo "Source: pubspec.yaml"
+          echo "=========================="
+
+          echo "ipa_file=$IPA_FILE" >> $GITHUB_OUTPUT
+          echo "versionName=$versionName" >> $GITHUB_OUTPUT
+          echo "versionCode=$versionCode" >> $GITHUB_OUTPUT
+          echo "buildHash=$buildHash" >> $GITHUB_OUTPUT
+
+      - name: Upload IPA to OTAShare
+        id: upload_ipa
+        env:
+          OTASHARE_APIKEY: ${{ secrets.OTASHARE_APIKEY }}
+          OTASHARE_APIKEY_BUILD: ${{ secrets.OTASHARE_APIKEY_BUILD }}
+          BUILD_USER: ${{ secrets.BUIUSER }}
+          BUILD_PASSWORD: ${{ secrets.BUIPASSWORD }}
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          file="${{ steps.meta_ios.outputs.ipa_file }}"
+          BuildENVL="${BUILD_ENVL:-qa}"
+          BuildENVL=$(echo "$BuildENVL" | tr '[:lower:]' '[:upper:]')
+          name="Esmorga iOS [$BuildENVL]"
+          versionName="${{ steps.meta_ios.outputs.versionName }}"
+          buildHash="${{ steps.meta_ios.outputs.buildHash }}"
+          buildType="$BuildENVL"
+          project_id=2796
+          visibleClient=true
+
+          echo "==============================================="
+          echo "=== OTAShare Upload - iOS ==="
+          echo "File: $file"
+          echo "File exists: $([ -f "$file" ] && echo 'YES' || echo 'NO')"
+          echo "File size: $(ls -lh "$file" | awk '{print $5}')"
+          echo "Name: $name"
+          echo "Version: $versionName"
+          echo "Build Number: ${BUILD_NUMBER}"
+          echo "Build Type: $buildType"
+          echo "Project ID: $project_id"
+          echo "NOTE: Not sending buiHash parameter (based on working example)"
+          echo "==============================================="
+
+          echo "Sending curl request..."
+          RESPONSE=$(curl -vs -w "\n%{http_code}" -F "buiFile=@${file}" \
+              -F "buiName=${name}" \
+              -F "buiVersion=${versionName}" \
+              -F "buiBuildNum=${BUILD_NUMBER}" \
+              -F "buiBuildType=${buildType}" \
+              -F "buiTemplate=0" \
+              -F "buiVisibleClient=${visibleClient}" \
+              -F "buiChangeLog=" \
+              -F "buiUser=${BUILD_USER}" -F "buiPassword=${BUILD_PASSWORD}" \
+              "https://otashare-api.mobgen.com/v1/builds/registernewbuild/${project_id}/${OTASHARE_APIKEY}/${OTASHARE_APIKEY_BUILD}" 2>&1) || true
+
+          http_code=$(echo "$RESPONSE" | tail -n1)
+          body=$(echo "$RESPONSE" | sed '$d')
+
+          echo ""
+          echo "=== OTAShare Response ==="
+          echo "HTTP Code: $http_code"
+          echo "Response Body: $body"
+          echo "========================="
+
+          if [ "$http_code" = "200" ] || [ "$http_code" = "201" ]; then
+            if echo "$body" | grep -qi "error\|not exists\|failed"; then
+              echo "⚠️  Warning: Upload returned $http_code but response contains error message"
+            else
+              echo "✅ Upload successful"
+            fi
+          else
+            echo "❌ Upload failed with HTTP $http_code"
+            exit 1
+          fi
+
+      - name: Upload IPA artifact (fallback/save)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-artifacts
+          path: ${{ steps.meta_ios.outputs.ipa_file }}
