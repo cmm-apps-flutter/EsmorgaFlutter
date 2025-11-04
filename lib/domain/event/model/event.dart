@@ -9,6 +9,8 @@ class Event {
   final EventLocation location;
   final List<String> tags;
   final bool userJoined;
+  final int currentAttendeeCount;
+  final int? maxCapacity;
 
   const Event({
     required this.id,
@@ -19,6 +21,8 @@ class Event {
     required this.location,
     this.tags = const [],
     required this.userJoined,
+    required this.currentAttendeeCount,
+    required this.maxCapacity
   });
 
   Event copyWith({
@@ -30,6 +34,8 @@ class Event {
     EventLocation? location,
     List<String>? tags,
     bool? userJoined,
+    int? currentAttendeeCount,
+    int? maxCapacity,
   }) {
     return Event(
       id: id ?? this.id,
@@ -40,6 +46,8 @@ class Event {
       location: location ?? this.location,
       tags: tags ?? this.tags,
       userJoined: userJoined ?? this.userJoined,
+      currentAttendeeCount: currentAttendeeCount ?? this.currentAttendeeCount,
+      maxCapacity: maxCapacity ?? this.maxCapacity,
     );
   }
 }

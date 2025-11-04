@@ -10,6 +10,9 @@ class EventDataModel {
   final List<String> dataTags;
   final int dataCreationTime;
   final bool dataUserJoined;
+  final int dataCurrentAttendeeCount;
+  final int? dataMaxCapacity;
+
 
   const EventDataModel({
     required this.dataId,
@@ -21,6 +24,8 @@ class EventDataModel {
     this.dataTags = const [],
     int? dataCreationTime,
     required this.dataUserJoined,
+    required this.dataCurrentAttendeeCount,
+    required this.dataMaxCapacity,
   }) : dataCreationTime = dataCreationTime ?? 0;
 
   factory EventDataModel.fromRemoteModel(EventRemoteModel remote) {
@@ -34,6 +39,8 @@ class EventDataModel {
       dataTags: remote.remoteTags,
       dataCreationTime: DateTime.now().millisecondsSinceEpoch,
       dataUserJoined: false,
+      dataCurrentAttendeeCount: remote.remoteCurrentAttendeeCount,
+      dataMaxCapacity: remote.remoteMaxCapacity,
     );
   }
 
@@ -47,6 +54,8 @@ class EventDataModel {
     List<String>? dataTags,
     int? dataCreationTime,
     bool? dataUserJoined,
+    int? dataCurrentAttendeeCount,
+    int? dataMaxCapacity,
   }) {
     return EventDataModel(
       dataId: dataId ?? this.dataId,
@@ -58,6 +67,8 @@ class EventDataModel {
       dataTags: dataTags ?? this.dataTags,
       dataCreationTime: dataCreationTime ?? this.dataCreationTime,
       dataUserJoined: dataUserJoined ?? this.dataUserJoined,
+      dataCurrentAttendeeCount: dataCurrentAttendeeCount ?? this.dataCurrentAttendeeCount,
+      dataMaxCapacity: dataMaxCapacity ?? this.dataMaxCapacity,
     );
   }
 
