@@ -17,8 +17,6 @@ extension EventLocalModelMapper on EventLocalModel {
       dataTags: localTags,
       dataCreationTime: localCreationTime,
       dataUserJoined: localUserJoined,
-      dataCurrentAttendeeCount: localCurrentAttendeeCount,
-      dataMaxCapacity: localMaxCapacity,
     );
   }
 }
@@ -39,8 +37,6 @@ extension EventDataModelToLocalMapper on EventDataModel {
       localTags: dataTags,
       localCreationTime: dataCreationTime,
       localUserJoined: dataUserJoined,
-      localCurrentAttendeeCount: dataCurrentAttendeeCount,
-      localMaxCapacity: dataMaxCapacity,
     );
   }
 }

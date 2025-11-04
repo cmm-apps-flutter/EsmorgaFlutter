@@ -26,8 +26,6 @@ class EventRemoteModel extends Equatable{
   final String? remoteImageUrl;
   final EventLocationRemoteModel remoteLocation;
   final List<String> remoteTags;
-  final int remoteCurrentAttendeeCount;
-  final int? remoteMaxCapacity;
 
   const EventRemoteModel({
     required this.remoteId,
@@ -38,8 +36,6 @@ class EventRemoteModel extends Equatable{
     this.remoteImageUrl,
     required this.remoteLocation,
     required this.remoteTags,
-    required this.remoteCurrentAttendeeCount,
-    required this.remoteMaxCapacity,
   });
 
   factory EventRemoteModel.fromJson(Map<String, dynamic> json) {
@@ -52,8 +48,6 @@ class EventRemoteModel extends Equatable{
       remoteImageUrl: json['imageUrl'],
       remoteLocation: EventLocationRemoteModel.fromJson(json['location']),
       remoteTags: json['tags'] != null ? List<String>.from(json['tags']) : [],
-      remoteCurrentAttendeeCount: json['currentAttendeeCount'],
-      remoteMaxCapacity: json['maxCapacity'],
     );
   }
 
