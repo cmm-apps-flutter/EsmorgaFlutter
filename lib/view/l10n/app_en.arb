@@ -121,6 +121,10 @@
   "step3ScreenTitle": "Event date",
   "step3ScreenRowTime": "Event time",
   "confirmButtonDialog": "Confirm",
-  "cancelButtonDialog": "Cancel"
+  "cancelButtonDialog": "Cancel",
+  "labelCapacity": "{current}/{total} attendees",
+  "buttonJoinEventDisabled": "Full",
+  "snackbarEventFull": "The event has reached maximum capacity.",
+  "errorEventFull": "Event full"
 }
 

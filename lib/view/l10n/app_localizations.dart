@@ -745,6 +745,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancel'**
   String get cancelButtonDialog;
+
+  /// No description provided for @labelCapacity.
+  ///
+  /// In en, this message translates to:
+  /// **'{current}/{total} attendees'**
+  String labelCapacity(Object current, Object total);
+
+  /// No description provided for @buttonJoinEventDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Full'**
+  String get buttonJoinEventDisabled;
+
+  /// No description provided for @snackbarEventFull.
+  ///
+  /// In en, this message translates to:
+  /// **'The event has reached maximum capacity.'**
+  String get snackbarEventFull;
+
+  /// No description provided for @errorEventFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Event full'**
+  String get errorEventFull;
 }
 
 class _AppLocalizationsDelegate

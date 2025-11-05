@@ -11,6 +11,8 @@ class EventDetailUiModel {
   final String? imageUrl;
   final bool userJoined;
   final bool showNavigateButton;
+  final int? maxCapacity;
+  final int currentAttendeeCount;
 
   EventDetailUiModel({
     required this.title,
@@ -20,6 +22,8 @@ class EventDetailUiModel {
     this.imageUrl,
     required this.userJoined,
     required this.showNavigateButton,
+    required this.currentAttendeeCount,
+    this.maxCapacity,
   });
 }
 
@@ -33,6 +37,8 @@ extension EventMappers on Event {
       userJoined: userJoined,
       imageUrl: imageUrl != null ? Uri.decodeComponent(imageUrl!) : null,
       showNavigateButton: location.lat != null && location.long != null,
+      currentAttendeeCount: currentAttendeeCount,
+      maxCapacity: maxCapacity,
     );
   }
 }

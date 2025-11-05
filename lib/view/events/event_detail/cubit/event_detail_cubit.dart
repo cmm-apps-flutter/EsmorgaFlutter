@@ -35,35 +35,47 @@ class EventDetailCubit extends Cubit<EventDetailState> {
   }
 
   Future<void> primaryPressed() async {
-    final current = state.event;
-    if (current == null) return;
-    if (!state.isAuthenticated) {
-      _emitEffect(NavigateToLoginEffect());
-      return;
-    }
-    emit(state.copyWith(joinLeaving: true));
-    try {
-      if (current.userJoined) {
-        await eventRepository.leaveEvent(event);
-        final updated = event.copyWith(userJoined: false);
-        emit(state.copyWith(event: updated.toEventDetailUiModel(), joinLeaving: false));
-        _emitEffect(ShowLeaveSuccessEffect());
-      } else {
-        await eventRepository.joinEvent(event);
-        final updated = event.copyWith(userJoined: true);
-        emit(state.copyWith(event: updated.toEventDetailUiModel(), joinLeaving: false));
-        _emitEffect(ShowJoinSuccessEffect());
-      }
-    } catch (e) {
-      final msg = e.toString().toLowerCase();
-      if (msg.contains('network') || msg.contains('connection')) {
-        _emitEffect(ShowNoNetworkEffect());
-      } else {
-        _emitEffect(ShowGenericErrorEffect());
-      }
-      emit(state.copyWith(joinLeaving: false));
-    }
+  final current = state.event;
+  if (current == null) return;
+
+  if (!state.isAuthenticated) {
+    _emitEffect(NavigateToLoginEffect());
+    return;
   }
+
+  emit(state.copyWith(joinLeaving: true));
+
+  try {
+    if (current.userJoined) {
+      await eventRepository.leaveEvent(event);
+      final updated = event.copyWith(
+        userJoined: false,
+        currentAttendeeCount: (event.currentAttendeeCount - 1).clamp(0, event.maxCapacity ?? 9999),
+      );
+      emit(state.copyWith(event: updated.toEventDetailUiModel(), joinLeaving: false));
+      _emitEffect(ShowLeaveSuccessEffect());
+    } else {
+      await eventRepository.joinEvent(event);
+      final updated = event.copyWith(
+        userJoined: true,
+        currentAttendeeCount: (event.currentAttendeeCount + 1),
+      );
+      emit(state.copyWith(event: updated.toEventDetailUiModel(), joinLeaving: false));
+      _emitEffect(ShowJoinSuccessEffect());
+    }
+  } catch (e) {
+    final msg = e.toString();
+    if (msg.contains('422')) {
+      _emitEffect(ShowEventFullSnackbarEffect());
+    } else if (msg.contains('network') || msg.contains('connection')) {
+      _emitEffect(ShowNoNetworkEffect());
+    } else {
+      _emitEffect(ShowGenericErrorEffect());
+    }
+    emit(state.copyWith(joinLeaving: false));
+  }
+}
+
 
   void navigatePressed() {
     if (event.location.lat != null && event.location.long != null) {

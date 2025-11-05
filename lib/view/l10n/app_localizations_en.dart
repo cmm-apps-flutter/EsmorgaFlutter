@@ -349,4 +349,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cancelButtonDialog => 'Cancel';
+
+  @override
+  String labelCapacity(Object current, Object total) {
+    return '$current/$total attendees';
+  }
+
+  @override
+  String get buttonJoinEventDisabled => 'Full';
+
+  @override
+  String get snackbarEventFull => 'The event has reached maximum capacity.';
+
+  @override
+  String get errorEventFull => 'Event full';
 }

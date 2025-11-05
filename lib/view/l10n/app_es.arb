@@ -107,6 +107,10 @@
   "step3ScreenTitle": "Fecha del evento",
   "step3ScreenRowTime": "Hora del evento",
   "confirmButtonDialog": "Confirmar",
-  "cancelButtonDialog": "Cancelar"
+  "cancelButtonDialog": "Cancelar",
+  "labelCapacity": "{current}/{total} asistentes",
+  "buttonJoinEventDisabled": "Lleno",
+  "snackbarEventFull": "El evento ya ha alcanzado el aforo máximo.",
+  "errorEventFull": "El evento está completo"
 }
 

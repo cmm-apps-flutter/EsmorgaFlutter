@@ -149,7 +149,23 @@ class _EventDetailFormState extends State<_EventDetailForm> {
           const SizedBox(height: 8),
           EsmorgaText(text: state.event.date, style: EsmorgaTextStyle.body1Accent),
           const SizedBox(height: 8),
-          EsmorgaText(text: state.event.locationName, style: EsmorgaTextStyle.body1Accent),
+          if (state.event.maxCapacity != null) ...[
+            Row(
+              children: [
+                const Icon(Icons.people, size: 20),
+                const SizedBox(width: 8),
+                EsmorgaText(
+                  text: l10n.labelCapacity(
+                    state.event.currentAttendeeCount,
+                    state.event.maxCapacity!,
+                  ),
+                  style: EsmorgaTextStyle.body1Accent,
+                  key: const Key('event_detail_capacity_label'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+          ],
           const SizedBox(height: 24),
           EsmorgaText(text: l10n.screenEventDetailsDescription, style: EsmorgaTextStyle.heading2),
           const SizedBox(height: 8),
