@@ -17,6 +17,8 @@ extension EventDataModelMapper on EventDataModel {
       ),
       tags: dataTags,
       userJoined: dataUserJoined,
+      currentAttendeeCount: dataCurrentAttendeeCount,
+      maxCapacity: dataMaxCapacity,
     );
   }
 }
@@ -43,6 +45,8 @@ extension EventMapper on Event {
       dataTags: tags,
       dataCreationTime: DateTime.now().millisecondsSinceEpoch,
       dataUserJoined: userJoined,
+      dataCurrentAttendeeCount: currentAttendeeCount,
+      dataMaxCapacity: maxCapacity,
     );
   }
 }
