@@ -52,8 +52,8 @@ class EventRemoteModel extends Equatable{
       remoteImageUrl: json['imageUrl'],
       remoteLocation: EventLocationRemoteModel.fromJson(json['location']),
       remoteTags: json['tags'] != null ? List<String>.from(json['tags']) : [],
-      remoteCurrentAttendeeCount: json['currentAttendeeCount'],
-      remoteMaxCapacity: json['maxCapacity'],
+      remoteCurrentAttendeeCount: json['currentAttendeeCount'] as int? ?? 0,
+      remoteMaxCapacity: json['maxCapacity'] as int?,
     );
   }
 
