@@ -45,6 +45,30 @@ class EventRepositoryImpl implements EventRepository {
     await localEventDatasource.leaveEvent(updatedEvent.toEventDataModel());
   }
 
+  @override
+Future<Event> getEventDetails(String eventId) async {
+  try {
+    final remoteList = await remoteEventDatasource.getEvents();
+    final myEvents = await remoteEventDatasource.getMyEvents();
+
+    final combinedList = remoteList.map((event) {
+      final isJoined = myEvents.any((me) => event.dataId == me.dataId);
+      return event.copyWith(dataUserJoined: isJoined);
+    }).toList();
+
+    await localEventDatasource.cacheEvents(combinedList);
+
+    return combinedList
+        .firstWhere((e) => e.dataId == eventId)
+        .toEvent();
+  } catch (_) {
+    final localList = await localEventDatasource.getEvents();
+    return localList
+        .firstWhere((e) => e.dataId == eventId)
+        .toEvent();
+  }
+}
+
   Future<List<EventDataModel>> _getEventsFromRemote() async {
     final combinedList = <EventDataModel>[];
     final remoteEventList = await remoteEventDatasource.getEvents();

@@ -1,8 +1,10 @@
 import 'package:equatable/equatable.dart';
 import 'package:esmorga_flutter/view/events/event_detail/model/event_detail_ui_model.dart';
+import 'package:esmorga_flutter/domain/event/model/event.dart';
 
 class EventDetailState extends Equatable {
-  final EventDetailUiModel event;
+  final Event event;
+  final EventDetailUiModel uiModel;
   final bool loading;
   final bool isAuthenticated;
   final bool joinLeaving;
@@ -10,6 +12,7 @@ class EventDetailState extends Equatable {
 
   const EventDetailState({
     required this.event,
+    required this.uiModel,
     this.loading = false,
     this.isAuthenticated = false,
     this.joinLeaving = false,
@@ -17,17 +20,19 @@ class EventDetailState extends Equatable {
   });
 
   EventDetailState copyWith({
+    Event? event,
     bool? loading,
-    EventDetailUiModel? event,
+    EventDetailUiModel? uiModel,
     bool? isAuthenticated,
     bool? joinLeaving,
     String? error,
   }) => EventDetailState(
-    loading: loading ?? this.loading,
     event: event ?? this.event,
+    loading: loading ?? this.loading,
+    uiModel: uiModel ?? this.uiModel,
     isAuthenticated: isAuthenticated ?? this.isAuthenticated,
     joinLeaving: joinLeaving ?? this.joinLeaving,
-    error: error,
+    error: error ?? this.error,
   );
 
   @override
