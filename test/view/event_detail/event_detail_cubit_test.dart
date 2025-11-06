@@ -79,7 +79,6 @@ void main() {
       'join flow emits submitting, updated event userJoined true and success effect',
       build: () {
         when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
-        when(() => eventRepository.getEventDetails(any())).thenAnswer((_) async => baseEvent);
         when(() => eventRepository.joinEvent(any())).thenAnswer((_) async {});
         return EventDetailCubit(eventRepository: eventRepository, userRepository: userRepository, event: baseEvent);
       },
@@ -122,7 +121,6 @@ void main() {
       'uiModel has the correct capacity values',
       build: () {
         when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
-        when(() => eventRepository.getEventDetails(any())).thenAnswer((_) async => baseEvent);
         return EventDetailCubit(
           eventRepository: eventRepository,
           userRepository: userRepository,
@@ -148,7 +146,6 @@ void main() {
       'when the event is full, the uiModel reflects full capacity',
       build: () {
         when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
-        when(() => eventRepository.getEventDetails(any())).thenAnswer((_) async => fullEvent);
         return EventDetailCubit(
           eventRepository: eventRepository,
           userRepository: userRepository,
