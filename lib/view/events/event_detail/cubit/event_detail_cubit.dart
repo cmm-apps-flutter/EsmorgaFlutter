@@ -19,27 +19,20 @@ class EventDetailCubit extends Cubit<EventDetailState> {
 
   Future<void> start() async {
   emit(state.copyWith(loading: true, error: null));
+
   bool isAuth = false;
   try {
-    try {
-      await userRepository.getUser();
-      isAuth = true;
-    } catch (_) {
-      isAuth = false;
-    }
-
-    final updatedEvent = await eventRepository.getEventDetails(state.event.id);
-
-    emit(state.copyWith(
-      loading: false,
-      event: updatedEvent,
-      uiModel: updatedEvent.toEventDetailUiModel(),
-      isAuthenticated: isAuth,
-    ));
-  } catch (e) {
-    emit(state.copyWith(loading: false, error: e.toString()));
+    await userRepository.getUser();
+    isAuth = true;
+  } catch (_) {
+    isAuth = false;
   }
-}
+
+  emit(state.copyWith(
+    loading: false,
+    isAuthenticated: isAuth,
+  ));
+  }
 
   Future<void> primaryPressed() async {
     final current = state.event;
