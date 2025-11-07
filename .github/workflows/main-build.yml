@@ -59,7 +59,7 @@ jobs:
         run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Build APK (release)
-        run: flutter build apk --release --no-shrink
+        run: flutter build apk --release --no-shrink --dart-define=ESMORGA_ENV=${{ env.BUILD_ENVL || 'qa' }}
 
       - name: Determine APK path and build metadata
         id: meta
@@ -250,12 +250,14 @@ jobs:
       - name: Build IPA (signed if credentials present)
         run: |
           set -euo pipefail
+          BUILD_ENV="${{ env.BUILD_ENVL }}"
+          BUILD_ENV=${BUILD_ENV:-qa}
           if [ -n "${KEYCHAIN_NAME:-}" ]; then
             echo "Building IPA with codesign (using installed profile & certificate)"
-            flutter build ipa --export-options-plist=ios/ExportOptions.plist
+            flutter build ipa --export-options-plist=ios/ExportOptions.plist --dart-define=ESMORGA_ENV=$BUILD_ENV
           else
             echo "Credentials not provided: building IPA without codesign"
-            flutter build ipa --no-codesign --export-method ad-hoc
+            flutter build ipa --no-codesign --export-method ad-hoc --dart-define=ESMORGA_ENV=$BUILD_ENV
           fi
 
       - name: Cleanup keychain (if created)
