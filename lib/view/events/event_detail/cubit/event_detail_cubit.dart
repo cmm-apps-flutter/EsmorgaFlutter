@@ -71,7 +71,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
         _emitEffect(ShowJoinSuccessEffect());
       }
     } catch (e) {
-      final msg = e.toString();
+      final msg = e.toString().toLowerCase();
       if (msg.contains('422')) {
         _emitEffect(ShowEventFullSnackbarEffect());
       } else if (msg.contains('network') || msg.contains('connection')) {
