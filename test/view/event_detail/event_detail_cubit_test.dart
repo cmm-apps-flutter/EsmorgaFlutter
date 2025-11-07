@@ -158,7 +158,7 @@ void main() {
         isA<EventDetailState>()
             .having((s) => s.loading, 'loading', false)
             .having(
-              (s) => s.uiModel.currentAttendeeCount >= (s.uiModel.maxCapacity ?? 9999),
+              (s) => s.uiModel.currentAttendeeCount >= (s.uiModel.maxCapacity!),
               'isFull',
               true,
             ),
