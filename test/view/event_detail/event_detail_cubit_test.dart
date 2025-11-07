@@ -90,11 +90,11 @@ void main() {
       },
       expect: () => [
         isA<EventDetailState>().having((s) => s.loading, 'loading', true),
-        isA<EventDetailState>().having((s) => s.event.userJoined, 'joined', false),
+        isA<EventDetailState>().having((s) => s.uiModel.userJoined, 'joined', false),
         isA<EventDetailState>().having((s) => s.joinLeaving, 'joinLeaving', true),
         isA<EventDetailState>()
             .having((s) => s.joinLeaving, 'joinLeaving', false)
-            .having((s) => s.event.userJoined, 'joined', true),
+            .having((s) => s.uiModel.userJoined, 'joined', true),
       ],
     );;
 

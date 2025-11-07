@@ -123,15 +123,15 @@ class _EventDetailFormState extends State<_EventDetailForm> {
 
   final buttonText = !state.isAuthenticated
       ? l10n.buttonLoginToJoin 
-      : (isFull && !state.event.userJoined)
+      : (isFull && !state.uiModel.userJoined)
           ? 'Event full'
-          : (state.event.userJoined
+          : (state.uiModel.userJoined
               ? l10n.buttonLeaveEvent
               : l10n.buttonJoinEvent);
 
   final buttonEnabled = state.isAuthenticated
       ? (isFull
-          ? state.event.userJoined
+          ? state.uiModel.userJoined
           : true)
       : !isFull;
 

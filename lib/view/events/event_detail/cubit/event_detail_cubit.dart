@@ -15,7 +15,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
   final _effectController = StreamController<EventDetailEffect>.broadcast();
   Stream<EventDetailEffect> get effects => _effectController.stream;
 
-  EventDetailCubit({required this.eventRepository, required this.userRepository, required Event event}) : super(EventDetailState(event: event, uiModel: event.toEventDetailUiModel()));
+  EventDetailCubit({required this.eventRepository, required this.userRepository, required Event event}) : super(EventDetailState(uiModel: event.toEventDetailUiModel()));
 
   Future<void> start() async {
   emit(state.copyWith(loading: true, error: null));
@@ -35,7 +35,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
   }
 
   Future<void> primaryPressed() async {
-    final current = state.event;
+    final currentEvent = state.uiModel.toDomain();
 
     if (!state.isAuthenticated) {
       _emitEffect(NavigateToLoginEffect());
@@ -45,11 +45,11 @@ class EventDetailCubit extends Cubit<EventDetailState> {
     emit(state.copyWith(joinLeaving: true));
 
     try {
-      if (current.userJoined) {
-        await eventRepository.leaveEvent(current);
-        final updated = current.copyWith(
+      if (currentEvent.userJoined) {
+        await eventRepository.leaveEvent(currentEvent);
+        final updated = currentEvent.copyWith(
           userJoined: false,
-          currentAttendeeCount: (current.currentAttendeeCount - 1).clamp(0, current.maxCapacity ?? 9999),
+          currentAttendeeCount: (currentEvent.currentAttendeeCount - 1).clamp(0, currentEvent.maxCapacity ?? 9999),
         );
         emit(state.copyWith(
           event: updated,
@@ -58,10 +58,10 @@ class EventDetailCubit extends Cubit<EventDetailState> {
         ));
         _emitEffect(ShowLeaveSuccessEffect());
       } else {
-        await eventRepository.joinEvent(current);
-        final updated = current.copyWith(
+        await eventRepository.joinEvent(currentEvent);
+        final updated = currentEvent.copyWith(
           userJoined: true,
-          currentAttendeeCount: current.currentAttendeeCount + 1,
+          currentAttendeeCount: currentEvent.currentAttendeeCount + 1,
         );
         emit(state.copyWith(
           event: updated,
@@ -85,9 +85,15 @@ class EventDetailCubit extends Cubit<EventDetailState> {
 
 
   void navigatePressed() {
-    final loc = state.event.location;
-    if (loc.lat != null && loc.long != null) {
-      _emitEffect(OpenMapsEffect(lat: loc.lat!, lng: loc.long!, name: loc.name));
+    final lat = state.uiModel.lat;
+    final long = state.uiModel.long;
+
+    if (lat != null && long != null) {
+      _emitEffect(OpenMapsEffect(
+        lat: lat,
+        lng: long,
+        name: state.uiModel.locationName,
+      ));
     }
   }
 
