@@ -30,6 +30,8 @@ final event = Event(
   location: const EventLocation(name: 'Location'),
   tags: const [],
   userJoined: false,
+  currentAttendeeCount: 2,
+  maxCapacity: 10,
 );
 
 void main() {

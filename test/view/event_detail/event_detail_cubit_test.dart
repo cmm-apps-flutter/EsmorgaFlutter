@@ -43,6 +43,8 @@ void main() {
     userJoined: false,
     imageUrl: null,
     tags: const [],
+    currentAttendeeCount: 2,
+    maxCapacity: 10,
   );
 
   setUpAll(() {
