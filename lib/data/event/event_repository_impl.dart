@@ -45,6 +45,8 @@ class EventRepositoryImpl implements EventRepository {
     await localEventDatasource.leaveEvent(updatedEvent.toEventDataModel());
   }
 
+
+
   Future<List<EventDataModel>> _getEventsFromRemote() async {
     final combinedList = <EventDataModel>[];
     final remoteEventList = await remoteEventDatasource.getEvents();
@@ -66,4 +68,3 @@ class EventRepositoryImpl implements EventRepository {
     return combinedList;
   }
 }
-

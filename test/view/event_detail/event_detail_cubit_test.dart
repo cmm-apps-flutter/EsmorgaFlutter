@@ -84,19 +84,19 @@ void main() {
       },
       act: (c) async {
         final effectFuture = c.effects.firstWhere((e) => e is ShowJoinSuccessEffect);
-        c.start();
-        await Future<void>.delayed(const Duration(milliseconds: 5));
-        c.primaryPressed();
+        await c.start();
+        await c.primaryPressed();
         await effectFuture;
       },
-      skip: 0,
       expect: () => [
         isA<EventDetailState>().having((s) => s.loading, 'loading', true),
-        isA<EventDetailState>().having((s) => s.event.userJoined, 'joined', false),
+        isA<EventDetailState>().having((s) => s.uiModel.userJoined, 'joined', false),
         isA<EventDetailState>().having((s) => s.joinLeaving, 'joinLeaving', true),
-        isA<EventDetailState>().having((s) => s.joinLeaving, 'joinLeaving', false).having((s) => s.event.userJoined, 'joined', true),
+        isA<EventDetailState>()
+            .having((s) => s.joinLeaving, 'joinLeaving', false)
+            .having((s) => s.uiModel.userJoined, 'joined', true),
       ],
-    );
+    );;
 
     blocTest<EventDetailCubit, EventDetailState>(
       'navigate pressed emits openMaps effect when coords present',
@@ -114,6 +114,54 @@ void main() {
       expect: () => [
         isA<EventDetailState>().having((s) => s.loading, 'loading', true),
         isA<EventDetailState>(),
+      ],
+    );
+
+    blocTest<EventDetailCubit, EventDetailState>(
+      'uiModel has the correct capacity values',
+      build: () {
+        when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
+        return EventDetailCubit(
+          eventRepository: eventRepository,
+          userRepository: userRepository,
+          event: baseEvent,
+        );
+      },
+      act: (cubit) => cubit.start(),
+      expect: () => [
+        isA<EventDetailState>().having((s) => s.loading, 'loading', true),
+        isA<EventDetailState>()
+            .having((s) => s.loading, 'loading', false)
+            .having((s) => s.uiModel.currentAttendeeCount, 'currentAttendeeCount', 2)
+            .having((s) => s.uiModel.maxCapacity, 'maxCapacity', 10),
+      ],
+    );
+
+    final fullEvent = baseEvent.copyWith(
+      currentAttendeeCount: 10,
+      maxCapacity: 10,
+    );
+
+    blocTest<EventDetailCubit, EventDetailState>(
+      'when the event is full, the uiModel reflects full capacity',
+      build: () {
+        when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
+        return EventDetailCubit(
+          eventRepository: eventRepository,
+          userRepository: userRepository,
+          event: fullEvent,
+        );
+      },
+      act: (cubit) => cubit.start(),
+      expect: () => [
+        isA<EventDetailState>().having((s) => s.loading, 'loading', true),
+        isA<EventDetailState>()
+            .having((s) => s.loading, 'loading', false)
+            .having(
+              (s) => s.uiModel.currentAttendeeCount >= (s.uiModel.maxCapacity!),
+              'isFull',
+              true,
+            ),
       ],
     );
   });

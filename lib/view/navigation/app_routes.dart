@@ -99,7 +99,11 @@ class AppRoutes {
           path: eventDetail,
           builder: (context, state) {
             final event = state.extra as Event;
-            return BlocProvider(create: (context) => getIt<EventDetailCubit>(param1: context, param2: event), child: EventDetailScreen());
+            return BlocProvider(create: (context) => getIt<EventDetailCubit>(param1: context, param2: event), child: EventDetailScreen(
+              goToLogin: () {
+                context.push(login);
+              },
+            ));
           },
         ),
         GoRoute(

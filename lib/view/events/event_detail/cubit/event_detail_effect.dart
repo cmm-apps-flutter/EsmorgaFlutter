@@ -14,4 +14,4 @@ class OpenMapsEffect extends EventDetailEffect {
   final String name;
   OpenMapsEffect({required this.lat, required this.lng, required this.name});
 }
-
+class ShowEventFullSnackbarEffect extends EventDetailEffect {}

@@ -13,16 +13,18 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EventDetailScreen extends StatelessWidget {
-  const EventDetailScreen({Key? key}) : super(key: key);
+  final Function() goToLogin;
+  const EventDetailScreen({Key? key, required this.goToLogin}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return _EventDetailForm();
+    return _EventDetailForm(goToLogin: goToLogin);
   }
 }
 
 class _EventDetailForm extends StatefulWidget {
-  const _EventDetailForm({Key? key}) : super(key: key);
+  final Function() goToLogin;
+  const _EventDetailForm({Key? key, required this.goToLogin}) : super(key: key);
 
   @override
   State<_EventDetailForm> createState() => _EventDetailFormState();
@@ -52,7 +54,8 @@ class _EventDetailFormState extends State<_EventDetailForm> {
             if (effect is NavigateBackEffect) {
               context.pop();
             } else if (effect is NavigateToLoginEffect) {
-              context.go(AppRoutes.login);
+              debugPrint("Navigate");
+              widget.goToLogin();
             } else if (effect is ShowJoinSuccessEffect) {
               _showSnack(l10n.snackbarEventJoined);
             } else if (effect is ShowLeaveSuccessEffect) {
@@ -114,6 +117,24 @@ class _EventDetailFormState extends State<_EventDetailForm> {
         ),
       );
     }
+  final ui = state.uiModel;
+  final isFull = ui.maxCapacity != null && ui.currentAttendeeCount >= ui.maxCapacity!;
+
+
+  final buttonText = !state.isAuthenticated
+      ? l10n.buttonLoginToJoin 
+      : (isFull && !state.uiModel.userJoined)
+          ? l10n.buttonJoinEventDisabled
+          : (state.uiModel.userJoined
+              ? l10n.buttonLeaveEvent
+              : l10n.buttonJoinEvent);
+
+  final buttonEnabled = state.isAuthenticated
+      ? (isFull
+          ? state.uiModel.userJoined
+          : true)
+      : !isFull;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -122,7 +143,7 @@ class _EventDetailFormState extends State<_EventDetailForm> {
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: Image.network(
-              state.event.imageUrl ?? '',
+              ui.imageUrl ?? '',
               width: double.infinity,
               height: 200,
               fit: BoxFit.cover,
@@ -141,24 +162,47 @@ class _EventDetailFormState extends State<_EventDetailForm> {
             ),
           ),
           const SizedBox(height: 24),
+
           EsmorgaText(
-            text: state.event.title,
+            text: ui.title,
             style: EsmorgaTextStyle.heading1,
             key: const Key('event_detail_title'),
           ),
+
           const SizedBox(height: 8),
-          EsmorgaText(text: state.event.date, style: EsmorgaTextStyle.body1Accent),
+          EsmorgaText(text: ui.date, style: EsmorgaTextStyle.body1Accent),
+
           const SizedBox(height: 8),
-          EsmorgaText(text: state.event.locationName, style: EsmorgaTextStyle.body1Accent),
+          if (ui.maxCapacity != null) ...[
+            Row(
+              children: [
+                const Icon(Icons.people, size: 20),
+                const SizedBox(width: 8),
+                EsmorgaText(
+                  text: l10n.labelCapacity(
+                    ui.currentAttendeeCount,
+                    ui.maxCapacity!,
+                  ),
+                  style: EsmorgaTextStyle.body1Accent,
+                  key: const Key('event_detail_capacity_label'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+          ],
+
           const SizedBox(height: 24),
           EsmorgaText(text: l10n.screenEventDetailsDescription, style: EsmorgaTextStyle.heading2),
           const SizedBox(height: 8),
-          EsmorgaText(text: safeDecode(state.event.description), style: EsmorgaTextStyle.body1),
+
+          EsmorgaText(text: safeDecode(ui.description), style: EsmorgaTextStyle.body1),
+
           const SizedBox(height: 24),
           EsmorgaText(text: l10n.screenEventDetailsLocation, style: EsmorgaTextStyle.heading2),
           const SizedBox(height: 8),
-          EsmorgaText(text: state.event.locationName, style: EsmorgaTextStyle.body1),
-          if (state.event.showNavigateButton) ...[
+          EsmorgaText(text: ui.locationName, style: EsmorgaTextStyle.body1),
+
+          if (ui.showNavigateButton) ...[
             const SizedBox(height: 24),
             EsmorgaButton(
               text: l10n.buttonNavigate,
@@ -169,11 +213,14 @@ class _EventDetailFormState extends State<_EventDetailForm> {
           ],
           const SizedBox(height: 24),
           EsmorgaButton(
-            text: state.isAuthenticated ? (state.event.userJoined ? l10n.buttonLeaveEvent : l10n.buttonJoinEvent) : l10n.buttonLoginToJoin,
+            text: buttonText,
             isLoading: state.joinLeaving,
+            isEnabled: buttonEnabled,
             onClick: () => _cubit.primaryPressed(),
             key: const Key('event_detail_primary_button'),
           ),
+
+
           const SizedBox(height: 48),
         ],
       ),

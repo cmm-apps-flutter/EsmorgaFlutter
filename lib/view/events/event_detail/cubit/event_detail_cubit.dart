@@ -1,73 +1,98 @@
 import 'dart:async';
 
-import 'package:bloc/bloc.dart';
 import 'package:esmorga_flutter/domain/event/event_repository.dart';
 import 'package:esmorga_flutter/domain/event/model/event.dart';
 import 'package:esmorga_flutter/domain/user/repository/user_repository.dart';
 import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_effect.dart';
 import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_state.dart';
 import 'package:esmorga_flutter/view/events/event_detail/model/event_detail_ui_model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class EventDetailCubit extends Cubit<EventDetailState> {
   final EventRepository eventRepository;
   final UserRepository userRepository;
-  final Event event;
+  Event _event;
 
   final _effectController = StreamController<EventDetailEffect>.broadcast();
   Stream<EventDetailEffect> get effects => _effectController.stream;
 
-  EventDetailCubit({required this.eventRepository, required this.userRepository, required this.event}) : super(EventDetailState(event: event.toEventDetailUiModel()));
+  EventDetailCubit({required this.eventRepository, required this.userRepository, required Event event}) : _event = event, super(
+    EventDetailState(
+      uiModel: event.toEventDetailUiModel(),
+    ),
+  );
 
   Future<void> start() async {
-    emit(state.copyWith(loading: true, error: null));
-    bool isAuth = false;
-    try {
-      try {
-        await userRepository.getUser();
-        isAuth = true;
-      } catch (_) {
-        isAuth = false;
-      }
-      emit(state.copyWith(loading: false, event: event.toEventDetailUiModel(), isAuthenticated: isAuth));
-    } catch (e) {
-      emit(state.copyWith(loading: false, error: e.toString()));
-    }
+  emit(state.copyWith(loading: true, error: null));
+
+  bool isAuth = false;
+  try {
+    await userRepository.getUser();
+    isAuth = true;
+  } catch (_) {
+    isAuth = false;
+  }
+
+  emit(state.copyWith(
+    loading: false,
+    isAuthenticated: isAuth,
+  ));
   }
 
   Future<void> primaryPressed() async {
-    final current = state.event;
-    if (current == null) return;
-    if (!state.isAuthenticated) {
-      _emitEffect(NavigateToLoginEffect());
-      return;
-    }
-    emit(state.copyWith(joinLeaving: true));
-    try {
-      if (current.userJoined) {
-        await eventRepository.leaveEvent(event);
-        final updated = event.copyWith(userJoined: false);
-        emit(state.copyWith(event: updated.toEventDetailUiModel(), joinLeaving: false));
-        _emitEffect(ShowLeaveSuccessEffect());
-      } else {
-        await eventRepository.joinEvent(event);
-        final updated = event.copyWith(userJoined: true);
-        emit(state.copyWith(event: updated.toEventDetailUiModel(), joinLeaving: false));
-        _emitEffect(ShowJoinSuccessEffect());
-      }
-    } catch (e) {
-      final msg = e.toString().toLowerCase();
-      if (msg.contains('network') || msg.contains('connection')) {
-        _emitEffect(ShowNoNetworkEffect());
-      } else {
-        _emitEffect(ShowGenericErrorEffect());
-      }
-      emit(state.copyWith(joinLeaving: false));
-    }
+  if (!state.isAuthenticated) {
+    _emitEffect(NavigateToLoginEffect());
+    return;
   }
 
+  emit(state.copyWith(joinLeaving: true));
+
+  try {
+    Event updated;
+    if (_event.userJoined) {
+      await eventRepository.leaveEvent(_event);
+      updated = _event.copyWith(
+        userJoined: false,
+        currentAttendeeCount: (_event.currentAttendeeCount - 1).clamp(0, _event.maxCapacity ?? 9999),
+      );
+      _emitEffect(ShowLeaveSuccessEffect());
+    } else {
+      await eventRepository.joinEvent(_event);
+      updated = _event.copyWith(
+        userJoined: true,
+        currentAttendeeCount: _event.currentAttendeeCount + 1,
+      );
+      _emitEffect(ShowJoinSuccessEffect());
+    }
+
+    _event = updated;
+    emit(state.copyWith(
+      uiModel: updated.toEventDetailUiModel(),
+      joinLeaving: false,
+    ));
+  } catch (e) {
+    final msg = e.toString().toLowerCase();
+    if (msg.contains('422')) {
+      _emitEffect(ShowEventFullSnackbarEffect());
+    } else if (msg.contains('network') || msg.contains('connection')) {
+      _emitEffect(ShowNoNetworkEffect());
+    } else {
+      _emitEffect(ShowGenericErrorEffect());
+    }
+    emit(state.copyWith(joinLeaving: false));
+  }
+}
+
+
+
   void navigatePressed() {
-    if (event.location.lat != null && event.location.long != null) {
-      _emitEffect(OpenMapsEffect(lat: event.location.lat!, lng: event.location.long!, name: event.location.name));
+    final loc = _event.location;
+    if (loc.lat != null && loc.long != null) {
+      _emitEffect(OpenMapsEffect(
+        lat: loc.lat!,
+        lng: loc.long!,
+        name: loc.name,
+      ));
     }
   }
 
