@@ -40,7 +40,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
   }
 
   Future<void> primaryPressed() async {
-    final currentEvent = state.uiModel.toDomain();
+    final currentEvent = state.event;
 
     if (!state.isAuthenticated) {
       _emitEffect(NavigateToLoginEffect());
