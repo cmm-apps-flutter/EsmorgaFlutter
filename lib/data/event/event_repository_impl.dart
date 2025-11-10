@@ -68,4 +68,3 @@ class EventRepositoryImpl implements EventRepository {
     return combinedList;
   }
 }
-

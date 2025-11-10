@@ -11,13 +11,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class EventDetailCubit extends Cubit<EventDetailState> {
   final EventRepository eventRepository;
   final UserRepository userRepository;
+  Event _event;
 
   final _effectController = StreamController<EventDetailEffect>.broadcast();
   Stream<EventDetailEffect> get effects => _effectController.stream;
 
-  EventDetailCubit({required this.eventRepository, required this.userRepository, required Event event}) : super(
+  EventDetailCubit({required this.eventRepository, required this.userRepository, required Event event}) : _event = event, super(
     EventDetailState(
-      event: event,
       uiModel: event.toEventDetailUiModel(),
     ),
   );
@@ -40,57 +40,53 @@ class EventDetailCubit extends Cubit<EventDetailState> {
   }
 
   Future<void> primaryPressed() async {
-    final currentEvent = state.event;
-
-    if (!state.isAuthenticated) {
-      _emitEffect(NavigateToLoginEffect());
-      return;
-    }
-
-    emit(state.copyWith(joinLeaving: true));
-
-    try {
-      if (currentEvent.userJoined) {
-        await eventRepository.leaveEvent(currentEvent);
-        final updated = currentEvent.copyWith(
-          userJoined: false,
-          currentAttendeeCount: (currentEvent.currentAttendeeCount - 1).clamp(0, currentEvent.maxCapacity ?? 9999),
-        );
-        emit(state.copyWith(
-          event: updated,
-          uiModel: updated.toEventDetailUiModel(),
-          joinLeaving: false,
-        ));
-        _emitEffect(ShowLeaveSuccessEffect());
-      } else {
-        await eventRepository.joinEvent(currentEvent);
-        final updated = currentEvent.copyWith(
-          userJoined: true,
-          currentAttendeeCount: currentEvent.currentAttendeeCount + 1,
-        );
-        emit(state.copyWith(
-          event: updated,
-          uiModel: updated.toEventDetailUiModel(),
-          joinLeaving: false,
-        ));
-        _emitEffect(ShowJoinSuccessEffect());
-      }
-    } catch (e) {
-      final msg = e.toString().toLowerCase();
-      if (msg.contains('422')) {
-        _emitEffect(ShowEventFullSnackbarEffect());
-      } else if (msg.contains('network') || msg.contains('connection')) {
-        _emitEffect(ShowNoNetworkEffect());
-      } else {
-        _emitEffect(ShowGenericErrorEffect());
-      }
-      emit(state.copyWith(joinLeaving: false));
-    }
+  if (!state.isAuthenticated) {
+    _emitEffect(NavigateToLoginEffect());
+    return;
   }
+
+  emit(state.copyWith(joinLeaving: true));
+
+  try {
+    Event updated;
+    if (_event.userJoined) {
+      await eventRepository.leaveEvent(_event);
+      updated = _event.copyWith(
+        userJoined: false,
+        currentAttendeeCount: (_event.currentAttendeeCount - 1).clamp(0, _event.maxCapacity ?? 9999),
+      );
+      _emitEffect(ShowLeaveSuccessEffect());
+    } else {
+      await eventRepository.joinEvent(_event);
+      updated = _event.copyWith(
+        userJoined: true,
+        currentAttendeeCount: _event.currentAttendeeCount + 1,
+      );
+      _emitEffect(ShowJoinSuccessEffect());
+    }
+
+    _event = updated;
+    emit(state.copyWith(
+      uiModel: updated.toEventDetailUiModel(),
+      joinLeaving: false,
+    ));
+  } catch (e) {
+    final msg = e.toString().toLowerCase();
+    if (msg.contains('422')) {
+      _emitEffect(ShowEventFullSnackbarEffect());
+    } else if (msg.contains('network') || msg.contains('connection')) {
+      _emitEffect(ShowNoNetworkEffect());
+    } else {
+      _emitEffect(ShowGenericErrorEffect());
+    }
+    emit(state.copyWith(joinLeaving: false));
+  }
+}
+
 
 
   void navigatePressed() {
-    final loc = state.event.location;
+    final loc = _event.location;
     if (loc.lat != null && loc.long != null) {
       _emitEffect(OpenMapsEffect(
         lat: loc.lat!,

@@ -3,7 +3,6 @@ import 'package:esmorga_flutter/view/events/event_detail/model/event_detail_ui_m
 import 'package:esmorga_flutter/domain/event/model/event.dart';
 
 class EventDetailState extends Equatable {
-  final Event event;
   final EventDetailUiModel uiModel;
   final bool loading;
   final bool isAuthenticated;
@@ -11,7 +10,6 @@ class EventDetailState extends Equatable {
   final String? error;
 
   const EventDetailState({
-    required this.event,
     required this.uiModel,
     this.loading = false,
     this.isAuthenticated = false,
@@ -27,7 +25,6 @@ class EventDetailState extends Equatable {
     bool? joinLeaving,
     String? error,
   }) => EventDetailState(
-    event: event ?? this.event,
     loading: loading ?? this.loading,
     uiModel: uiModel ?? this.uiModel,
     isAuthenticated: isAuthenticated ?? this.isAuthenticated,
