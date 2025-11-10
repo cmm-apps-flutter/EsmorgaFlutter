@@ -15,7 +15,12 @@ class EventDetailCubit extends Cubit<EventDetailState> {
   final _effectController = StreamController<EventDetailEffect>.broadcast();
   Stream<EventDetailEffect> get effects => _effectController.stream;
 
-  EventDetailCubit({required this.eventRepository, required this.userRepository, required Event event}) : super(EventDetailState(uiModel: event.toEventDetailUiModel()));
+  EventDetailCubit({required this.eventRepository, required this.userRepository, required Event event}) : super(
+    EventDetailState(
+      event: event,
+      uiModel: event.toEventDetailUiModel(),
+    ),
+  );
 
   Future<void> start() async {
   emit(state.copyWith(loading: true, error: null));
@@ -85,14 +90,12 @@ class EventDetailCubit extends Cubit<EventDetailState> {
 
 
   void navigatePressed() {
-    final lat = state.uiModel.lat;
-    final long = state.uiModel.long;
-
-    if (lat != null && long != null) {
+    final loc = state.event.location;
+    if (loc.lat != null && loc.long != null) {
       _emitEffect(OpenMapsEffect(
-        lat: lat,
-        lng: long,
-        name: state.uiModel.locationName,
+        lat: loc.lat!,
+        lng: loc.long!,
+        name: loc.name,
       ));
     }
   }

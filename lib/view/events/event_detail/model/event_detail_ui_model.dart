@@ -10,8 +10,6 @@ class EventDetailUiModel {
   final String description;
   final String date;
   final String locationName;
-  final double? lat;
-  final double? long;
   final String? imageUrl;
   final bool userJoined;
   final bool showNavigateButton;
@@ -24,8 +22,6 @@ class EventDetailUiModel {
     required this.description,
     required this.date,
     required this.locationName,
-    this.lat,
-    this.long,
     this.imageUrl,
     required this.userJoined,
     required this.showNavigateButton,
@@ -57,8 +53,6 @@ extension EventMappers on Event {
       description: description,
       date: getIt<EsmorgaDateTimeFormatter>().formatEventDate(date),
       locationName: location.name,
-      lat: location.lat,
-      long: location.long,
       userJoined: userJoined,
       imageUrl: imageUrl != null ? Uri.decodeComponent(imageUrl!) : null,
       showNavigateButton: location.lat != null && location.long != null,
