@@ -15,6 +15,7 @@ class EventDetailUiModel {
   final bool showNavigateButton;
   final int? maxCapacity;
   final int currentAttendeeCount;
+  final String? joinDeadLine;
 
   EventDetailUiModel({
     required this.id,
@@ -27,6 +28,7 @@ class EventDetailUiModel {
     required this.showNavigateButton,
     required this.currentAttendeeCount,
     this.maxCapacity,
+    this.joinDeadLine,
   });
 
   Event toDomain() {
@@ -58,6 +60,9 @@ extension EventMappers on Event {
       showNavigateButton: location.lat != null && location.long != null,
       currentAttendeeCount: currentAttendeeCount,
       maxCapacity: maxCapacity,
+      joinDeadLine: joinDeadline != null 
+          ? getIt<EsmorgaDateTimeFormatter>().formatEventDate(joinDeadline!) 
+          : null,
     );
   }
 }

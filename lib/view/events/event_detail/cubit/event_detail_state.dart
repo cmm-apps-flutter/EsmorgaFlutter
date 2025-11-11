@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:esmorga_flutter/view/events/event_detail/model/event_detail_ui_model.dart';
-import 'package:esmorga_flutter/domain/event/model/event.dart';
 
 class EventDetailState extends Equatable {
   final EventDetailUiModel uiModel;
@@ -17,8 +16,14 @@ class EventDetailState extends Equatable {
     this.error,
   });
 
+  bool get isJoinEnabled {
+    if (uiModel.joinDeadLine == null) return true;
+    final deadline = DateTime.tryParse(uiModel.joinDeadLine!);
+    if (deadline == null) return true;
+    return DateTime.now().isBefore(deadline) || DateTime.now().isAtSameMomentAs(deadline);
+  }
+
   EventDetailState copyWith({
-    Event? event,
     bool? loading,
     EventDetailUiModel? uiModel,
     bool? isAuthenticated,
@@ -33,5 +38,5 @@ class EventDetailState extends Equatable {
   );
 
   @override
-  List<Object?> get props => [loading, isAuthenticated, joinLeaving, error];
+  List<Object?> get props => [uiModel, loading, isAuthenticated, joinLeaving, error];
 }

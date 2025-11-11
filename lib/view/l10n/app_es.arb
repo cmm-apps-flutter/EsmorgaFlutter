@@ -111,6 +111,7 @@
   "labelCapacity": "{current}/{total} asistentes",
   "buttonJoinEventDisabled": "Lleno",
   "snackbarEventFull": "El evento ya ha alcanzado el aforo máximo.",
-  "errorEventFull": "El evento está completo"
+  "errorEventFull": "El evento está completo",
+  "button_join_event_closed": "Demasiado tarde",
+  "screen_event_details_join_deadline": "Únete antes del {date}"
 }
-

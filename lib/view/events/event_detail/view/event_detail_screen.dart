@@ -118,22 +118,26 @@ class _EventDetailFormState extends State<_EventDetailForm> {
       );
     }
   final ui = state.uiModel;
-  final isFull = ui.maxCapacity != null && ui.currentAttendeeCount >= ui.maxCapacity!;
 
 
-  final buttonText = !state.isAuthenticated
-      ? l10n.buttonLoginToJoin 
-      : (isFull && !state.uiModel.userJoined)
-          ? l10n.buttonJoinEventDisabled
-          : (state.uiModel.userJoined
-              ? l10n.buttonLeaveEvent
-              : l10n.buttonJoinEvent);
+  final isFull = state.uiModel.maxCapacity != null && state.uiModel.currentAttendeeCount >= state.uiModel.maxCapacity!;
 
   final buttonEnabled = state.isAuthenticated
-      ? (isFull
-          ? state.uiModel.userJoined
-          : true)
-      : !isFull;
+      ? state.isJoinEnabled
+          ? (isFull ? state.uiModel.userJoined : true) 
+          : false
+      : false;
+
+  final buttonText = !state.isAuthenticated
+      ? l10n.buttonLoginToJoin
+      : !state.isJoinEnabled
+          ? l10n.button_join_event_closed
+          : (isFull && !state.uiModel.userJoined)
+              ? l10n.buttonJoinEventDisabled
+              : (state.uiModel.userJoined
+                  ? l10n.buttonLeaveEvent
+                  : l10n.buttonJoinEvent);
+
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -190,7 +194,10 @@ class _EventDetailFormState extends State<_EventDetailForm> {
             ),
             const SizedBox(height: 8),
           ],
-
+          EsmorgaText(
+            text: l10n.screen_event_details_join_deadline(ui.joinDeadLine ?? ""),
+            style: EsmorgaTextStyle.caption,
+          ),
           const SizedBox(height: 24),
           EsmorgaText(text: l10n.screenEventDetailsDescription, style: EsmorgaTextStyle.heading2),
           const SizedBox(height: 8),
@@ -212,6 +219,7 @@ class _EventDetailFormState extends State<_EventDetailForm> {
             ),
           ],
           const SizedBox(height: 24),
+          
           EsmorgaButton(
             text: buttonText,
             isLoading: state.joinLeaving,

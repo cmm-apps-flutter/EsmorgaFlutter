@@ -40,8 +40,13 @@ class EventDetailCubit extends Cubit<EventDetailState> {
   }
 
   Future<void> primaryPressed() async {
-  if (!state.isAuthenticated) {
+    if (!state.isAuthenticated) {
     _emitEffect(NavigateToLoginEffect());
+    return;
+  }
+
+  if (!state.isJoinEnabled) {
+    _emitEffect(ShowJoinClosedEffect());
     return;
   }
 
