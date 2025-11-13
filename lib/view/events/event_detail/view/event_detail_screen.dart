@@ -131,7 +131,7 @@ class _EventDetailFormState extends State<_EventDetailForm> {
     }
     final bool buttonEnabled;
     if (!state.isAuthenticated) {
-      buttonEnabled = false;
+      buttonEnabled = true;
     } else if (isDeadlinePassed || !state.isJoinEnabled) {
       buttonEnabled = false;
     } else if (isFull) {
