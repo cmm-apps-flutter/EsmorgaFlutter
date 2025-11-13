@@ -6,7 +6,6 @@ import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_effe
 import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_state.dart';
 import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
 import 'package:esmorga_flutter/view/l10n/localization_service.dart';
-import 'package:esmorga_flutter/view/navigation/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -117,27 +116,44 @@ class _EventDetailFormState extends State<_EventDetailForm> {
         ),
       );
     }
-  final ui = state.uiModel;
+    
+    final ui = state.uiModel;
+    final isFull = ui.maxCapacity != null && ui.currentAttendeeCount >= ui.maxCapacity!;
+    
+    bool isDeadlinePassed = false;
+    if (ui.joinDeadLine != null && ui.joinDeadLine!.isNotEmpty) {
+      try {
+        final deadlineDateTime = DateTime.parse(ui.joinDeadLine!);
+        isDeadlinePassed = deadlineDateTime.isBefore(DateTime.now());
+      } catch (e) {
+        debugPrint('$e');
+      }
+    }
+    final bool buttonEnabled;
+    if (!state.isAuthenticated) {
+      buttonEnabled = false;
+    } else if (isDeadlinePassed || !state.isJoinEnabled) {
+      buttonEnabled = false;
+    } else if (isFull) {
+      buttonEnabled = ui.userJoined;
+    } else {
+      buttonEnabled = true;
+    }
 
-
-  final isFull = state.uiModel.maxCapacity != null && state.uiModel.currentAttendeeCount >= state.uiModel.maxCapacity!;
-
-  final buttonEnabled = state.isAuthenticated
-      ? state.isJoinEnabled
-          ? (isFull ? state.uiModel.userJoined : true) 
-          : false
-      : false;
-
-  final buttonText = !state.isAuthenticated
-      ? l10n.buttonLoginToJoin
-      : !state.isJoinEnabled
-          ? l10n.button_join_event_closed
-          : (isFull && !state.uiModel.userJoined)
-              ? l10n.buttonJoinEventDisabled
-              : (state.uiModel.userJoined
-                  ? l10n.buttonLeaveEvent
-                  : l10n.buttonJoinEvent);
-
+    final String buttonText;
+    if (!state.isAuthenticated) {
+      buttonText = l10n.buttonLoginToJoin;
+    } else if (isDeadlinePassed) { 
+      buttonText = l10n.button_join_event_closed;
+    } else if (!state.isJoinEnabled) {
+      buttonText = l10n.button_join_event_closed;
+    } else if (isFull && !ui.userJoined) { 
+      buttonText = l10n.buttonJoinEventDisabled;
+    } else {
+      buttonText = ui.userJoined
+          ? l10n.buttonLeaveEvent
+          : l10n.buttonJoinEvent;
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -195,7 +211,7 @@ class _EventDetailFormState extends State<_EventDetailForm> {
             const SizedBox(height: 8),
           ],
           EsmorgaText(
-            text: l10n.screen_event_details_join_deadline(ui.joinDeadLine ?? ""),
+            text: l10n.screen_event_details_join_deadline(ui.formattedJoinDeadLine ?? ""),
             style: EsmorgaTextStyle.caption,
           ),
           const SizedBox(height: 24),
