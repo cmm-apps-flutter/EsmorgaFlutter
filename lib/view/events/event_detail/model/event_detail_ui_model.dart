@@ -16,6 +16,9 @@ class EventDetailUiModel {
   final int currentAttendeeCount;
   final String? joinDeadLine;
   final String? formattedJoinDeadLine;
+  final bool buttonEnabled;
+  final String buttonText;
+
 
   EventDetailUiModel({
     required this.id,
@@ -30,6 +33,8 @@ class EventDetailUiModel {
     this.maxCapacity,
     this.joinDeadLine,
     this.formattedJoinDeadLine,
+    required this.buttonEnabled,
+    required this.buttonText,
   });
 
   Event toDomain() {
@@ -48,41 +53,3 @@ class EventDetailUiModel {
   }
 }
 
-extension EventMappers on Event {
-  EventDetailUiModel toEventDetailUiModel() {
-    String? rawDeadlineString;
-    if (joinDeadline != null) {
-      try {
-        final int timestamp = joinDeadline as int;
-        rawDeadlineString = DateTime.fromMillisecondsSinceEpoch(timestamp).toIso8601String();
-      } catch (e) {
-        rawDeadlineString = null;
-      }
-    }
-    
-    String? formattedDeadline;
-    if (joinDeadline != null) {
-      try {
-        final int timestamp = joinDeadline as int;
-        formattedDeadline = getIt<EsmorgaDateTimeFormatter>().formatEventDate(timestamp);
-      } catch (e) {
-        formattedDeadline = null;
-      }
-    }
-
-    return EventDetailUiModel(
-      id: id,
-      title: name,
-      description: description,
-      date: getIt<EsmorgaDateTimeFormatter>().formatEventDate(date),
-      locationName: location.name,
-      userJoined: userJoined,
-      imageUrl: imageUrl != null ? Uri.decodeComponent(imageUrl!) : null,
-      showNavigateButton: location.lat != null && location.long != null,
-      currentAttendeeCount: currentAttendeeCount,
-      maxCapacity: maxCapacity,
-      joinDeadLine: rawDeadlineString,
-      formattedJoinDeadLine: formattedDeadline,
-    );
-  }
-}

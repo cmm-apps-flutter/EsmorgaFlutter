@@ -5,7 +5,7 @@ import 'package:esmorga_flutter/domain/event/model/event.dart';
 import 'package:esmorga_flutter/domain/user/repository/user_repository.dart';
 import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_effect.dart';
 import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_state.dart';
-import 'package:esmorga_flutter/view/events/event_detail/model/event_detail_ui_model.dart';
+import 'package:esmorga_flutter/view/events/event_detail/mapper/event_detail_ui_mapper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class EventDetailCubit extends Cubit<EventDetailState> {
@@ -18,25 +18,34 @@ class EventDetailCubit extends Cubit<EventDetailState> {
 
   EventDetailCubit({required this.eventRepository, required this.userRepository, required Event event}) : _event = event, super(
     EventDetailState(
-      uiModel: event.toEventDetailUiModel(),
+      uiModel: EventDetailUiMapper.map(
+        event,
+        isAuthenticated: false,
+        isJoinEnabled: true,
+      ),
     ),
   );
 
   Future<void> start() async {
-  emit(state.copyWith(loading: true, error: null));
+    emit(state.copyWith(loading: true, error: null));
 
-  bool isAuth = false;
-  try {
-    await userRepository.getUser();
-    isAuth = true;
-  } catch (_) {
-    isAuth = false;
-  }
+    bool isAuth = false;
+    try {
+      await userRepository.getUser();
+      isAuth = true;
+    } catch (_) {}
 
-  emit(state.copyWith(
-    loading: false,
-    isAuthenticated: isAuth,
-  ));
+    final newUiModel = EventDetailUiMapper.map(
+      _event,
+      isAuthenticated: isAuth,
+      isJoinEnabled: state.isJoinEnabled,
+    );
+
+    emit(state.copyWith(
+      loading: false,
+      isAuthenticated: isAuth,
+      uiModel: newUiModel,
+    ));
   }
 
   Future<void> primaryPressed() async {
@@ -72,7 +81,11 @@ class EventDetailCubit extends Cubit<EventDetailState> {
 
     _event = updated;
     emit(state.copyWith(
-      uiModel: updated.toEventDetailUiModel(),
+      uiModel: EventDetailUiMapper.map(
+        updated,
+        isAuthenticated: state.isAuthenticated,
+        isJoinEnabled: state.isJoinEnabled,
+      ),
       joinLeaving: false,
     ));
   } catch (e) {

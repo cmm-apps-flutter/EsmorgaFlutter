@@ -118,42 +118,6 @@ class _EventDetailFormState extends State<_EventDetailForm> {
     }
     
     final ui = state.uiModel;
-    final isFull = ui.maxCapacity != null && ui.currentAttendeeCount >= ui.maxCapacity!;
-    
-    bool isDeadlinePassed = false;
-    if (ui.joinDeadLine != null && ui.joinDeadLine!.isNotEmpty) {
-      try {
-        final deadlineDateTime = DateTime.parse(ui.joinDeadLine!);
-        isDeadlinePassed = deadlineDateTime.isBefore(DateTime.now());
-      } catch (e) {
-        debugPrint('$e');
-      }
-    }
-    final bool buttonEnabled;
-    if (!state.isAuthenticated) {
-      buttonEnabled = true;
-    } else if (isDeadlinePassed || !state.isJoinEnabled) {
-      buttonEnabled = false;
-    } else if (isFull) {
-      buttonEnabled = ui.userJoined;
-    } else {
-      buttonEnabled = true;
-    }
-
-    final String buttonText;
-    if (!state.isAuthenticated) {
-      buttonText = l10n.buttonLoginToJoin;
-    } else if (isDeadlinePassed) { 
-      buttonText = l10n.button_join_event_closed;
-    } else if (!state.isJoinEnabled) {
-      buttonText = l10n.button_join_event_closed;
-    } else if (isFull && !ui.userJoined) { 
-      buttonText = l10n.buttonJoinEventDisabled;
-    } else {
-      buttonText = ui.userJoined
-          ? l10n.buttonLeaveEvent
-          : l10n.buttonJoinEvent;
-    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -237,9 +201,9 @@ class _EventDetailFormState extends State<_EventDetailForm> {
           const SizedBox(height: 24),
           
           EsmorgaButton(
-            text: buttonText,
+            text: ui.buttonText,
             isLoading: state.joinLeaving,
-            isEnabled: buttonEnabled,
+            isEnabled: ui.buttonEnabled,
             onClick: () => _cubit.primaryPressed(),
             key: const Key('event_detail_primary_button'),
           ),
