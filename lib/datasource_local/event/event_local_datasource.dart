@@ -33,13 +33,13 @@ class EventLocalDatasourceImpl implements EventDatasource {
 
   @override
   Future<void> joinEvent(EventDataModel event) async {
-    final localEvent = event.copyWith(dataUserJoined: true).toEventLocalModel();
+    final localEvent = event.toEventLocalModel();
     await eventsBox.put(event.dataId, localEvent);
   }
 
   @override
   Future<void> leaveEvent(EventDataModel event) async {
-    final localEvent = event.copyWith(dataUserJoined: false).toEventLocalModel();
+    final localEvent = event.toEventLocalModel();
     await eventsBox.put(event.dataId, localEvent);
   }
 

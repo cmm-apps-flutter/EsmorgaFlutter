@@ -33,14 +33,20 @@ class EventRepositoryImpl implements EventRepository {
 
   @override
   Future<void> joinEvent(Event event) async {
-    final updatedEvent = event.copyWith(userJoined: true);
+    final updatedEvent = event.copyWith(
+      userJoined: true,
+      currentAttendeeCount: event.currentAttendeeCount + 1,
+    );
     await remoteEventDatasource.joinEvent(updatedEvent.toEventDataModel());
     await localEventDatasource.joinEvent(updatedEvent.toEventDataModel());
   }
 
   @override
   Future<void> leaveEvent(Event event) async {
-    final updatedEvent = event.copyWith(userJoined: false);
+    final updatedEvent = event.copyWith(
+      userJoined: false,
+      currentAttendeeCount: event.currentAttendeeCount - 1,
+    );
     await remoteEventDatasource.leaveEvent(updatedEvent.toEventDataModel());
     await localEventDatasource.leaveEvent(updatedEvent.toEventDataModel());
   }

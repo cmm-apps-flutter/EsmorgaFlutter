@@ -33,6 +33,17 @@ class EventDetailCubit extends Cubit<EventDetailState> {
     try {
       await userRepository.getUser();
       isAuth = true;
+    } catch (_) {
+      isAuth = false;
+    }
+
+    try {
+      final localEvents = await eventRepository.getEvents(forceLocal: true);
+      final updatedEvent = localEvents.firstWhere(
+        (e) => e.id == _event.id,
+        orElse: () => _event,
+      );
+      _event = updatedEvent;
     } catch (_) {}
 
     final newUiModel = EventDetailUiMapper.map(
@@ -48,59 +59,59 @@ class EventDetailCubit extends Cubit<EventDetailState> {
     ));
   }
 
+
   Future<void> primaryPressed() async {
     if (!state.isAuthenticated) {
-    _emitEffect(NavigateToLoginEffect());
-    return;
-  }
-
-  if (!state.isJoinEnabled) {
-    _emitEffect(ShowJoinClosedEffect());
-    return;
-  }
-
-  emit(state.copyWith(joinLeaving: true));
-
-  try {
-    Event updated;
-    if (_event.userJoined) {
-      await eventRepository.leaveEvent(_event);
-      updated = _event.copyWith(
-        userJoined: false,
-        currentAttendeeCount: (_event.currentAttendeeCount - 1).clamp(0, _event.maxCapacity ?? 9999),
-      );
-      _emitEffect(ShowLeaveSuccessEffect());
-    } else {
-      await eventRepository.joinEvent(_event);
-      updated = _event.copyWith(
-        userJoined: true,
-        currentAttendeeCount: _event.currentAttendeeCount + 1,
-      );
-      _emitEffect(ShowJoinSuccessEffect());
+      _emitEffect(NavigateToLoginEffect());
+      return;
     }
 
-    _event = updated;
-    emit(state.copyWith(
-      uiModel: EventDetailUiMapper.map(
-        updated,
-        isAuthenticated: state.isAuthenticated,
-        isJoinEnabled: state.isJoinEnabled,
-      ),
-      joinLeaving: false,
-    ));
-  } catch (e) {
-    final msg = e.toString().toLowerCase();
-    if (msg.contains('422')) {
-      _emitEffect(ShowEventFullSnackbarEffect());
-    } else if (msg.contains('network') || msg.contains('connection')) {
-      _emitEffect(ShowNoNetworkEffect());
-    } else {
-      _emitEffect(ShowGenericErrorEffect());
+    if (!state.isJoinEnabled) {
+      _emitEffect(ShowJoinClosedEffect());
+      return;
     }
-    emit(state.copyWith(joinLeaving: false));
-  }
-}
 
+    emit(state.copyWith(joinLeaving: true));
+
+    try {
+      Event updated;
+      if (_event.userJoined) {
+        await eventRepository.leaveEvent(_event);
+        updated = _event.copyWith(
+          userJoined: false,
+          currentAttendeeCount: (_event.currentAttendeeCount - 1).clamp(0, _event.maxCapacity ?? _event.currentAttendeeCount),
+        );
+        _emitEffect(ShowLeaveSuccessEffect());
+      } else {
+        await eventRepository.joinEvent(_event);
+        updated = _event.copyWith(
+          userJoined: true,
+          currentAttendeeCount: _event.currentAttendeeCount + 1,
+        );
+        _emitEffect(ShowJoinSuccessEffect());
+      }
+
+      _event = updated;
+      emit(state.copyWith(
+        uiModel: EventDetailUiMapper.map(
+          updated,
+          isAuthenticated: state.isAuthenticated,
+          isJoinEnabled: state.isJoinEnabled,
+        ),
+        joinLeaving: false,
+      ));
+    } catch (e) {
+      final msg = e.toString().toLowerCase();
+      if (msg.contains('422')) {
+        _emitEffect(ShowEventFullSnackbarEffect());
+      } else if (msg.contains('network') || msg.contains('connection')) {
+        _emitEffect(ShowNoNetworkEffect());
+      } else {
+        _emitEffect(ShowGenericErrorEffect());
+      }
+      emit(state.copyWith(joinLeaving: false));
+    }
+  }
 
 
   void navigatePressed() {
