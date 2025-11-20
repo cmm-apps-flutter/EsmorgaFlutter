@@ -66,6 +66,11 @@ class EventDetailUiMapper {
             dateFormatter.formatEventDate(event.joinDeadline as int);
       }
     } catch (_) {}
+    print("EVENT RAW: ${event.toString()}");
+    print("EVENT id: ${event.id}, joinDeadline: ${event.joinDeadline}");
+
+    print("joinDeadline runtimeType: ${event.joinDeadline.runtimeType}");
+    print("joinDeadline value: ${event.joinDeadline}");
 
     return EventDetailUiModel(
       id: event.id,
@@ -82,7 +87,9 @@ class EventDetailUiMapper {
       currentAttendeeCount: event.currentAttendeeCount,
       maxCapacity: event.maxCapacity,
       joinDeadLine: rawDeadlineString,
-      formattedJoinDeadLine: formattedDeadline,
+      formattedJoinDeadLine: event.joinDeadline != null
+        ? dateFormatter.formatEventDate(event.joinDeadline!)
+        : dateFormatter.formatEventDate(event.date),
 
       buttonEnabled: buttonEnabled,
       buttonText: buttonText,

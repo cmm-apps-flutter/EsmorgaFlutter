@@ -41,9 +41,11 @@ class EventDetailCubit extends Cubit<EventDetailState> {
       final localEvents = await eventRepository.getEvents(forceLocal: true);
       final updatedEvent = localEvents.firstWhere(
         (e) => e.id == _event.id,
-        orElse: () => _event,
+        orElse: () => _event,  
       );
-      _event = updatedEvent;
+      _event = updatedEvent.copyWith(
+        joinDeadline: updatedEvent.joinDeadline ?? _event.joinDeadline,
+      );
     } catch (_) {}
 
     final newUiModel = EventDetailUiMapper.map(
