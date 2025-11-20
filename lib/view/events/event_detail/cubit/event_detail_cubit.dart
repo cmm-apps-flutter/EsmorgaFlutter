@@ -6,25 +6,32 @@ import 'package:esmorga_flutter/domain/user/repository/user_repository.dart';
 import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_effect.dart';
 import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_state.dart';
 import 'package:esmorga_flutter/view/events/event_detail/mapper/event_detail_ui_mapper.dart';
+import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class EventDetailCubit extends Cubit<EventDetailState> {
   final EventRepository eventRepository;
   final UserRepository userRepository;
+  final LocalizationService l10n; 
   Event _event;
 
   final _effectController = StreamController<EventDetailEffect>.broadcast();
   Stream<EventDetailEffect> get effects => _effectController.stream;
 
-  EventDetailCubit({required this.eventRepository, required this.userRepository, required Event event}) : _event = event, super(
-    EventDetailState(
-      uiModel: EventDetailUiMapper.map(
-        event,
-        isAuthenticated: false,
-        isJoinEnabled: true,
-      ),
-    ),
-  );
+  EventDetailCubit({
+    required this.eventRepository,
+    required this.userRepository,
+    required this.l10n, 
+    required Event event,
+  })  : _event = event,
+        super(EventDetailState(
+          uiModel: EventDetailUiMapper.map(
+            event,
+            isAuthenticated: false,
+            isJoinEnabled: true,
+            l10n: l10n,
+          ),
+        ));
 
   Future<void> start() async {
     emit(state.copyWith(loading: true, error: null));
@@ -33,15 +40,13 @@ class EventDetailCubit extends Cubit<EventDetailState> {
     try {
       await userRepository.getUser();
       isAuth = true;
-    } catch (_) {
-      isAuth = false;
-    }
+    } catch (_) {}
 
     try {
       final localEvents = await eventRepository.getEvents(forceLocal: true);
       final updatedEvent = localEvents.firstWhere(
         (e) => e.id == _event.id,
-        orElse: () => _event,  
+        orElse: () => _event,
       );
       _event = updatedEvent.copyWith(
         joinDeadline: updatedEvent.joinDeadline ?? _event.joinDeadline,
@@ -52,6 +57,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
       _event,
       isAuthenticated: isAuth,
       isJoinEnabled: state.isJoinEnabled,
+      l10n: l10n,
     );
 
     emit(state.copyWith(
@@ -60,7 +66,6 @@ class EventDetailCubit extends Cubit<EventDetailState> {
       uiModel: newUiModel,
     ));
   }
-
 
   Future<void> primaryPressed() async {
     if (!state.isAuthenticated) {
@@ -81,7 +86,9 @@ class EventDetailCubit extends Cubit<EventDetailState> {
         await eventRepository.leaveEvent(_event);
         updated = _event.copyWith(
           userJoined: false,
-          currentAttendeeCount: (_event.currentAttendeeCount - 1).clamp(0, _event.maxCapacity ?? _event.currentAttendeeCount),
+          currentAttendeeCount: (_event.currentAttendeeCount -
+                  1)
+              .clamp(0, _event.maxCapacity ?? _event.currentAttendeeCount),
         );
         _emitEffect(ShowLeaveSuccessEffect());
       } else {
@@ -99,6 +106,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
           updated,
           isAuthenticated: state.isAuthenticated,
           isJoinEnabled: state.isJoinEnabled,
+          l10n: l10n,
         ),
         joinLeaving: false,
       ));
@@ -114,7 +122,6 @@ class EventDetailCubit extends Cubit<EventDetailState> {
       emit(state.copyWith(joinLeaving: false));
     }
   }
-
 
   void navigatePressed() {
     final loc = _event.location;

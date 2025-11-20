@@ -10,6 +10,8 @@ import 'package:esmorga_flutter/view/dateformatting/esmorga_date_time_formatter.
 import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_cubit.dart';
 import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_effect.dart';
 import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_state.dart';
+import 'package:esmorga_flutter/view/l10n/app_localizations_en.dart';
+import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -29,10 +31,12 @@ class _FakeFormatter implements EsmorgaDateTimeFormatter {
   @override
   String formatTimeWithMillisUtcSuffix(int hour, int minute) => 'timeZ';
 }
+class _MockLocalizationService extends Mock implements LocalizationService {}
 
 void main() {
   late _MockEventRepository eventRepository;
   late _MockUserRepository userRepository;
+  late _MockLocalizationService l10n;
 
   const testUser = User(name: 'John', lastName: 'Doe', email: 'john@doe.com', role: RoleType.user);
 
@@ -82,6 +86,8 @@ void main() {
     eventRepository = _MockEventRepository();
     userRepository = _MockUserRepository();
     getIt.registerSingleton<EsmorgaDateTimeFormatter>(_FakeFormatter());
+    l10n = _MockLocalizationService();
+    when(() => l10n.current).thenReturn(AppLocalizationsEn());
   });
 
   tearDown(() async {
@@ -92,7 +98,7 @@ void main() {
       'loads event and sets isAuthenticated true when getUser succeeds',
       build: () {
         when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
-        return EventDetailCubit(eventRepository: eventRepository, userRepository: userRepository, event: baseEvent);
+        return EventDetailCubit(eventRepository: eventRepository, userRepository: userRepository, event: baseEvent, l10n: l10n);
       },
       act: (c) => c.start(),
       expect: () => [
@@ -108,7 +114,7 @@ void main() {
       build: () {
         when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
         when(() => eventRepository.joinEvent(any())).thenAnswer((_) async {});
-        return EventDetailCubit(eventRepository: eventRepository, userRepository: userRepository, event: baseEvent);
+        return EventDetailCubit(eventRepository: eventRepository, userRepository: userRepository, event: baseEvent, l10n: l10n);
       },
       act: (c) async {
         final effectFuture = c.effects.firstWhere((e) => e is ShowJoinSuccessEffect);
@@ -130,7 +136,7 @@ void main() {
       'navigate pressed emits openMaps effect when coords present',
       build: () {
         when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
-        return EventDetailCubit(eventRepository: eventRepository, userRepository: userRepository, event: baseEvent);
+        return EventDetailCubit(eventRepository: eventRepository, userRepository: userRepository, event: baseEvent, l10n: l10n);
       },
       act: (c) async {
         final effectFuture = c.effects.firstWhere((e) => e is OpenMapsEffect);
@@ -153,6 +159,7 @@ void main() {
           eventRepository: eventRepository,
           userRepository: userRepository,
           event: baseEvent,
+          l10n: l10n
         );
       },
       act: (cubit) => cubit.start(),
@@ -172,6 +179,7 @@ void main() {
         eventRepository: eventRepository,
         userRepository: userRepository,
         event: deadlinePassedEvent,
+        l10n: l10n
       );
     },
     act: (c) => c.start(),
@@ -190,6 +198,7 @@ void main() {
         eventRepository: eventRepository,
         userRepository: userRepository,
         event: deadlineFutureEvent,
+        l10n: l10n
       );
     },
     act: (c) => c.start(),
@@ -209,6 +218,7 @@ void main() {
         eventRepository: eventRepository,
         userRepository: userRepository,
         event: deadlinePassedEvent,
+        l10n: l10n
       );
     },
     act: (c) async {
@@ -229,6 +239,7 @@ void main() {
         eventRepository: eventRepository,
         userRepository: userRepository,
         event: fullEvent,
+        l10n: l10n
       );
     },
     act: (c) => c.start(),
@@ -249,6 +260,7 @@ void main() {
         eventRepository: eventRepository,
         userRepository: userRepository,
         event: fullJoinedEvent,
+        l10n: l10n
       );
     },
     act: (c) async {

@@ -9,9 +9,9 @@ class EventDetailUiMapper {
     Event event, {
     required bool isAuthenticated,
     required bool isJoinEnabled,
+    required LocalizationService l10n,
   }) {
     final dateFormatter = getIt<EsmorgaDateTimeFormatter>();
-    final l10n = getIt<LocalizationService>().current;
 
     bool isDeadlinePassed = false;
     if (event.joinDeadline != null) {
@@ -37,17 +37,15 @@ class EventDetailUiMapper {
 
     final String buttonText;
     if (!isAuthenticated) {
-      buttonText = l10n.buttonLoginToJoin;
-    } else if (isDeadlinePassed) {
-      buttonText = l10n.button_join_event_closed;
-    } else if (!isJoinEnabled) {
-      buttonText = l10n.button_join_event_closed;
+      buttonText = l10n.current.buttonLoginToJoin;
+    } else if (isDeadlinePassed || !isJoinEnabled) {
+      buttonText = l10n.current.button_join_event_closed;
     } else if (isFull && !event.userJoined) {
-      buttonText = l10n.buttonJoinEventDisabled;
+      buttonText = l10n.current.buttonJoinEventDisabled;
     } else {
       buttonText = event.userJoined
-          ? l10n.buttonLeaveEvent
-          : l10n.buttonJoinEvent;
+          ? l10n.current.buttonLeaveEvent
+          : l10n.current.buttonJoinEvent;
     }
 
     String? rawDeadlineString;
@@ -58,19 +56,6 @@ class EventDetailUiMapper {
         ).toIso8601String();
       }
     } catch (_) {}
-
-    String? formattedDeadline;
-    try {
-      if (event.joinDeadline != null) {
-        formattedDeadline =
-            dateFormatter.formatEventDate(event.joinDeadline as int);
-      }
-    } catch (_) {}
-    print("EVENT RAW: ${event.toString()}");
-    print("EVENT id: ${event.id}, joinDeadline: ${event.joinDeadline}");
-
-    print("joinDeadline runtimeType: ${event.joinDeadline.runtimeType}");
-    print("joinDeadline value: ${event.joinDeadline}");
 
     return EventDetailUiModel(
       id: event.id,
@@ -88,9 +73,8 @@ class EventDetailUiMapper {
       maxCapacity: event.maxCapacity,
       joinDeadLine: rawDeadlineString,
       formattedJoinDeadLine: event.joinDeadline != null
-        ? dateFormatter.formatEventDate(event.joinDeadline!)
-        : dateFormatter.formatEventDate(event.date),
-
+          ? dateFormatter.formatEventDate(event.joinDeadline!)
+          : dateFormatter.formatEventDate(event.date),
       buttonEnabled: buttonEnabled,
       buttonText: buttonText,
     );
