@@ -2,9 +2,9 @@ import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 
 class FormValidator {
-  static const String nameRegex = r"^[a-zA-Z\s'-]+$";
+  static const String nameRegex = r"^[A-Za-zÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÜüÑñÇç\s'-]+$";
   static const String emailRegex = r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
-  static const String passwordRegex = r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&]).{8,}';
+  static const String passwordRegex = r'^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!-/:-@\[-`{-~]).{8,50}$';
 
   final l10n = getIt<LocalizationService>().current;
 
