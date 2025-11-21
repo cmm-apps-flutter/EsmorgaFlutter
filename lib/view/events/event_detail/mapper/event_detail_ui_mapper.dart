@@ -8,7 +8,6 @@ class EventDetailUiMapper {
   static EventDetailUiModel map(
     Event event, {
     required bool isAuthenticated,
-    required bool isJoinEnabled,
     required LocalizationService l10n,
   }) {
     final dateFormatter = getIt<EsmorgaDateTimeFormatter>();
@@ -27,7 +26,7 @@ class EventDetailUiMapper {
     final bool buttonEnabled;
     if (!isAuthenticated) {
       buttonEnabled = true;
-    } else if (isDeadlinePassed || !isJoinEnabled) {
+    } else if (isDeadlinePassed) {
       buttonEnabled = false;
     } else if (isFull) {
       buttonEnabled = event.userJoined;
@@ -38,7 +37,7 @@ class EventDetailUiMapper {
     final String buttonText;
     if (!isAuthenticated) {
       buttonText = l10n.current.buttonLoginToJoin;
-    } else if (isDeadlinePassed || !isJoinEnabled) {
+    } else if (isDeadlinePassed) {
       buttonText = l10n.current.button_join_event_closed;
     } else if (isFull && !event.userJoined) {
       buttonText = l10n.current.buttonJoinEventDisabled;
@@ -64,11 +63,12 @@ class EventDetailUiMapper {
       currentAttendeeCount: event.currentAttendeeCount,
       maxCapacity: event.maxCapacity,
       joinDeadLine: event.joinDeadline != null
-          ? DateTime.fromMillisecondsSinceEpoch(event.joinDeadline as int).toIso8601String()
+          ? DateTime.fromMillisecondsSinceEpoch(event.joinDeadline as int)
+              .toIso8601String()
           : null,
       formattedJoinDeadLine: event.joinDeadline != null
-    ? dateFormatter.formatEventDate(event.joinDeadline!)
-    : dateFormatter.formatEventDate(event.date),
+          ? dateFormatter.formatEventDate(event.joinDeadline!)
+          : dateFormatter.formatEventDate(event.date),
       buttonEnabled: buttonEnabled,
       buttonText: buttonText,
     );

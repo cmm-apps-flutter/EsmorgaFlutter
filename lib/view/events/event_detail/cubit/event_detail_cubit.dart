@@ -28,43 +28,39 @@ class EventDetailCubit extends Cubit<EventDetailState> {
           uiModel: EventDetailUiMapper.map(
             event,
             isAuthenticated: false,
-            isJoinEnabled: true,
             l10n: l10n,
           ),
         ));
 
   Future<void> start() async {
-  emit(state.copyWith(loading: true, error: null));
+    emit(state.copyWith(loading: true, error: null));
 
-  bool isAuth = false;
-  try {
-    await userRepository.getUser();
-    isAuth = true;
-  } catch (_) {}
+    bool isAuth = false;
+    try {
+      await userRepository.getUser();
+      isAuth = true;
+    } catch (_) {}
 
-  try {
-    final allEvents = await eventRepository.getEvents(forceRefresh: true);
-    final updatedEvent = allEvents.firstWhere(
-      (e) => e.id == _event.id,
-      orElse: () => _event, 
+    try {
+      final allEvents = await eventRepository.getEvents(forceRefresh: true);
+      _event = allEvents.firstWhere(
+        (e) => e.id == _event.id,
+        orElse: () => _event,
+      );
+    } catch (_) {}
+
+    final updatedUiModel = EventDetailUiMapper.map(
+      _event,
+      isAuthenticated: isAuth,
+      l10n: l10n,
     );
-    _event = updatedEvent;
-  } catch (_) {
+
+    emit(state.copyWith(
+      loading: false,
+      isAuthenticated: isAuth,
+      uiModel: updatedUiModel,
+    ));
   }
-
-  final updatedUiModel = EventDetailUiMapper.map(
-    _event,
-    isAuthenticated: isAuth,
-    isJoinEnabled: state.isJoinEnabled,
-    l10n: l10n,
-  );
-
-  emit(state.copyWith(
-    loading: false,
-    isAuthenticated: isAuth,
-    uiModel: updatedUiModel,
-  ));
-}
 
   Future<void> primaryPressed() async {
     if (!state.isAuthenticated) {
@@ -72,7 +68,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
       return;
     }
 
-    if (!state.isJoinEnabled) {
+    if (!state.uiModel.buttonEnabled) {
       _emitEffect(ShowJoinClosedEffect());
       return;
     }
@@ -103,7 +99,6 @@ class EventDetailCubit extends Cubit<EventDetailState> {
         uiModel: EventDetailUiMapper.map(
           updated,
           isAuthenticated: state.isAuthenticated,
-          isJoinEnabled: state.isJoinEnabled,
           l10n: l10n,
         ),
         joinLeaving: false,

@@ -16,23 +16,6 @@ class EventDetailState extends Equatable {
     this.error,
   });
 
-  bool get isJoinEnabled {
-  final now = DateTime.now();
-
-  if (uiModel.eventDate.isBefore(now)) {
-    return false;
-  }
-
-  if (uiModel.joinDeadLine != null) {
-    final deadline = DateTime.tryParse(uiModel.joinDeadLine!);
-    if (deadline != null) {
-      return now.isBefore(deadline) || now.isAtSameMomentAs(deadline);
-    }
-  }
-
-  return true;
-}
-
   EventDetailState copyWith({
     bool? loading,
     EventDetailUiModel? uiModel,
@@ -40,12 +23,12 @@ class EventDetailState extends Equatable {
     bool? joinLeaving,
     String? error,
   }) => EventDetailState(
-    loading: loading ?? this.loading,
-    uiModel: uiModel ?? this.uiModel,
-    isAuthenticated: isAuthenticated ?? this.isAuthenticated,
-    joinLeaving: joinLeaving ?? this.joinLeaving,
-    error: error ?? this.error,
-  );
+        loading: loading ?? this.loading,
+        uiModel: uiModel ?? this.uiModel,
+        isAuthenticated: isAuthenticated ?? this.isAuthenticated,
+        joinLeaving: joinLeaving ?? this.joinLeaving,
+        error: error ?? this.error,
+      );
 
   @override
   List<Object?> get props => [uiModel, loading, isAuthenticated, joinLeaving, error];
