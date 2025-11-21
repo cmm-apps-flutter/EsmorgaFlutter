@@ -74,44 +74,16 @@ class _EventDetailFormState extends State<_EventDetailForm> {
   Widget build(BuildContext context) {
     final l10n = getIt<LocalizationService>().current;
 
-    return StreamBuilder<EventDetailEffect>(
-      stream: _cubit.effects,
-      builder: (context, snapshot) {
-        final effect = snapshot.data;
-        if (effect != null) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-            if (effect is NavigateBackEffect) {
-              context.pop();
-            } else if (effect is NavigateToLoginEffect) {
-              debugPrint("Navigate");
-              widget.goToLogin();
-            } else if (effect is ShowJoinSuccessEffect) {
-              _showSnack(l10n.snackbarEventJoined);
-            } else if (effect is ShowLeaveSuccessEffect) {
-              _showSnack(l10n.snackbarEventLeft);
-            } else if (effect is ShowNoNetworkEffect) {
-              _showSnack(l10n.snackbarNoInternet);
-            } else if (effect is ShowGenericErrorEffect) {
-              _showSnack(l10n.defaultErrorTitle);
-            } else if (effect is OpenMapsEffect) {
-              _openMaps(effect.lat, effect.lng, effect.name);
-            }
-          });
-        }
-
-        return BlocBuilder<EventDetailCubit, EventDetailState>(
-          builder: (context, state) {
-            return Scaffold(
-              appBar: AppBar(
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () => _cubit.backPressed(),
-                ),
-              ),
-              body: _buildBody(context, state, l10n),
-            );
-          },
+    return BlocBuilder<EventDetailCubit, EventDetailState>(
+      builder: (context, state) {
+        return Scaffold(
+          appBar: AppBar(
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => _cubit.backPressed(),
+            ),
+          ),
+          body: _buildBody(context, state, l10n),
         );
       },
     );
