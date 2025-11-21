@@ -1,4 +1,5 @@
 import 'package:esmorga_flutter/data/event/event_repository_impl.dart';
+import 'package:intl/intl.dart';
 import 'package:esmorga_flutter/data/user/datasource/auth_datasource.dart';
 import 'package:esmorga_flutter/data/user/datasource/shared_preferences_auth_datasource.dart';
 import 'package:esmorga_flutter/data/user/datasource/user_local_datasource_impl.dart';
@@ -43,6 +44,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 final getIt = GetIt.instance;
 
 Future<void> setupDi(Locale locale) async {
+  Intl.defaultLocale = locale.toString();
   // -----------------------------
   // ROUTER
   // -----------------------------
@@ -155,19 +157,19 @@ Future<void> setupDi(Locale locale) async {
   getIt.registerFactory(() => RegistrationConfirmationCubit(userRepository: getIt()));
   getIt.registerFactory(() => RecoverPasswordCubit(userRepository: getIt(), validator: getIt()));
   getIt.registerFactoryParam<ResetPasswordCubit, BuildContext, String?>((context, code) => ResetPasswordCubit(
-        userRepository: getIt(),
-        validator: getIt(),
-        code: code,
-      ));
+            userRepository: getIt(),
+            validator: getIt(),
+            code: code,
+          ));
 
   getIt.registerFactoryParam<EventDetailCubit, BuildContext, Event>((context, event) => EventDetailCubit(
-        eventRepository: getIt(),
-        userRepository: getIt(),
-        event: event,
-      ));
+            eventRepository: getIt(),
+            userRepository: getIt(),
+            event: event,
+          ));
 
   getIt.registerFactoryParam<VerifyAccountCubit, BuildContext, String>((context, verificationCode) => VerifyAccountCubit(
-        userRepository: getIt(),
-        verificationCode: verificationCode,
-      ));
+            userRepository: getIt(),
+            verificationCode: verificationCode,
+          ));
 }
