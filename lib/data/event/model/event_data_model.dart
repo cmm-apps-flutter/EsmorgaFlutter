@@ -12,7 +12,7 @@ class EventDataModel {
   final bool dataUserJoined;
   final int dataCurrentAttendeeCount;
   final int? dataMaxCapacity;
-  final int? dataJoinDeadLine;
+  final int dataJoinDeadLine;
 
   const EventDataModel({
     required this.dataId,
@@ -26,7 +26,7 @@ class EventDataModel {
     required this.dataUserJoined,
     required this.dataCurrentAttendeeCount,
     required this.dataMaxCapacity,
-    this.dataJoinDeadLine,
+    required this.dataJoinDeadLine,
   }) : dataCreationTime = dataCreationTime ?? 0;
 
   factory EventDataModel.fromRemoteModel(EventRemoteModel remote) {

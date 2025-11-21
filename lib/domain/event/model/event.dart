@@ -11,7 +11,7 @@ class Event {
   final bool userJoined;
   final int currentAttendeeCount;
   final int? maxCapacity;
-  final int? joinDeadline;
+  final int joinDeadline;
 
   const Event({
     required this.id,
@@ -24,7 +24,7 @@ class Event {
     required this.userJoined,
     required this.currentAttendeeCount,
     this.maxCapacity,
-    this.joinDeadline,
+    required this.joinDeadline,
   });
 
   Event copyWith({

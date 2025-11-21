@@ -49,6 +49,7 @@ class EventDetailUiModel {
       userJoined: userJoined,
       currentAttendeeCount: currentAttendeeCount,
       maxCapacity: maxCapacity,
+      joinDeadline: 0,
     );
   }
 }

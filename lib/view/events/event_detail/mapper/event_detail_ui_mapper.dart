@@ -13,13 +13,11 @@ class EventDetailUiMapper {
     final dateFormatter = getIt<EsmorgaDateTimeFormatter>();
 
     bool isDeadlinePassed = false;
-    if (event.joinDeadline != null) {
-      try {
-        isDeadlinePassed = DateTime.now().millisecondsSinceEpoch >
-            (event.joinDeadline as int);
-      } catch (_) {}
-    }
-
+    try {
+      isDeadlinePassed = DateTime.now().millisecondsSinceEpoch >
+          event.joinDeadline;
+    } catch (_) {}
+  
     final isFull = event.maxCapacity != null &&
         event.currentAttendeeCount >= event.maxCapacity!;
 
@@ -62,13 +60,9 @@ class EventDetailUiMapper {
           event.location.lat != null && event.location.long != null,
       currentAttendeeCount: event.currentAttendeeCount,
       maxCapacity: event.maxCapacity,
-      joinDeadLine: event.joinDeadline != null
-          ? DateTime.fromMillisecondsSinceEpoch(event.joinDeadline as int)
-              .toIso8601String()
-          : null,
-      formattedJoinDeadLine: event.joinDeadline != null
-          ? dateFormatter.formatEventDate(event.joinDeadline!)
-          : dateFormatter.formatEventDate(event.date),
+      joinDeadLine: DateTime.fromMillisecondsSinceEpoch(event.joinDeadline)
+              .toIso8601String(),
+      formattedJoinDeadLine: dateFormatter.formatEventDate(event.joinDeadline),
       buttonEnabled: buttonEnabled,
       buttonText: buttonText,
     );
