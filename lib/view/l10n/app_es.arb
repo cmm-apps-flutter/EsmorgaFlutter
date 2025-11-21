@@ -111,6 +111,7 @@
   "labelCapacity": "{current}/{total} asistentes",
   "buttonJoinEventDisabled": "Lleno",
   "snackbarEventFull": "El evento ya ha alcanzado el aforo máximo.",
-  "errorEventFull": "El evento está completo"
+  "errorEventFull": "El evento está completo",
+  "loginError": "Ups, hubo un error. Revisa tus datos e inténtalo de nuevo"
 }
 

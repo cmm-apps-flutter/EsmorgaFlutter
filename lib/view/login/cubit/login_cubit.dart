@@ -1,4 +1,6 @@
+import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/domain/user/repository/user_repository.dart';
+import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:esmorga_flutter/view/login/cubit/login_state.dart';
 import 'package:esmorga_flutter/view/validation/form_validator.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,6 +15,7 @@ class LoginCubit extends Cubit<LoginState> {
     String? initialMessage,
   }) : super(LoginState(initMessage: initialMessage));
 
+final l10n = getIt<LocalizationService>().current;
   bool get _validateEmail => state.attemptedSubmit || state.emailBlurred;
   bool get _validatePassword => state.attemptedSubmit || state.passwordBlurred;
 
@@ -63,7 +66,7 @@ class LoginCubit extends Cubit<LoginState> {
       await userRepository.login(state.email.trim(), state.password);
       emit(validated.copyWith(status: LoginStatus.success));
     } catch (e) {
-      emit(validated.copyWith(status: LoginStatus.failure, failureMessage: e.toString()));
+      emit(validated.copyWith(status: LoginStatus.failure, failureMessage: l10n.loginError));
     }
   }
 }

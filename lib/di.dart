@@ -1,4 +1,9 @@
+import 'dart:io';
+
 import 'package:esmorga_flutter/data/event/event_repository_impl.dart';
+import 'package:esmorga_flutter/datasource_remote/config/environment_config.dart';
+import 'package:http/io_client.dart';
+import 'package:http_proxy/http_proxy.dart';
 import 'package:intl/intl.dart';
 import 'package:esmorga_flutter/data/user/datasource/auth_datasource.dart';
 import 'package:esmorga_flutter/data/user/datasource/shared_preferences_auth_datasource.dart';
@@ -76,8 +81,24 @@ Future<void> setupDi(Locale locale) async {
   // -----------------------------
   // NETWORK
   // -----------------------------
+  http.Client client;
+  if (EnvironmentConfig.isQA) {
+    final httpProxy = await HttpProxy.createHttpProxy();
+    HttpOverrides.global = httpProxy;
+    final httpClient = HttpClient();
+    httpClient.findProxy = (uri) {
+      return "PROXY ${httpProxy.host}:${httpProxy.port}";
+    };
+    httpClient.badCertificateCallback = (X509Certificate cert, String host, int port) {
+      return true;
+    };
+    client = IOClient(httpClient);
+  } else {
+    client = http.Client();
+  }
+
   getIt.registerSingleton<http.Client>(
-    LoggingHttpClient(http.Client()),
+    LoggingHttpClient(client),
     instanceName: 'base',
   );
 
@@ -96,7 +117,7 @@ Future<void> setupDi(Locale locale) async {
 
   getIt.registerSingleton<http.Client>(
     AuthenticatedHttpClient(
-      LoggingHttpClient(http.Client()),
+      getIt<http.Client>(instanceName: 'base'),
       getIt<AuthDatasource>(),
     ),
     instanceName: 'authenticated',
@@ -157,18 +178,19 @@ Future<void> setupDi(Locale locale) async {
   getIt.registerFactory(() => RegistrationConfirmationCubit(userRepository: getIt()));
   getIt.registerFactory(() => RecoverPasswordCubit(userRepository: getIt(), validator: getIt()));
   getIt.registerFactoryParam<ResetPasswordCubit, BuildContext, String?>((context, code) => ResetPasswordCubit(
-            userRepository: getIt(),
-            validator: getIt(),
-            code: code,
-          ));
+        userRepository: getIt(),
+        validator: getIt(),
+        code: code,
+      ));
 
   getIt.registerFactoryParam<EventDetailCubit, BuildContext, Event>((context, event) => EventDetailCubit(
-            eventRepository: getIt(),
-            userRepository: getIt(),
-            event: event,
-          ));
+        eventRepository: getIt(),
+        userRepository: getIt(),
+        event: event,
+      ));
 
-  getIt.registerFactoryParam<VerifyAccountCubit, BuildContext, String>((context, verificationCode) => VerifyAccountCubit(
+  getIt
+      .registerFactoryParam<VerifyAccountCubit, BuildContext, String>((context, verificationCode) => VerifyAccountCubit(
             userRepository: getIt(),
             verificationCode: verificationCode,
           ));

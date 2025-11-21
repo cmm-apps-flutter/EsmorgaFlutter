@@ -125,6 +125,7 @@
   "labelCapacity": "{current}/{total} attendees",
   "buttonJoinEventDisabled": "Full",
   "snackbarEventFull": "The event has reached maximum capacity.",
-  "errorEventFull": "Event full"
+  "errorEventFull": "Event full",
+  "loginError": "Oops, something went wrong. Please review your data and try again."
 }
 
