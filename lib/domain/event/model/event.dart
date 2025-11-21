@@ -23,7 +23,7 @@ class Event {
     this.tags = const [],
     required this.userJoined,
     required this.currentAttendeeCount,
-    required this.maxCapacity,
+    this.maxCapacity,
     this.joinDeadline,
   });
 
@@ -51,7 +51,7 @@ class Event {
       userJoined: userJoined ?? this.userJoined,
       currentAttendeeCount: currentAttendeeCount ?? this.currentAttendeeCount,
       maxCapacity: maxCapacity ?? this.maxCapacity,
-      joinDeadline: joinDeadline ?? joinDeadline,
+      joinDeadline: joinDeadline ?? this.joinDeadline,
     );
   }
 }

@@ -48,20 +48,12 @@ class EventDetailUiMapper {
           : l10n.current.buttonJoinEvent;
     }
 
-    String? rawDeadlineString;
-    try {
-      if (event.joinDeadline != null) {
-        rawDeadlineString = DateTime.fromMillisecondsSinceEpoch(
-          event.joinDeadline as int,
-        ).toIso8601String();
-      }
-    } catch (_) {}
-
     return EventDetailUiModel(
       id: event.id,
       title: event.name,
       description: event.description,
       date: dateFormatter.formatEventDate(event.date),
+      eventDate: DateTime.fromMillisecondsSinceEpoch(event.date),
       locationName: event.location.name,
       imageUrl: event.imageUrl != null
           ? Uri.decodeComponent(event.imageUrl!)
@@ -71,10 +63,12 @@ class EventDetailUiMapper {
           event.location.lat != null && event.location.long != null,
       currentAttendeeCount: event.currentAttendeeCount,
       maxCapacity: event.maxCapacity,
-      joinDeadLine: rawDeadlineString,
+      joinDeadLine: event.joinDeadline != null
+          ? DateTime.fromMillisecondsSinceEpoch(event.joinDeadline as int).toIso8601String()
+          : null,
       formattedJoinDeadLine: event.joinDeadline != null
-          ? dateFormatter.formatEventDate(event.joinDeadline!)
-          : dateFormatter.formatEventDate(event.date),
+    ? dateFormatter.formatEventDate(event.joinDeadline!)
+    : dateFormatter.formatEventDate(event.date),
       buttonEnabled: buttonEnabled,
       buttonText: buttonText,
     );

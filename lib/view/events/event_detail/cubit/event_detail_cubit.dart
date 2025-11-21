@@ -34,38 +34,37 @@ class EventDetailCubit extends Cubit<EventDetailState> {
         ));
 
   Future<void> start() async {
-    emit(state.copyWith(loading: true, error: null));
+  emit(state.copyWith(loading: true, error: null));
 
-    bool isAuth = false;
-    try {
-      await userRepository.getUser();
-      isAuth = true;
-    } catch (_) {}
+  bool isAuth = false;
+  try {
+    await userRepository.getUser();
+    isAuth = true;
+  } catch (_) {}
 
-    try {
-      final localEvents = await eventRepository.getEvents(forceLocal: true);
-      final updatedEvent = localEvents.firstWhere(
-        (e) => e.id == _event.id,
-        orElse: () => _event,
-      );
-      _event = updatedEvent.copyWith(
-        joinDeadline: updatedEvent.joinDeadline ?? _event.joinDeadline,
-      );
-    } catch (_) {}
-
-    final newUiModel = EventDetailUiMapper.map(
-      _event,
-      isAuthenticated: isAuth,
-      isJoinEnabled: state.isJoinEnabled,
-      l10n: l10n,
+  try {
+    final allEvents = await eventRepository.getEvents(forceRefresh: true);
+    final updatedEvent = allEvents.firstWhere(
+      (e) => e.id == _event.id,
+      orElse: () => _event, 
     );
-
-    emit(state.copyWith(
-      loading: false,
-      isAuthenticated: isAuth,
-      uiModel: newUiModel,
-    ));
+    _event = updatedEvent;
+  } catch (_) {
   }
+
+  final updatedUiModel = EventDetailUiMapper.map(
+    _event,
+    isAuthenticated: isAuth,
+    isJoinEnabled: state.isJoinEnabled,
+    l10n: l10n,
+  );
+
+  emit(state.copyWith(
+    loading: false,
+    isAuthenticated: isAuth,
+    uiModel: updatedUiModel,
+  ));
+}
 
   Future<void> primaryPressed() async {
     if (!state.isAuthenticated) {
@@ -86,8 +85,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
         await eventRepository.leaveEvent(_event);
         updated = _event.copyWith(
           userJoined: false,
-          currentAttendeeCount: (_event.currentAttendeeCount -
-                  1)
+          currentAttendeeCount: (_event.currentAttendeeCount - 1)
               .clamp(0, _event.maxCapacity ?? _event.currentAttendeeCount),
         );
         _emitEffect(ShowLeaveSuccessEffect());

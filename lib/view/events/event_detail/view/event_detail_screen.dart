@@ -175,7 +175,7 @@ class _EventDetailFormState extends State<_EventDetailForm> {
             const SizedBox(height: 8),
           ],
           EsmorgaText(
-            text: l10n.screen_event_details_join_deadline(ui.formattedJoinDeadLine ?? ""),
+            text: l10n.screen_event_details_join_deadline(ui.formattedJoinDeadLine!),
             style: EsmorgaTextStyle.caption,
           ),
           const SizedBox(height: 24),

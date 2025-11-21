@@ -17,11 +17,21 @@ class EventDetailState extends Equatable {
   });
 
   bool get isJoinEnabled {
-    if (uiModel.joinDeadLine == null) return true;
-    final deadline = DateTime.tryParse(uiModel.joinDeadLine!);
-    if (deadline == null) return true;
-    return DateTime.now().isBefore(deadline) || DateTime.now().isAtSameMomentAs(deadline);
+  final now = DateTime.now();
+
+  if (uiModel.eventDate.isBefore(now)) {
+    return false;
   }
+
+  if (uiModel.joinDeadLine != null) {
+    final deadline = DateTime.tryParse(uiModel.joinDeadLine!);
+    if (deadline != null) {
+      return now.isBefore(deadline) || now.isAtSameMomentAs(deadline);
+    }
+  }
+
+  return true;
+}
 
   EventDetailState copyWith({
     bool? loading,

@@ -1,6 +1,4 @@
-import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/domain/event/model/event.dart';
-import 'package:esmorga_flutter/view/dateformatting/esmorga_date_time_formatter.dart';
 import 'package:esmorga_flutter/domain/event/model/event_location.dart';
 
 class EventDetailUiModel {
@@ -8,6 +6,7 @@ class EventDetailUiModel {
   final String title;
   final String description;
   final String date;
+  final DateTime eventDate; 
   final String locationName;
   final String? imageUrl;
   final bool userJoined;
@@ -25,6 +24,7 @@ class EventDetailUiModel {
     required this.title,
     required this.description,
     required this.date,
+    required this.eventDate,
     required this.locationName,
     this.imageUrl,
     required this.userJoined,
