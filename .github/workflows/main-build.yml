@@ -10,7 +10,7 @@ on:
       platform:
         description: 'Platform to build: android, ios, or both'
         required: true
-        default: 'both'
+        default: 'ios'
       build_env:
         description: 'Build environment (e.g., qa, prod)'
         required: false
