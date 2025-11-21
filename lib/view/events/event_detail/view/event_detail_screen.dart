@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
@@ -14,7 +16,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 class EventDetailScreen extends StatelessWidget {
   final Function() goToLogin;
-  const EventDetailScreen({Key? key, required this.goToLogin}) : super(key: key);
+  const EventDetailScreen({Key? key, required this.goToLogin})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -33,11 +36,39 @@ class _EventDetailForm extends StatefulWidget {
 class _EventDetailFormState extends State<_EventDetailForm> {
   late final EventDetailCubit _cubit;
 
+  StreamSubscription<EventDetailEffect>? _effectSubscription;
+
   @override
   void initState() {
     super.initState();
     _cubit = context.read<EventDetailCubit>();
     _cubit.start();
+    _effectSubscription = _cubit.effects.listen((effect) {
+      if (!mounted) return;
+      final l10n = getIt<LocalizationService>().current;
+      if (effect is NavigateBackEffect) {
+        context.pop();
+      } else if (effect is NavigateToLoginEffect) {
+        debugPrint("Navigate");
+        widget.goToLogin();
+      } else if (effect is ShowJoinSuccessEffect) {
+        _showSnack(l10n.snackbarEventJoined);
+      } else if (effect is ShowLeaveSuccessEffect) {
+        _showSnack(l10n.snackbarEventLeft);
+      } else if (effect is ShowNoNetworkEffect) {
+        _showSnack(l10n.snackbarNoInternet);
+      } else if (effect is ShowGenericErrorEffect) {
+        _showSnack(l10n.defaultErrorTitle);
+      } else if (effect is OpenMapsEffect) {
+        _openMaps(effect.lat, effect.lng, effect.name);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _effectSubscription?.cancel();
+    super.dispose();
   }
 
   @override
@@ -87,7 +118,8 @@ class _EventDetailFormState extends State<_EventDetailForm> {
     );
   }
 
-  Widget _buildBody(BuildContext context, EventDetailState state, AppLocalizations l10n) {
+  Widget _buildBody(
+      BuildContext context, EventDetailState state, AppLocalizations l10n) {
     String safeDecode(String raw) {
       if (!raw.contains('%')) return raw;
       final hasValidPattern = RegExp(r'%[0-9A-Fa-f]{2}').hasMatch(raw);
@@ -117,23 +149,21 @@ class _EventDetailFormState extends State<_EventDetailForm> {
         ),
       );
     }
-  final ui = state.uiModel;
-  final isFull = ui.maxCapacity != null && ui.currentAttendeeCount >= ui.maxCapacity!;
+    final ui = state.uiModel;
+    final isFull =
+        ui.maxCapacity != null && ui.currentAttendeeCount >= ui.maxCapacity!;
 
+    final buttonText = !state.isAuthenticated
+        ? l10n.buttonLoginToJoin
+        : (isFull && !state.uiModel.userJoined)
+            ? l10n.buttonJoinEventDisabled
+            : (state.uiModel.userJoined
+                ? l10n.buttonLeaveEvent
+                : l10n.buttonJoinEvent);
 
-  final buttonText = !state.isAuthenticated
-      ? l10n.buttonLoginToJoin 
-      : (isFull && !state.uiModel.userJoined)
-          ? l10n.buttonJoinEventDisabled
-          : (state.uiModel.userJoined
-              ? l10n.buttonLeaveEvent
-              : l10n.buttonJoinEvent);
-
-  final buttonEnabled = state.isAuthenticated
-      ? (isFull
-          ? state.uiModel.userJoined
-          : true)
-      : !isFull;
+    final buttonEnabled = state.isAuthenticated
+        ? (isFull ? state.uiModel.userJoined : true)
+        : !isFull;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -162,16 +192,13 @@ class _EventDetailFormState extends State<_EventDetailForm> {
             ),
           ),
           const SizedBox(height: 24),
-
           EsmorgaText(
             text: ui.title,
             style: EsmorgaTextStyle.heading1,
             key: const Key('event_detail_title'),
           ),
-
           const SizedBox(height: 8),
           EsmorgaText(text: ui.date, style: EsmorgaTextStyle.body1Accent),
-
           const SizedBox(height: 8),
           if (ui.maxCapacity != null) ...[
             Row(
@@ -190,18 +217,19 @@ class _EventDetailFormState extends State<_EventDetailForm> {
             ),
             const SizedBox(height: 8),
           ],
-
           const SizedBox(height: 24),
-          EsmorgaText(text: l10n.screenEventDetailsDescription, style: EsmorgaTextStyle.heading2),
+          EsmorgaText(
+              text: l10n.screenEventDetailsDescription,
+              style: EsmorgaTextStyle.heading2),
           const SizedBox(height: 8),
-
-          EsmorgaText(text: safeDecode(ui.description), style: EsmorgaTextStyle.body1),
-
+          EsmorgaText(
+              text: safeDecode(ui.description), style: EsmorgaTextStyle.body1),
           const SizedBox(height: 24),
-          EsmorgaText(text: l10n.screenEventDetailsLocation, style: EsmorgaTextStyle.heading2),
+          EsmorgaText(
+              text: l10n.screenEventDetailsLocation,
+              style: EsmorgaTextStyle.heading2),
           const SizedBox(height: 8),
           EsmorgaText(text: ui.locationName, style: EsmorgaTextStyle.body1),
-
           if (ui.showNavigateButton) ...[
             const SizedBox(height: 24),
             EsmorgaButton(
@@ -219,8 +247,6 @@ class _EventDetailFormState extends State<_EventDetailForm> {
             onClick: () => _cubit.primaryPressed(),
             key: const Key('event_detail_primary_button'),
           ),
-
-
           const SizedBox(height: 48),
         ],
       ),
@@ -234,7 +260,8 @@ class _EventDetailFormState extends State<_EventDetailForm> {
 
   void _openMaps(double lat, double lng, String name) async {
     final query = Uri.encodeComponent(name);
-    final uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng($query)');
+    final uri = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=$lat,$lng($query)');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else if (mounted) {
