@@ -37,6 +37,9 @@ class EventLocalModel extends HiveObject {
   @HiveField(10)
   final int? localMaxCapacity;
 
+  @HiveField(11)
+  final int localJoinDeadline;
+
   EventLocalModel({
     required this.localId,
     required this.localName,
@@ -49,6 +52,7 @@ class EventLocalModel extends HiveObject {
     required this.localUserJoined,
     required this.localCurrentAttendeeCount,
     required this.localMaxCapacity,
+    required this.localJoinDeadline,
   });
 }
 

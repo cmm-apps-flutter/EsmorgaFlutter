@@ -125,6 +125,7 @@
   "labelCapacity": "{current}/{total} attendees",
   "buttonJoinEventDisabled": "Full",
   "snackbarEventFull": "The event has reached maximum capacity.",
-  "errorEventFull": "Event full"
+  "errorEventFull": "Event full",
+  "button_join_event_closed": "Too late",
+  "screen_event_details_join_deadline": "Join before {date}"
 }
-

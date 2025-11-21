@@ -15,3 +15,4 @@ class OpenMapsEffect extends EventDetailEffect {
   OpenMapsEffect({required this.lat, required this.lng, required this.name});
 }
 class ShowEventFullSnackbarEffect extends EventDetailEffect {}
+class ShowJoinClosedEffect extends EventDetailEffect {}

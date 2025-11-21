@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:esmorga_flutter/data/event/event_repository_impl.dart';
 import 'package:esmorga_flutter/data/user/datasource/auth_datasource.dart';
 import 'package:esmorga_flutter/data/user/datasource/shared_preferences_auth_datasource.dart';
@@ -164,6 +166,7 @@ Future<void> setupDi(Locale locale) async {
         eventRepository: getIt(),
         userRepository: getIt(),
         event: event,
+        l10n: getIt<LocalizationService>(),
       ));
 
   getIt.registerFactoryParam<VerifyAccountCubit, BuildContext, String>((context, verificationCode) => VerifyAccountCubit(

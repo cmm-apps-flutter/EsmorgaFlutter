@@ -11,6 +11,7 @@ class Event {
   final bool userJoined;
   final int currentAttendeeCount;
   final int? maxCapacity;
+  final int joinDeadline;
 
   const Event({
     required this.id,
@@ -22,7 +23,8 @@ class Event {
     this.tags = const [],
     required this.userJoined,
     required this.currentAttendeeCount,
-    required this.maxCapacity
+    this.maxCapacity,
+    required this.joinDeadline,
   });
 
   Event copyWith({
@@ -36,6 +38,7 @@ class Event {
     bool? userJoined,
     int? currentAttendeeCount,
     int? maxCapacity,
+    int? joinDeadline,
   }) {
     return Event(
       id: id ?? this.id,
@@ -48,6 +51,7 @@ class Event {
       userJoined: userJoined ?? this.userJoined,
       currentAttendeeCount: currentAttendeeCount ?? this.currentAttendeeCount,
       maxCapacity: maxCapacity ?? this.maxCapacity,
+      joinDeadline: joinDeadline ?? this.joinDeadline,
     );
   }
 }

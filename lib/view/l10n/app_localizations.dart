@@ -769,6 +769,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Event full'**
   String get errorEventFull;
+
+  /// No description provided for @button_join_event_closed.
+  ///
+  /// In en, this message translates to:
+  /// **'Too late'**
+  String get button_join_event_closed;
+
+  /// No description provided for @screen_event_details_join_deadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Join before {date}'**
+  String screen_event_details_join_deadline(Object date);
 }
 
 class _AppLocalizationsDelegate

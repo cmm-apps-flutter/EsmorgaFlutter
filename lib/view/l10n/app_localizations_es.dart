@@ -368,4 +368,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get errorEventFull => 'El evento está completo';
+
+  @override
+  String get button_join_event_closed => 'Demasiado tarde';
+
+  @override
+  String screen_event_details_join_deadline(Object date) {
+    return 'Únete antes del $date';
+  }
 }

@@ -19,6 +19,7 @@ extension EventLocalModelMapper on EventLocalModel {
       dataUserJoined: localUserJoined,
       dataCurrentAttendeeCount: localCurrentAttendeeCount,
       dataMaxCapacity: localMaxCapacity,
+      dataJoinDeadLine: localJoinDeadline,
     );
   }
 }
@@ -41,6 +42,7 @@ extension EventDataModelToLocalMapper on EventDataModel {
       localUserJoined: dataUserJoined,
       localCurrentAttendeeCount: dataCurrentAttendeeCount,
       localMaxCapacity: dataMaxCapacity,
+      localJoinDeadline: dataJoinDeadLine,
     );
   }
 }
