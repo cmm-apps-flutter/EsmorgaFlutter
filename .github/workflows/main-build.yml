@@ -17,7 +17,6 @@ on:
         default: 'qa'
 
 jobs:
-  build-android:
     name: Build Android APK
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.platform == 'android' || github.event.inputs.platform == 'both' }}
