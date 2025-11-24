@@ -60,9 +60,7 @@ class EventDetailUiMapper {
           event.location.lat != null && event.location.long != null,
       currentAttendeeCount: event.currentAttendeeCount,
       maxCapacity: event.maxCapacity,
-      joinDeadLine: DateTime.fromMillisecondsSinceEpoch(event.joinDeadline)
-              .toIso8601String(),
-      formattedJoinDeadLine: dateFormatter.formatEventDate(event.joinDeadline),
+      joinDeadLine: dateFormatter.formatEventDate(event.joinDeadline),
       buttonEnabled: buttonEnabled,
       buttonText: buttonText,
     );

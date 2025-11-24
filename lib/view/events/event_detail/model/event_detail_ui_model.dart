@@ -14,7 +14,6 @@ class EventDetailUiModel {
   final int? maxCapacity;
   final int currentAttendeeCount;
   final String? joinDeadLine;
-  final String? formattedJoinDeadLine;
   final bool buttonEnabled;
   final String buttonText;
 
@@ -32,7 +31,6 @@ class EventDetailUiModel {
     required this.currentAttendeeCount,
     this.maxCapacity,
     this.joinDeadLine,
-    this.formattedJoinDeadLine,
     required this.buttonEnabled,
     required this.buttonText,
   });
