@@ -34,13 +34,15 @@ class DateFormatterImpl implements EsmorgaDateTimeFormatter {
       final dayOfWeekFormatter = DateFormat.E(); // Day of week (short)
 
       final dayOfWeek = dayOfWeekFormatter.format(dateTime);
+      final capitalizedDayOfWeek =
+          dayOfWeek.isNotEmpty ? '${dayOfWeek[0].toUpperCase()}${dayOfWeek.substring(1)}' : dayOfWeek;
+
       final mediumDate = mediumDateFormatter.format(dateTime);
       final shortTime = shortTimeFormatter.format(dateTime);
 
-      return '$dayOfWeek, $mediumDate, $shortTime';
+      return '$capitalizedDayOfWeek, $mediumDate, $shortTime';
     } catch (e) {
       return DateTime.fromMillisecondsSinceEpoch(epochMillis).toIso8601String();
     }
   }
 }
-

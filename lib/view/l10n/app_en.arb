@@ -128,4 +128,5 @@
   "errorEventFull": "Event full",
   "button_join_event_closed": "Too late",
   "screen_event_details_join_deadline": "Join before {date}"
+  "loginError": "Oops, something went wrong. Please review your data and try again."
 }

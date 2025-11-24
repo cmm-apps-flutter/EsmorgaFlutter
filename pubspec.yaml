@@ -30,6 +30,7 @@ dependencies:
   flutter_svg: ^2.0.10
   logger: ^2.0.2+1
   app_links: ^6.4.1
+  http_proxy: ^1.2.3
 
 
 dev_dependencies:
