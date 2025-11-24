@@ -55,7 +55,7 @@ void main() {
   );
   
   final deadlinePassedEvent = baseEvent.copyWith(
-    joinDeadline: DateTime.now().subtract(const Duration(hours: 1)).millisecondsSinceEpoch,
+    joinDeadline: DateTime(2020, 1, 1).millisecondsSinceEpoch, 
     currentAttendeeCount: 2,
     userJoined: false,
   );
@@ -63,7 +63,7 @@ void main() {
   final fullEvent = baseEvent.copyWith(
     currentAttendeeCount: 10,
     maxCapacity: 10,
-    joinDeadline: DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch,
+    joinDeadline: DateTime(2100, 1, 1).millisecondsSinceEpoch,
     userJoined: false,
   );
 
@@ -72,7 +72,7 @@ void main() {
   );
 
   final deadlineFutureEvent = baseEvent.copyWith(
-    joinDeadline: DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch,
+    joinDeadline: DateTime(2100, 1, 1).millisecondsSinceEpoch,
     currentAttendeeCount: 2,
     userJoined: false,
   );
@@ -175,6 +175,7 @@ void main() {
   blocTest<EventDetailCubit, EventDetailState>(
     'isJoinEnabled is false when joinDeadline is in the past',
     build: () {
+      when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
       return EventDetailCubit(
         eventRepository: eventRepository,
         userRepository: userRepository,
@@ -187,7 +188,7 @@ void main() {
       isA<EventDetailState>().having((s) => s.loading, 'loading', true),
       isA<EventDetailState>()
           .having((s) => s.loading, 'loading', false)
-          .having((s) => s.isJoinEnabled, 'isJoinEnabled', false), 
+          .having((s) => s.uiModel.buttonEnabled, 'buttonEnabled', false)
     ],
   );
 
@@ -206,7 +207,7 @@ void main() {
       isA<EventDetailState>().having((s) => s.loading, 'loading', true),
       isA<EventDetailState>()
           .having((s) => s.loading, 'loading', false)
-          .having((s) => s.isJoinEnabled, 'isJoinEnabled', true),
+          .having((s) => s.uiModel.buttonEnabled, 'buttonEnabled', true)
     ],
   );
 
@@ -247,7 +248,7 @@ void main() {
       isA<EventDetailState>().having((s) => s.loading, 'loading', true),
       isA<EventDetailState>()
           .having((s) => s.loading, 'loading', false)
-          .having((s) => s.isJoinEnabled, 'isJoinEnabled', true),
+          .having((s) => s.uiModel.buttonEnabled, 'buttonEnabled', true)
     ],
   );
 
