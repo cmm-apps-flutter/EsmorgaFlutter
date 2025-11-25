@@ -112,6 +112,7 @@
   "buttonJoinEventDisabled": "Lleno",
   "snackbarEventFull": "El evento ya ha alcanzado el aforo máximo.",
   "errorEventFull": "El evento está completo",
+  "button_join_event_closed": "Demasiado tarde",
+  "screen_event_details_join_deadline": "Únete antes del {date}",
   "loginError": "Ups, hubo un error. Revisa tus datos e inténtalo de nuevo"
 }
-

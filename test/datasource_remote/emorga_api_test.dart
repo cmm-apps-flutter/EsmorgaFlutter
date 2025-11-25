@@ -42,6 +42,7 @@ void main() {
             "description": "Join us for an unforgettable celebration as we dance into the apocalypse.",
             "eventType": "Party",
             "imageUrl": "image.url",
+            "joinDeadline": "2025-03-08T10:05:30.915Z",
             "location": {"lat": 43.35525182148881, "long": -8.41937931298951, "name": "A Coruña"},
             "tags": ["DANCE", "MUSIC"]
           },
@@ -52,6 +53,7 @@ void main() {
             "description": "Join us for an unforgettable celebration as we dance into the apocalypse.",
             "eventType": "Party",
             "imageUrl": "image.url",
+            "joinDeadline": "2025-03-08T10:05:30.915Z",
             "location": {"lat": 43.35525182148881, "long": -8.41937931298951, "name": "A Coruña"},
             "tags": ["DANCE", "MUSIC"]
           },
@@ -62,6 +64,7 @@ void main() {
             "description": "Join us for an unforgettable celebration as we dance into the apocalypse.",
             "eventType": "Party",
             "imageUrl": "image.url",
+            "joinDeadline": "2025-03-08T10:05:30.915Z",
             "location": {"lat": 43.35525182148881, "long": -8.41937931298951, "name": "A Coruña"},
             "tags": ["DANCE", "MUSIC"]
           },
@@ -72,6 +75,7 @@ void main() {
             "description": "Join us for an unforgettable celebration as we dance into the apocalypse.",
             "eventType": "Party",
             "imageUrl": "image.url",
+            "joinDeadline": "2025-03-08T10:05:30.915Z",
             "location": {"lat": 43.35525182148881, "long": -8.41937931298951, "name": "A Coruña"},
             "tags": ["DANCE", "MUSIC"]
           },
@@ -82,6 +86,7 @@ void main() {
             "description": "Join us for an unforgettable celebration as we dance into the apocalypse.",
             "eventType": "Party",
             "imageUrl": "image.url",
+            "joinDeadline": "2025-03-08T10:05:30.915Z",
             "location": {"lat": 43.35525182148881, "long": -8.41937931298951, "name": "A Coruña"},
             "tags": ["DANCE", "MUSIC"]
           },

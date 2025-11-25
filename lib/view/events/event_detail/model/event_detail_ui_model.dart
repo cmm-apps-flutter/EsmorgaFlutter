@@ -1,7 +1,4 @@
-
-import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/domain/event/model/event.dart';
-import 'package:esmorga_flutter/view/dateformatting/esmorga_date_time_formatter.dart';
 import 'package:esmorga_flutter/domain/event/model/event_location.dart';
 
 class EventDetailUiModel {
@@ -15,6 +12,10 @@ class EventDetailUiModel {
   final bool showNavigateButton;
   final int? maxCapacity;
   final int currentAttendeeCount;
+  final String joinDeadLine;
+  final bool buttonEnabled;
+  final String buttonText;
+
 
   EventDetailUiModel({
     required this.id,
@@ -27,6 +28,9 @@ class EventDetailUiModel {
     required this.showNavigateButton,
     required this.currentAttendeeCount,
     this.maxCapacity,
+    required this.joinDeadLine,
+    required this.buttonEnabled,
+    required this.buttonText,
   });
 
   Event toDomain() {
@@ -41,23 +45,7 @@ class EventDetailUiModel {
       userJoined: userJoined,
       currentAttendeeCount: currentAttendeeCount,
       maxCapacity: maxCapacity,
-    );
-  }
-}
-
-extension EventMappers on Event {
-  EventDetailUiModel toEventDetailUiModel() {
-    return EventDetailUiModel(
-      id: id,
-      title: name,
-      description: description,
-      date: getIt<EsmorgaDateTimeFormatter>().formatEventDate(date),
-      locationName: location.name,
-      userJoined: userJoined,
-      imageUrl: imageUrl != null ? Uri.decodeComponent(imageUrl!) : null,
-      showNavigateButton: location.lat != null && location.long != null,
-      currentAttendeeCount: currentAttendeeCount,
-      maxCapacity: maxCapacity,
+      joinDeadline: int.parse(joinDeadLine),
     );
   }
 }

@@ -30,7 +30,7 @@ void main() {
   late _MockEventRepository eventRepository;
   late _MockUserRepository userRepository;
   const testUser = User(name: 'John', lastName: 'Doe', email: 'john@doe.com', role: RoleType.user);
-  final joinedEvent = Event(id: '1', name: 'Joined', date: 0, description: 'desc', location: const EventLocation(name: 'Loc'), userJoined: true, imageUrl: null, tags: const [], currentAttendeeCount: 2, maxCapacity: 10);
+  final joinedEvent = Event(id: '1', name: 'Joined', date: 0, description: 'desc', joinDeadline: 0 ,location: const EventLocation(name: 'Loc'), userJoined: true, imageUrl: null, tags: const [], currentAttendeeCount: 2, maxCapacity: 10);
 
   setUp(() {
     eventRepository = _MockEventRepository();

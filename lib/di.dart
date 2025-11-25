@@ -187,6 +187,7 @@ Future<void> setupDi(Locale locale) async {
         eventRepository: getIt(),
         userRepository: getIt(),
         event: event,
+        l10n: getIt<LocalizationService>(),
       ));
 
   getIt

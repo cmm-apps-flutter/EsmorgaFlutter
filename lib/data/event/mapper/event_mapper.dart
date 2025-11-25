@@ -19,6 +19,7 @@ extension EventDataModelMapper on EventDataModel {
       userJoined: dataUserJoined,
       currentAttendeeCount: dataCurrentAttendeeCount,
       maxCapacity: dataMaxCapacity,
+      joinDeadline: dataJoinDeadLine,
     );
   }
 }
@@ -47,6 +48,7 @@ extension EventMapper on Event {
       dataUserJoined: userJoined,
       dataCurrentAttendeeCount: currentAttendeeCount,
       dataMaxCapacity: maxCapacity,
+      dataJoinDeadLine: joinDeadline,
     );
   }
 }

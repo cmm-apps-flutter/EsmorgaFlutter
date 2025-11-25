@@ -32,6 +32,7 @@ final event = Event(
   userJoined: false,
   currentAttendeeCount: 2,
   maxCapacity: 10,
+  joinDeadline: DateTime(2025, 1, 1).millisecondsSinceEpoch,
 );
 
 void main() {

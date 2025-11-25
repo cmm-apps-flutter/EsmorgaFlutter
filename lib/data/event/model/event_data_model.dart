@@ -12,7 +12,7 @@ class EventDataModel {
   final bool dataUserJoined;
   final int dataCurrentAttendeeCount;
   final int? dataMaxCapacity;
-
+  final int dataJoinDeadLine;
 
   const EventDataModel({
     required this.dataId,
@@ -26,6 +26,7 @@ class EventDataModel {
     required this.dataUserJoined,
     required this.dataCurrentAttendeeCount,
     required this.dataMaxCapacity,
+    required this.dataJoinDeadLine,
   }) : dataCreationTime = dataCreationTime ?? 0;
 
   factory EventDataModel.fromRemoteModel(EventRemoteModel remote) {
@@ -41,6 +42,7 @@ class EventDataModel {
       dataUserJoined: false,
       dataCurrentAttendeeCount: remote.remoteCurrentAttendeeCount,
       dataMaxCapacity: remote.remoteMaxCapacity,
+      dataJoinDeadLine: _parseDateToMillis(remote.remoteJoinDeadLine)
     );
   }
 
@@ -56,6 +58,7 @@ class EventDataModel {
     bool? dataUserJoined,
     int? dataCurrentAttendeeCount,
     int? dataMaxCapacity,
+    int? dataJoinDeadLine,
   }) {
     return EventDataModel(
       dataId: dataId ?? this.dataId,
@@ -69,6 +72,7 @@ class EventDataModel {
       dataUserJoined: dataUserJoined ?? this.dataUserJoined,
       dataCurrentAttendeeCount: dataCurrentAttendeeCount ?? this.dataCurrentAttendeeCount,
       dataMaxCapacity: dataMaxCapacity ?? this.dataMaxCapacity,
+      dataJoinDeadLine: dataJoinDeadLine ?? this.dataJoinDeadLine,
     );
   }
 

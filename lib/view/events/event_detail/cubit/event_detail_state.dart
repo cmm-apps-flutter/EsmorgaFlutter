@@ -23,12 +23,12 @@ class EventDetailState extends Equatable {
     bool? joinLeaving,
     String? error,
   }) => EventDetailState(
-    loading: loading ?? this.loading,
-    uiModel: uiModel ?? this.uiModel,
-    isAuthenticated: isAuthenticated ?? this.isAuthenticated,
-    joinLeaving: joinLeaving ?? this.joinLeaving,
-    error: error ?? this.error,
-  );
+        loading: loading ?? this.loading,
+        uiModel: uiModel ?? this.uiModel,
+        isAuthenticated: isAuthenticated ?? this.isAuthenticated,
+        joinLeaving: joinLeaving ?? this.joinLeaving,
+        error: error ?? this.error,
+      );
 
   @override
   List<Object?> get props => [uiModel, loading, isAuthenticated, joinLeaving, error];

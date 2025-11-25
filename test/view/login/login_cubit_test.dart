@@ -65,7 +65,8 @@ void main() {
     blocTest<LoginCubit, LoginState>(
       'emits failure when repository throws',
       build: () {
-        when(() => userRepository.login(any(), any())).thenThrow(Exception('invalid credentials'));
+        when(() => userRepository.login(any(), any()))
+            .thenThrow(Exception('invalid credentials'));
         final cubit = LoginCubit(userRepository: userRepository, validator: validator)
           ..changeEmail('user@test.com')
           ..changePassword('Passw0rd!');
@@ -74,7 +75,12 @@ void main() {
       act: (cubit) => cubit.submit(),
       expect: () => [
         isA<LoginState>().having((s) => s.status, 'status', LoginStatus.submitting),
-        isA<LoginState>().having((s) => s.status, 'status', LoginStatus.failure).having((s) => s.failureMessage, 'failureMessage', contains('invalid credentials')),
+        isA<LoginState>()
+            .having((s) => s.status, 'status', LoginStatus.failure)
+            .having(
+                (s) => s.failureMessage,
+                'failureMessage',
+                'Oops, something went wrong. Please review your data and try again.'),
       ],
     );
   });
