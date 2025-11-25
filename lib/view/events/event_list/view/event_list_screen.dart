@@ -74,7 +74,7 @@ class _EventListFormState extends State<_EventListForm> {
             builder: (context, state) {
               Widget body;
               if (state.loading) {
-                body = EventListLoadingWidget(title: l10n.screenEventListLoading);
+                body = EventListLoadingWidget(title: l10n.body_loader);
               } else if (state.eventList.isEmpty && state.error == null) {
                 body = EventListEmptyWidget(text: l10n.screenEventListEmptyText);
               } else if (state.error != null) {

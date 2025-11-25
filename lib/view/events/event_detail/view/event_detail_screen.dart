@@ -158,25 +158,34 @@ class _EventDetailFormState extends State<_EventDetailForm> {
           const SizedBox(height: 8),
           EsmorgaText(text: ui.date, style: EsmorgaTextStyle.body1Accent),
           const SizedBox(height: 8),
-          if (ui.maxCapacity != null) ...[
+          if ((ui.maxCapacity != null && ui.maxCapacity! > 0) || ui.currentAttendeeCount > 0) ...[
             Row(
               children: [
-                const Icon(Icons.people, size: 20),
-                const SizedBox(width: 8),
-                EsmorgaText(
-                  text: l10n.labelCapacity(
-                    ui.currentAttendeeCount,
-                    ui.maxCapacity!,
+                if (ui.maxCapacity != null && ui.maxCapacity! > 0) ...[
+                  const Icon(Icons.people, size: 20),
+                  const SizedBox(width: 8),
+                  EsmorgaText(
+                    text: l10n.labelCapacity(ui.currentAttendeeCount, ui.maxCapacity!),
+                    style: EsmorgaTextStyle.body1Accent,
                   ),
-                  style: EsmorgaTextStyle.body1Accent,
-                  key: const Key('event_detail_capacity_label'),
-                ),
+                  const Spacer(),
+                ],
+                if (ui.currentAttendeeCount > 0)
+                  InkWell(
+                    onTap: () {
+                      context.push('/event_attendees/${ui.id}');
+                    },
+                    child: EsmorgaText(
+                      text: l10n.button_view_attendees,
+                      style: EsmorgaTextStyle.button,
+                    ),
+                  ),
               ],
             ),
             const SizedBox(height: 8),
           ],
           EsmorgaText(
-            text: l10n.screen_event_details_join_deadline(ui.joinDeadLine!),
+            text: l10n.screen_event_details_join_deadline(ui.joinDeadLine),
             style: EsmorgaTextStyle.caption,
           ),
           const SizedBox(height: 24),
