@@ -41,14 +41,6 @@ class EventDetailCubit extends Cubit<EventDetailState> {
       isAuth = true;
     } catch (_) {}
 
-    try {
-      final allEvents = await eventRepository.getEvents(forceRefresh: true);
-      _event = allEvents.firstWhere(
-        (e) => e.id == _event.id,
-        orElse: () => _event,
-      );
-    } catch (_) {}
-
     final updatedUiModel = EventDetailUiMapper.map(
       _event,
       isAuthenticated: isAuth,

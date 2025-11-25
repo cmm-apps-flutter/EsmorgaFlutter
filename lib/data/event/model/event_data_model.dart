@@ -42,7 +42,7 @@ class EventDataModel {
       dataUserJoined: false,
       dataCurrentAttendeeCount: remote.remoteCurrentAttendeeCount,
       dataMaxCapacity: remote.remoteMaxCapacity,
-      dataJoinDeadLine: _parseDateToMillis(remote.remoteJoinDeadLine ?? '')
+      dataJoinDeadLine: _parseDateToMillis(remote.remoteJoinDeadLine)
     );
   }
 

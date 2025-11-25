@@ -50,7 +50,6 @@ class EventDetailUiMapper {
       title: event.name,
       description: event.description,
       date: dateFormatter.formatEventDate(event.date),
-      eventDate: DateTime.fromMillisecondsSinceEpoch(event.date),
       locationName: event.location.name,
       imageUrl: event.imageUrl != null
           ? Uri.decodeComponent(event.imageUrl!)

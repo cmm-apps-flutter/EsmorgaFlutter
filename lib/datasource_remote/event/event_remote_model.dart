@@ -28,7 +28,7 @@ class EventRemoteModel extends Equatable{
   final List<String> remoteTags;
   final int remoteCurrentAttendeeCount;
   final int? remoteMaxCapacity;
-  final String? remoteJoinDeadLine;
+  final String remoteJoinDeadLine;
 
   const EventRemoteModel({
     required this.remoteId,
@@ -41,7 +41,7 @@ class EventRemoteModel extends Equatable{
     required this.remoteTags,
     required this.remoteCurrentAttendeeCount,
     required this.remoteMaxCapacity,
-    this.remoteJoinDeadLine,
+    required this.remoteJoinDeadLine,
   });
 
   factory EventRemoteModel.fromJson(Map<String, dynamic> json) {
