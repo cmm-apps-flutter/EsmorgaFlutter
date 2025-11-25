@@ -45,7 +45,7 @@ class EventDetailUiModel {
       userJoined: userJoined,
       currentAttendeeCount: currentAttendeeCount,
       maxCapacity: maxCapacity,
-      joinDeadline: 0,
+      joinDeadline: int.tryParse(joinDeadLine ?? '') ?? 0,
     );
   }
 }
