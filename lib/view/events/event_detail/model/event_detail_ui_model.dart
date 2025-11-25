@@ -12,7 +12,7 @@ class EventDetailUiModel {
   final bool showNavigateButton;
   final int? maxCapacity;
   final int currentAttendeeCount;
-  final String? joinDeadLine;
+  final String joinDeadLine;
   final bool buttonEnabled;
   final String buttonText;
 
@@ -28,7 +28,7 @@ class EventDetailUiModel {
     required this.showNavigateButton,
     required this.currentAttendeeCount,
     this.maxCapacity,
-    this.joinDeadLine,
+    required this.joinDeadLine,
     required this.buttonEnabled,
     required this.buttonText,
   });
@@ -45,8 +45,7 @@ class EventDetailUiModel {
       userJoined: userJoined,
       currentAttendeeCount: currentAttendeeCount,
       maxCapacity: maxCapacity,
-      joinDeadline: int.tryParse(joinDeadLine ?? '') ?? 0,
+      joinDeadline: int.parse(joinDeadLine),
     );
   }
 }
-
