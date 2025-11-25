@@ -84,15 +84,20 @@ Future<void> setupDi(Locale locale) async {
   http.Client client;
   if (EnvironmentConfig.isQA) {
     final httpProxy = await HttpProxy.createHttpProxy();
-    HttpOverrides.global = httpProxy;
-    final httpClient = HttpClient();
-    httpClient.findProxy = (uri) {
-      return "PROXY ${httpProxy.host}:${httpProxy.port}";
-    };
-    httpClient.badCertificateCallback = (X509Certificate cert, String host, int port) {
-      return true;
-    };
-    client = IOClient(httpClient);
+    if (httpProxy.host != null && httpProxy.host!.isNotEmpty) {
+      HttpOverrides.global = httpProxy;
+      final httpClient = HttpClient();
+      httpClient.findProxy = (uri) {
+        return "PROXY ${httpProxy.host}:${httpProxy.port}";
+      };
+      httpClient.badCertificateCallback =
+          (X509Certificate cert, String host, int port) {
+        return true;
+      };
+      client = IOClient(httpClient);
+    } else {
+      client = http.Client();
+    }
   } else {
     client = http.Client();
   }
