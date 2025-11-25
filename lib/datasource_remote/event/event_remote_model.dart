@@ -56,7 +56,7 @@ class EventRemoteModel extends Equatable{
       remoteTags: json['tags'] != null ? List<String>.from(json['tags']) : [],
       remoteCurrentAttendeeCount: json['currentAttendeeCount'] as int? ?? 0,
       remoteMaxCapacity: json['maxCapacity'] as int?,
-      remoteJoinDeadLine: json['joinDeadline']
+      remoteJoinDeadLine: json['joinDeadline'] as String? ?? '',
     );
   }
 
