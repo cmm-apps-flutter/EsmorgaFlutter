@@ -23,4 +23,15 @@ class PollLocalDatasourceImpl implements PollDatasource {
     final pollMap = {for (var p in localPolls) p.localId: p};
     await pollsBox.putAll(pollMap);
   }
+
+  @override
+  Future<PollDataModel> votePoll(String pollId, List<String> selectedOptions) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> savePoll(PollDataModel poll) async {
+    final localPoll = poll.toPollLocalModel();
+    await pollsBox.put(localPoll.localId, localPoll);
+  }
 }

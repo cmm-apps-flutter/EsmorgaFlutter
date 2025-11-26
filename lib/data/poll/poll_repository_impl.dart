@@ -31,4 +31,11 @@ class PollRepositoryImpl implements PollRepository {
     await localPollDatasource.cachePolls(remotePolls);
     return remotePolls;
   }
+
+  @override
+  Future<Poll> votePoll(String pollId, List<String> selectedOptions) async {
+    final updatedPollData = await remotePollDatasource.votePoll(pollId, selectedOptions);
+    await localPollDatasource.savePoll(updatedPollData);
+    return updatedPollData.toDomain();
+  }
 }

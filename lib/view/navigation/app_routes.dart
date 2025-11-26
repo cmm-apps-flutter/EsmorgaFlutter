@@ -1,5 +1,6 @@
 import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/domain/event/model/event.dart';
+import 'package:esmorga_flutter/domain/poll/model/poll.dart';
 import 'package:esmorga_flutter/view/change_password/view/change_password_screen.dart';
 import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_cubit.dart';
 import 'package:esmorga_flutter/view/events/event_detail/view/event_detail_screen.dart';
@@ -9,6 +10,7 @@ import 'package:esmorga_flutter/view/home/home_screen.dart';
 import 'package:esmorga_flutter/view/login/view/login_screen.dart';
 import 'package:esmorga_flutter/view/password/recover_password_screen.dart';
 import 'package:esmorga_flutter/view/password/reset_password_screen.dart';
+import 'package:esmorga_flutter/view/poll_detail/view/poll_detail_screen.dart';
 import 'package:esmorga_flutter/view/profile/view/profile_screen.dart';
 import 'package:esmorga_flutter/view/registration/verify_account/cubit/verify_account_cubit.dart';
 import 'package:esmorga_flutter/view/registration/verify_account/view/verify_account_screen.dart';
@@ -32,6 +34,7 @@ class AppRoutes {
   static const String recoverPassword = '/recover-password';
   static const String resetPassword = '/reset-password';
   static const String eventDetail = '/event';
+  static const String pollDetail = '/poll';
   static const String verifyAccount = '/verify-account';
 
   static GoRouter createRouter() {
@@ -109,6 +112,13 @@ class AppRoutes {
           },
         ),
         GoRoute(
+          path: pollDetail,
+          builder: (context, state) {
+            final poll = state.extra as Poll;
+            return PollDetailScreen(poll: poll);
+          },
+        ),
+        GoRoute(
           path: verifyAccount,
           builder: (context, state) {
             final code = state.uri.queryParameters['code'] ?? '';
@@ -130,8 +140,11 @@ class AppRoutes {
               pageBuilder: (context, state) => CustomTransitionPage(
                 key: state.pageKey,
                 child: HomeTabScreen(
-                  onDetailsClicked: (event) {
-                    context.push(AppRoutes.eventDetail, extra: event);
+                  onDetailsClicked: (event) async {
+                    await context.push(AppRoutes.eventDetail, extra: event);
+                  },
+                  onPollClicked: (poll) async {
+                    await context.push(AppRoutes.pollDetail, extra: poll);
                   },
                 ),
                 transitionsBuilder: (context, animation, secondaryAnimation, child) {

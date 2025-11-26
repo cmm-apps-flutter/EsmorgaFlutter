@@ -82,6 +82,12 @@ class HomeTabCubit extends Cubit<HomeTabState> {
     _emitEffect(NavigateToEventDetailsEffect(event: events.first));
   }
 
+  void onPollClicked(String id) {
+    final polls = _polls.where((p) => p.id == id);
+    if (polls.isEmpty) return;
+    _emitEffect(NavigateToPollDetailsEffect(poll: polls.first));
+  }
+
   void _emitEffect(HomeTabEffect effect) => _effectController.add(effect);
 
   @override

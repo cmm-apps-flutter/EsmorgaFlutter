@@ -77,4 +77,22 @@ class EsmorgaApi {
       throw Exception('Failed to change password');
     }
   }
+
+  Future<PollRemoteModel> votePoll(String pollId, List<String> selectedOptions) async {
+    final result = await authenticatedHttpClient.post(
+      Uri.parse('$baseUrl$pollsEndpoint/$pollId/vote'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'selectedOptions': selectedOptions}),
+    );
+
+    if (result.statusCode == 200) {
+      return PollRemoteModel.fromJson(json.decode(result.body));
+    } else if (result.statusCode == 409) {
+      throw Exception('Deadline passed');
+    } else if (result.statusCode == 401) {
+      throw Exception('Unauthorized');
+    } else {
+      throw Exception('Failed to vote');
+    }
+  }
 }

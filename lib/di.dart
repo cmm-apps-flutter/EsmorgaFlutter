@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:esmorga_flutter/data/event/event_repository_impl.dart';
 import 'package:esmorga_flutter/data/poll/poll_repository_impl.dart';
 import 'package:esmorga_flutter/datasource_remote/config/environment_config.dart';
+import 'package:esmorga_flutter/domain/user/model/user.dart';
 import 'package:http/io_client.dart';
 import 'package:http_proxy/http_proxy.dart';
 import 'package:intl/intl.dart';
@@ -39,6 +40,9 @@ import 'package:esmorga_flutter/view/login/cubit/login_cubit.dart';
 import 'package:esmorga_flutter/view/navigation/app_routes.dart';
 import 'package:esmorga_flutter/view/password/recover_password_cubit.dart';
 import 'package:esmorga_flutter/view/password/reset_password_cubit.dart';
+import 'package:esmorga_flutter/domain/poll/model/poll.dart';
+import 'package:esmorga_flutter/domain/poll/usecase/vote_poll_use_case.dart';
+import 'package:esmorga_flutter/view/poll_detail/cubit/poll_detail_cubit.dart';
 import 'package:esmorga_flutter/view/profile/cubit/profile_cubit.dart';
 import 'package:esmorga_flutter/view/registration/cubit/register_cubit.dart';
 import 'package:esmorga_flutter/view/registration/cubit/registration_confirmation_cubit.dart';
@@ -175,12 +179,23 @@ Future<void> setupDi(Locale locale) async {
     () => PollRemoteDatasourceImpl(getIt<EsmorgaApi>()),
     instanceName: 'remotePollDatasource',
   );
-
+  getIt.registerFactory<UserRepository>(() => UserRepositoryImpl(
+        getIt<UserLocalDatasourceImpl>(),
+        getIt<UserRemoteDatasourceImpl>(),
+        getIt<EventLocalDatasourceImpl>(),
+        getIt<AuthDatasource>(),
+      ));
   getIt.registerSingleton<PollRepository>(PollRepositoryImpl(
     getIt<PollDatasource>(instanceName: 'localPollDatasource'),
     getIt<PollDatasource>(instanceName: 'remotePollDatasource'),
   ));
+  getIt.registerSingleton<EventRepository>(EventRepositoryImpl(
+    getIt<UserLocalDatasourceImpl>(),
+    getIt<EventLocalDatasourceImpl>(),
+    getIt<EventRemoteDatasourceImpl>(),
+  ));
   getIt.registerSingleton<GetPollsUseCase>(GetPollsUseCase(getIt<PollRepository>()));
+  getIt.registerSingleton<VotePollUseCase>(VotePollUseCase(getIt<PollRepository>()));
 
   // -----------------------------
   // CUBITS
@@ -209,6 +224,11 @@ Future<void> setupDi(Locale locale) async {
         userRepository: getIt(),
         event: event,
         l10n: getIt<LocalizationService>(),
+      ));
+
+  getIt.registerFactoryParam<PollDetailCubit, Poll, void>((poll, _) => PollDetailCubit(
+        poll: poll,
+        votePollUseCase: getIt(),
       ));
 
   getIt
