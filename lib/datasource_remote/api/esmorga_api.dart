@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:esmorga_flutter/datasource_remote/config/environment_config.dart';
 import 'package:esmorga_flutter/datasource_remote/event/event_remote_model.dart';
+import 'package:esmorga_flutter/datasource_remote/poll/poll_remote_model.dart';
 import 'package:http/http.dart' as http;
 
 class EsmorgaApi {
@@ -9,8 +10,23 @@ class EsmorgaApi {
 
   String get baseUrl => EnvironmentConfig.currentBaseUrl;
   String eventsEndpoint = 'account/events';
+  String pollsEndpoint = 'polls';
 
   EsmorgaApi(this.authenticatedHttpClient);
+
+  Future<List<PollRemoteModel>> getPolls() async {
+    final result = await authenticatedHttpClient.get(
+      Uri.parse('$baseUrl$pollsEndpoint'),
+    );
+    if (result.statusCode == 200) {
+      final pollListWrapper = PollListWrapperRemoteModel.fromJson(json.decode(result.body));
+      return pollListWrapper.polls;
+    } else if (result.statusCode == 401) {
+      throw Exception('Unauthorized');
+    } else {
+      throw Exception('Failed to load polls');
+    }
+  }
 
   Future<List<EventRemoteModel>> getMyEvents() async {
     final result = await authenticatedHttpClient.get(

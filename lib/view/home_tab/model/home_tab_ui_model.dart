@@ -1,11 +1,11 @@
 import 'package:equatable/equatable.dart';
 
-class EventListUiState extends Equatable {
+class HomeTabUiState extends Equatable {
   final bool loading;
-  final List<EventListUiModel> eventList;
+  final List<HomeTabUiModel> eventList;
   final String? error;
 
-  const EventListUiState({
+  const HomeTabUiState({
     this.loading = false,
     this.eventList = const [],
     this.error,
@@ -15,14 +15,14 @@ class EventListUiState extends Equatable {
   List<Object?> get props => [loading, eventList, error];
 }
 
-class EventListUiModel extends Equatable {
+class HomeTabUiModel extends Equatable {
   final String id;
   final String? imageUrl;
   final String cardTitle;
   final String cardSubtitle1;
   final String cardSubtitle2;
 
-  const EventListUiModel({
+  const HomeTabUiModel({
     required this.id,
     this.imageUrl,
     required this.cardTitle,

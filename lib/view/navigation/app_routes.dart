@@ -3,7 +3,7 @@ import 'package:esmorga_flutter/domain/event/model/event.dart';
 import 'package:esmorga_flutter/view/change_password/view/change_password_screen.dart';
 import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_cubit.dart';
 import 'package:esmorga_flutter/view/events/event_detail/view/event_detail_screen.dart';
-import 'package:esmorga_flutter/view/events/event_list/view/event_list_screen.dart';
+import 'package:esmorga_flutter/view/home_tab/view/home_tab_screen.dart';
 import 'package:esmorga_flutter/view/events/my_events/view/my_events_screen.dart';
 import 'package:esmorga_flutter/view/home/home_screen.dart';
 import 'package:esmorga_flutter/view/login/view/login_screen.dart';
@@ -99,11 +99,13 @@ class AppRoutes {
           path: eventDetail,
           builder: (context, state) {
             final event = state.extra as Event;
-            return BlocProvider(create: (context) => getIt<EventDetailCubit>(param1: context, param2: event), child: EventDetailScreen(
-              goToLogin: () {
-                context.push(login);
-              },
-            ));
+            return BlocProvider(
+                create: (context) => getIt<EventDetailCubit>(param1: context, param2: event),
+                child: EventDetailScreen(
+                  goToLogin: () {
+                    context.push(login);
+                  },
+                ));
           },
         ),
         GoRoute(
@@ -127,7 +129,7 @@ class AppRoutes {
               path: eventList,
               pageBuilder: (context, state) => CustomTransitionPage(
                 key: state.pageKey,
-                child: EventListScreen(
+                child: HomeTabScreen(
                   onDetailsClicked: (event) {
                     context.push(AppRoutes.eventDetail, extra: event);
                   },

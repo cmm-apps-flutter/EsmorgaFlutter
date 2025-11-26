@@ -4,8 +4,8 @@ import 'package:equatable/equatable.dart';
 import 'package:esmorga_flutter/domain/event/event_repository.dart';
 import 'package:esmorga_flutter/domain/event/model/event.dart';
 import 'package:esmorga_flutter/domain/user/repository/user_repository.dart';
-import 'package:esmorga_flutter/view/events/event_list/mapper/event_list_ui_mapper.dart';
-import 'package:esmorga_flutter/view/events/event_list/model/event_list_ui_model.dart';
+import 'package:esmorga_flutter/view/home_tab/mapper/home_tab_ui_mapper.dart';
+import 'package:esmorga_flutter/view/home_tab/model/home_tab_ui_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 // Removed event part
@@ -13,8 +13,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 part 'my_events_state.dart';
 
 sealed class MyEventsEffect {}
+
 class MyEventsEffectShowNoNetworkPrompt extends MyEventsEffect {}
-class MyEventsEffectNavigateToEventDetail extends MyEventsEffect { final Event event; MyEventsEffectNavigateToEventDetail(this.event); }
+
+class MyEventsEffectNavigateToEventDetail extends MyEventsEffect {
+  final Event event;
+  MyEventsEffectNavigateToEventDetail(this.event);
+}
+
 class MyEventsEffectNavigateToSignIn extends MyEventsEffect {}
 
 class MyEventsCubit extends Cubit<MyEventsState> {
@@ -41,7 +47,7 @@ class MyEventsCubit extends Cubit<MyEventsState> {
       if (_myEvents.isEmpty) {
         emit(const MyEventsState(loading: false, error: MyEventsEffectType.emptyList));
       } else {
-        emit(MyEventsState(loading: false, eventList: _myEvents.toEventUiList()));
+        emit(MyEventsState(loading: false, eventList: _myEvents.toHomeTabUiList()));
       }
     } catch (e) {
       if (e.toString().contains('network') || e.toString().contains('connection')) {
@@ -59,7 +65,9 @@ class MyEventsCubit extends Cubit<MyEventsState> {
     }
   }
 
-  void signIn() { _effectController.add(MyEventsEffectNavigateToSignIn()); }
+  void signIn() {
+    _effectController.add(MyEventsEffectNavigateToSignIn());
+  }
 
   @override
   Future<void> close() {
