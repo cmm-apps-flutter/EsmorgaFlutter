@@ -7,6 +7,7 @@ extension PollDataModelMapper on PollDataModel {
       id: dataId,
       name: dataName,
       description: dataDescription,
+      imageUrl: dataImageUrl,
       options: dataOptions.map((e) => e.toDomain()).toList(),
       userSelectedOptionIds: dataUserSelectedOptionIds,
       voteDeadline: DateTime.fromMillisecondsSinceEpoch(dataVoteDeadline),
@@ -37,11 +38,11 @@ extension PollMapper on Poll {
       dataId: id,
       dataName: name,
       dataDescription: description,
+      dataImageUrl: imageUrl,
       dataOptions: options.map((e) => e.toDataModel()).toList(),
       dataUserSelectedOptionIds: userSelectedOptionIds,
       dataVoteDeadline: voteDeadline.millisecondsSinceEpoch,
       dataIsMultipleChoice: isMultipleChoice,
-      dataCreationTime: DateTime.now().millisecondsSinceEpoch,
     );
   }
 }

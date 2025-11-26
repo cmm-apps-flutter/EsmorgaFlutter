@@ -67,12 +67,26 @@ class _PollDetailView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Image.asset(
-                    'assets/images/poll_placeholder.png',
-                    height: 200,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
+                  if (poll.imageUrl != null && poll.imageUrl!.isNotEmpty)
+                    Image.network(
+                      poll.imageUrl!,
+                      height: 200,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Image.asset(
+                        'assets/images/poll_placeholder.png',
+                        height: 200,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  else
+                    Image.asset(
+                      'assets/images/poll_placeholder.png',
+                      height: 200,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(

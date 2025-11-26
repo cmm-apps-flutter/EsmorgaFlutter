@@ -4,6 +4,7 @@ class Poll extends Equatable {
   final String id;
   final String name;
   final String description;
+  final String? imageUrl;
   final List<PollOption> options;
   final List<String> userSelectedOptionIds;
   final DateTime voteDeadline;
@@ -13,6 +14,7 @@ class Poll extends Equatable {
     required this.id,
     required this.name,
     required this.description,
+    this.imageUrl,
     required this.options,
     required this.userSelectedOptionIds,
     required this.voteDeadline,
@@ -24,6 +26,7 @@ class Poll extends Equatable {
         id,
         name,
         description,
+        imageUrl,
         options,
         userSelectedOptionIds,
         voteDeadline,
