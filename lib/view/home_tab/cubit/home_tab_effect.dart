@@ -1,9 +1,8 @@
-
 import 'package:esmorga_flutter/domain/event/model/event.dart';
 
-abstract class EventListEffect {}
+abstract class HomeTabEffect {}
 
-class NavigateToEventDetailsEffect extends EventListEffect {
+class NavigateToEventDetailsEffect extends HomeTabEffect {
   final Event event;
   NavigateToEventDetailsEffect({required this.event});
 }
