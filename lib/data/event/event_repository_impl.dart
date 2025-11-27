@@ -5,6 +5,7 @@ import 'package:esmorga_flutter/data/user/datasource/user_datasource.dart';
 import 'package:esmorga_flutter/data/event/model/event_data_model.dart';
 import 'package:esmorga_flutter/domain/event/event_repository.dart';
 import 'package:esmorga_flutter/domain/event/model/event.dart';
+import 'package:esmorga_flutter/domain/event/model/event_attendees.dart';
 
 class EventRepositoryImpl implements EventRepository {
   final UserDatasource localUserDatasource;
@@ -72,5 +73,15 @@ class EventRepositoryImpl implements EventRepository {
 
     await localEventDatasource.cacheEvents(combinedList);
     return combinedList;
+  }
+  
+  @override
+  Future<EventAttendees> getEventAttendees(String eventId) async {
+    final attendeesData = await remoteEventDatasource.getEventAttendees(eventId);
+
+    return EventAttendees(
+      totalUsers: attendeesData.totalUsers,
+      users: attendeesData.users,
+    );
   }
 }

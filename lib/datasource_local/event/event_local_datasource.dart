@@ -1,4 +1,5 @@
 import 'package:esmorga_flutter/data/event/event_datasource.dart';
+import 'package:esmorga_flutter/data/event/model/event_attendees_data_model.dart';
 import 'package:esmorga_flutter/data/event/model/event_data_model.dart';
 import 'package:esmorga_flutter/datasource_local/event/event_local_model.dart';
 import 'package:esmorga_flutter/datasource_local/event/mapper/event_local_mapper.dart';
@@ -55,5 +56,10 @@ class EventLocalDatasourceImpl implements EventDatasource {
   Future<void> deleteCacheEvents() async {
     await eventsBox.clear();
   }
+
+  @override
+Future<EventAttendeesDataModel> getEventAttendees(String eventId) async {
+  return EventAttendeesDataModel(totalUsers: 0, users: []);
+}
 }
 

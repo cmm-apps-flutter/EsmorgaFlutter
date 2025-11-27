@@ -170,7 +170,7 @@ class _EventDetailFormState extends State<_EventDetailForm> {
                   ),
                   const Spacer(),
                 ],
-                if (ui.currentAttendeeCount > 0)
+                if (ui.currentAttendeeCount > 0 && ui.showViewAttendants)
                   InkWell(
                     onTap: () {
                       context.push('/event_attendees/${ui.id}');

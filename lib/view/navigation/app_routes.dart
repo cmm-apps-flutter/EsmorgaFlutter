@@ -1,6 +1,8 @@
 import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/domain/event/model/event.dart';
 import 'package:esmorga_flutter/view/change_password/view/change_password_screen.dart';
+import 'package:esmorga_flutter/view/events/event_attendees/cubbit/event_attendees_cubit.dart';
+import 'package:esmorga_flutter/view/events/event_attendees/view/event_attendees_screen.dart';
 import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_cubit.dart';
 import 'package:esmorga_flutter/view/events/event_detail/view/event_detail_screen.dart';
 import 'package:esmorga_flutter/view/events/event_list/view/event_list_screen.dart';
@@ -33,6 +35,7 @@ class AppRoutes {
   static const String resetPassword = '/reset-password';
   static const String eventDetail = '/event';
   static const String verifyAccount = '/verify-account';
+  static const String eventAttendees = '/event_attendees/:eventId';
 
   static GoRouter createRouter() {
     return GoRouter(
@@ -116,6 +119,19 @@ class AppRoutes {
                 onAccountVerified: () {
                   context.go(eventList);
                 },
+              ),
+            );
+          },
+        ),
+        GoRoute(
+          path: eventAttendees,
+          builder: (context, state) {
+            final eventId = state.pathParameters['eventId']!;
+
+            return BlocProvider(
+              create: (_) => getIt<EventAttendeesCubit>(param1: eventId),
+              child: EventAttendeesScreen(
+                eventId: eventId,
               ),
             );
           },
