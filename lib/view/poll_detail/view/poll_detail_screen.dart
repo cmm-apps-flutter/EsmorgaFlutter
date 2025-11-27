@@ -1,6 +1,7 @@
 import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/domain/poll/model/poll.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
+import 'package:esmorga_flutter/ds/esmorga_checkbox_row.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
 import 'package:esmorga_flutter/view/dateformatting/esmorga_date_time_formatter.dart';
 import 'package:esmorga_flutter/view/l10n/localization_service.dart';
@@ -133,26 +134,10 @@ class _PollDetailView extends StatelessWidget {
                               itemBuilder: (context, index) {
                                 final option = poll.options[index];
                                 final isSelected = state.currentSelection.contains(option.id);
-                                return InkWell(
+                                return EsmorgaCheckboxRow(
+                                  text: '${option.option} ${l10n.textPollVoteCount(option.voteCount)}',
+                                  isSelected: isSelected,
                                   onTap: isDeadlinePassed ? null : () => cubit.toggleOption(option.id),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8.0),
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          child: EsmorgaText(
-                                            text: '${option.option} ${l10n.textPollVoteCount(option.voteCount)}',
-                                            style: EsmorgaTextStyle.body1,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Checkbox(
-                                          value: isSelected,
-                                          onChanged: isDeadlinePassed ? null : (_) => cubit.toggleOption(option.id),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
                                 );
                               },
                             ),
