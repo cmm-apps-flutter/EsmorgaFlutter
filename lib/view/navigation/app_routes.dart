@@ -1,16 +1,18 @@
 import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/domain/event/model/event.dart';
+import 'package:esmorga_flutter/domain/poll/model/poll.dart';
 import 'package:esmorga_flutter/view/change_password/view/change_password_screen.dart';
 import 'package:esmorga_flutter/view/events/event_attendees/cubbit/event_attendees_cubit.dart';
 import 'package:esmorga_flutter/view/events/event_attendees/view/event_attendees_screen.dart';
 import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_cubit.dart';
 import 'package:esmorga_flutter/view/events/event_detail/view/event_detail_screen.dart';
-import 'package:esmorga_flutter/view/events/event_list/view/event_list_screen.dart';
+import 'package:esmorga_flutter/view/home_tab/view/home_tab_screen.dart';
 import 'package:esmorga_flutter/view/events/my_events/view/my_events_screen.dart';
 import 'package:esmorga_flutter/view/home/home_screen.dart';
 import 'package:esmorga_flutter/view/login/view/login_screen.dart';
 import 'package:esmorga_flutter/view/password/recover_password_screen.dart';
 import 'package:esmorga_flutter/view/password/reset_password_screen.dart';
+import 'package:esmorga_flutter/view/poll_detail/view/poll_detail_screen.dart';
 import 'package:esmorga_flutter/view/profile/view/profile_screen.dart';
 import 'package:esmorga_flutter/view/registration/verify_account/cubit/verify_account_cubit.dart';
 import 'package:esmorga_flutter/view/registration/verify_account/view/verify_account_screen.dart';
@@ -34,6 +36,7 @@ class AppRoutes {
   static const String recoverPassword = '/recover-password';
   static const String resetPassword = '/reset-password';
   static const String eventDetail = '/event';
+  static const String pollDetail = '/poll';
   static const String verifyAccount = '/verify-account';
   static const String eventAttendees = '/event_attendees/:eventId';
 
@@ -102,11 +105,20 @@ class AppRoutes {
           path: eventDetail,
           builder: (context, state) {
             final event = state.extra as Event;
-            return BlocProvider(create: (context) => getIt<EventDetailCubit>(param1: context, param2: event), child: EventDetailScreen(
-              goToLogin: () {
-                context.push(login);
-              },
-            ));
+            return BlocProvider(
+                create: (context) => getIt<EventDetailCubit>(param1: context, param2: event),
+                child: EventDetailScreen(
+                  goToLogin: () {
+                    context.push(login);
+                  },
+                ));
+          },
+        ),
+        GoRoute(
+          path: pollDetail,
+          builder: (context, state) {
+            final poll = state.extra as Poll;
+            return PollDetailScreen(poll: poll);
           },
         ),
         GoRoute(
@@ -143,9 +155,12 @@ class AppRoutes {
               path: eventList,
               pageBuilder: (context, state) => CustomTransitionPage(
                 key: state.pageKey,
-                child: EventListScreen(
-                  onDetailsClicked: (event) {
-                    context.push(AppRoutes.eventDetail, extra: event);
+                child: HomeTabScreen(
+                  onDetailsClicked: (event) async {
+                    await context.push(AppRoutes.eventDetail, extra: event);
+                  },
+                  onPollClicked: (poll) async {
+                    await context.push(AppRoutes.pollDetail, extra: poll);
                   },
                 ),
                 transitionsBuilder: (context, animation, secondaryAnimation, child) {

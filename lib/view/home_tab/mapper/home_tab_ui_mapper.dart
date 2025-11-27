@@ -1,13 +1,13 @@
 import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/domain/event/model/event.dart';
 import 'package:esmorga_flutter/view/dateformatting/esmorga_date_time_formatter.dart';
-import 'package:esmorga_flutter/view/events/event_list/model/event_list_ui_model.dart';
+import 'package:esmorga_flutter/view/home_tab/model/home_tab_ui_model.dart';
 
-extension EventListUiMapper on Event {
-  EventListUiModel toEventUi() {
+extension HomeTabUiMapper on Event {
+  HomeTabUiModel toHomeTabUi() {
     final formatter = getIt<EsmorgaDateTimeFormatter>();
 
-    return EventListUiModel(
+    return HomeTabUiModel(
       id: id,
       imageUrl: imageUrl != null ? Uri.decodeComponent(imageUrl!) : null,
       cardTitle: name,
@@ -17,8 +17,8 @@ extension EventListUiMapper on Event {
   }
 }
 
-extension EventListUiMapperList on List<Event> {
-  List<EventListUiModel> toEventUiList() {
-    return map((event) => event.toEventUi()).toList();
+extension HomeTabUiMapperList on List<Event> {
+  List<HomeTabUiModel> toHomeTabUiList() {
+    return map((event) => event.toHomeTabUi()).toList();
   }
 }

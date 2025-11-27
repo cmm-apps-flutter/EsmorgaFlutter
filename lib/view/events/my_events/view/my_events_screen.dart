@@ -3,9 +3,9 @@ import 'package:esmorga_flutter/domain/event/model/event.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_loader.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
-import 'package:esmorga_flutter/view/events/event_list/model/event_list_ui_model.dart';
 import 'package:esmorga_flutter/view/events/my_events/cubit/my_events_cubit.dart';
 import 'package:esmorga_flutter/view/home/logged_out_view.dart';
+import 'package:esmorga_flutter/view/home_tab/model/home_tab_ui_model.dart';
 import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -249,7 +249,7 @@ class _MyEventsError extends StatelessWidget {
 }
 
 class _MyEventsList extends StatelessWidget {
-  final List<EventListUiModel> events;
+  final List<HomeTabUiModel> events;
   final Function(String) onEventClick;
 
   const _MyEventsList({required this.events, required this.onEventClick});

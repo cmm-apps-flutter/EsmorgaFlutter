@@ -1,8 +1,10 @@
 import 'dart:io';
 
 import 'package:esmorga_flutter/data/event/event_repository_impl.dart';
+import 'package:esmorga_flutter/data/poll/poll_repository_impl.dart';
 import 'package:esmorga_flutter/datasource_remote/config/environment_config.dart';
 import 'package:esmorga_flutter/view/events/event_attendees/cubbit/event_attendees_cubit.dart';
+import 'package:esmorga_flutter/domain/user/model/user.dart';
 import 'package:http/io_client.dart';
 import 'package:http_proxy/http_proxy.dart';
 import 'package:intl/intl.dart';
@@ -13,20 +15,25 @@ import 'package:esmorga_flutter/data/user/datasource/user_remote_datasource_impl
 import 'package:esmorga_flutter/data/user/repository/user_repository_impl.dart';
 import 'package:esmorga_flutter/datasource_local/event/event_local_datasource.dart';
 import 'package:esmorga_flutter/datasource_local/event/event_local_model.dart';
+import 'package:esmorga_flutter/datasource_local/poll/poll_local_datasource.dart';
+import 'package:esmorga_flutter/datasource_local/poll/poll_local_model.dart';
 import 'package:esmorga_flutter/datasource_remote/api/authenticated_http_client.dart';
 import 'package:esmorga_flutter/datasource_remote/api/esmorga_api.dart';
 import 'package:esmorga_flutter/datasource_remote/api/esmorga_auth_api.dart';
 import 'package:esmorga_flutter/datasource_remote/api/esmorga_guest_api.dart';
 import 'package:esmorga_flutter/datasource_remote/api/logging_http_client.dart';
 import 'package:esmorga_flutter/datasource_remote/event/event_remote_datasource.dart';
+import 'package:esmorga_flutter/datasource_remote/poll/poll_remote_datasource.dart';
 import 'package:esmorga_flutter/domain/event/event_repository.dart';
 import 'package:esmorga_flutter/domain/event/model/event.dart';
+import 'package:esmorga_flutter/domain/poll/poll_repository.dart';
+import 'package:esmorga_flutter/domain/poll/usecase/get_polls_use_case.dart';
 import 'package:esmorga_flutter/domain/user/repository/user_repository.dart';
 import 'package:esmorga_flutter/view/change_password/cubit/change_password_cubit.dart';
 import 'package:esmorga_flutter/view/dateformatting/esmorga_date_time_formatter.dart';
 import 'package:esmorga_flutter/view/deeplink/deep_link_service.dart';
 import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_cubit.dart';
-import 'package:esmorga_flutter/view/events/event_list/cubit/event_list_cubit.dart';
+import 'package:esmorga_flutter/view/home_tab/cubit/home_tab_cubit.dart';
 import 'package:esmorga_flutter/view/events/my_events/cubit/my_events_cubit.dart';
 import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
 import 'package:esmorga_flutter/view/l10n/localization_service.dart';
@@ -34,6 +41,9 @@ import 'package:esmorga_flutter/view/login/cubit/login_cubit.dart';
 import 'package:esmorga_flutter/view/navigation/app_routes.dart';
 import 'package:esmorga_flutter/view/password/recover_password_cubit.dart';
 import 'package:esmorga_flutter/view/password/reset_password_cubit.dart';
+import 'package:esmorga_flutter/domain/poll/model/poll.dart';
+import 'package:esmorga_flutter/domain/poll/usecase/vote_poll_use_case.dart';
+import 'package:esmorga_flutter/view/poll_detail/cubit/poll_detail_cubit.dart';
 import 'package:esmorga_flutter/view/profile/cubit/profile_cubit.dart';
 import 'package:esmorga_flutter/view/registration/cubit/register_cubit.dart';
 import 'package:esmorga_flutter/view/registration/cubit/registration_confirmation_cubit.dart';
@@ -46,6 +56,8 @@ import 'package:go_router/go_router.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:esmorga_flutter/data/poll/poll_datasource.dart';
 
 final getIt = GetIt.instance;
 
@@ -72,9 +84,14 @@ Future<void> setupDi(Locale locale) async {
   await Hive.initFlutter();
   Hive.registerAdapter(EventLocalModelAdapter());
   Hive.registerAdapter(EventLocationLocalModelAdapter());
+  Hive.registerAdapter(PollLocalModelAdapter());
+  Hive.registerAdapter(PollOptionLocalModelAdapter());
 
   final eventsBox = await Hive.openBox<EventLocalModel>('events');
   getIt.registerSingleton<Box<EventLocalModel>>(eventsBox);
+
+  final pollsBox = await Hive.openBox<PollLocalModel>('polls');
+  getIt.registerSingleton<Box<PollLocalModel>>(pollsBox);
 
   final sharedPreferences = await SharedPreferences.getInstance();
   getIt.registerSingleton<SharedPreferences>(sharedPreferences);
@@ -85,15 +102,19 @@ Future<void> setupDi(Locale locale) async {
   http.Client client;
   if (EnvironmentConfig.isQA) {
     final httpProxy = await HttpProxy.createHttpProxy();
-    HttpOverrides.global = httpProxy;
-    final httpClient = HttpClient();
-    httpClient.findProxy = (uri) {
-      return "PROXY ${httpProxy.host}:${httpProxy.port}";
-    };
-    httpClient.badCertificateCallback = (X509Certificate cert, String host, int port) {
-      return true;
-    };
-    client = IOClient(httpClient);
+    if (httpProxy.host != null && httpProxy.host!.isNotEmpty) {
+      HttpOverrides.global = httpProxy;
+      final httpClient = HttpClient();
+      httpClient.findProxy = (uri) {
+        return "PROXY ${httpProxy.host}:${httpProxy.port}";
+      };
+      httpClient.badCertificateCallback = (X509Certificate cert, String host, int port) {
+        return true;
+      };
+      client = IOClient(httpClient);
+    } else {
+      client = http.Client();
+    }
   } else {
     client = http.Client();
   }
@@ -150,28 +171,43 @@ Future<void> setupDi(Locale locale) async {
         getIt<EsmorgaGuestApi>(),
       ));
 
-  // -----------------------------
-  // REPOSITORIES
-  // -----------------------------
+  getIt.registerFactory<PollDatasource>(
+    () => PollLocalDatasourceImpl(getIt<Box<PollLocalModel>>()),
+    instanceName: 'localPollDatasource',
+  );
+
+  getIt.registerFactory<PollDatasource>(
+    () => PollRemoteDatasourceImpl(getIt<EsmorgaApi>()),
+    instanceName: 'remotePollDatasource',
+  );
   getIt.registerFactory<UserRepository>(() => UserRepositoryImpl(
         getIt<UserLocalDatasourceImpl>(),
         getIt<UserRemoteDatasourceImpl>(),
         getIt<EventLocalDatasourceImpl>(),
         getIt<AuthDatasource>(),
       ));
-
-  getIt.registerFactory<EventRepository>(() => EventRepositoryImpl(
-        getIt<UserLocalDatasourceImpl>(),
-        getIt<EventLocalDatasourceImpl>(),
-        getIt<EventRemoteDatasourceImpl>(),
-      ));
+  getIt.registerSingleton<PollRepository>(PollRepositoryImpl(
+    getIt<PollDatasource>(instanceName: 'localPollDatasource'),
+    getIt<PollDatasource>(instanceName: 'remotePollDatasource'),
+  ));
+  getIt.registerSingleton<EventRepository>(EventRepositoryImpl(
+    getIt<UserLocalDatasourceImpl>(),
+    getIt<EventLocalDatasourceImpl>(),
+    getIt<EventRemoteDatasourceImpl>(),
+  ));
+  getIt.registerSingleton<GetPollsUseCase>(GetPollsUseCase(getIt<PollRepository>()));
+  getIt.registerSingleton<VotePollUseCase>(VotePollUseCase(getIt<PollRepository>()));
 
   // -----------------------------
   // CUBITS
   // -----------------------------
   getIt.registerFactory(() => SplashCubit());
   getIt.registerFactory(() => MyEventsCubit(eventRepository: getIt(), userRepository: getIt()));
-  getIt.registerFactory(() => EventListCubit(eventRepository: getIt()));
+  getIt.registerFactory(() => HomeTabCubit(
+        eventRepository: getIt(),
+        getPollsUseCase: getIt(),
+        userRepository: getIt(),
+      ));
   getIt.registerFactory(() => ProfileCubit(userRepository: getIt()));
   getIt.registerFactory(() => LoginCubit(userRepository: getIt(), validator: getIt()));
   getIt.registerFactory(() => RegisterCubit(userRepository: getIt(), validator: getIt()));
@@ -198,4 +234,14 @@ Future<void> setupDi(Locale locale) async {
 
   getIt.registerFactory<EventAttendeesCubit>(() => EventAttendeesCubit(getIt<EventRepository>()));
 
+  getIt.registerFactoryParam<PollDetailCubit, Poll, void>((poll, _) => PollDetailCubit(
+        poll: poll,
+        votePollUseCase: getIt(),
+      ));
+
+  getIt
+      .registerFactoryParam<VerifyAccountCubit, BuildContext, String>((context, verificationCode) => VerifyAccountCubit(
+            userRepository: getIt(),
+            verificationCode: verificationCode,
+          ));
 }

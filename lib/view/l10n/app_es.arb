@@ -36,6 +36,12 @@
   "screenEventListEmptyText": "No hay eventos disponibles. Por favor vuelve más tarde.",
   "body_loader": "Cargando …",
   "screenEventListTitle": "Listado de eventos",
+  "titleExplore": "Está pasando…",
+  "titlePolls": "Encuestas",
+  "titleEvents": "Eventos",
+  "textPollVoteDeadline": "Vota antes del",
+  "textEmptyState": "Ahora mismo no hay nada… pero no te preocupes, algo estamos preparando.",
+  "screenEventListLoading": "Cargando eventos…",
   "screenHomescreenTitle": "¡Hola!",
   "screenLoginTitle": "Hola de nuevo!",
   "screenRegistrationTitle": "Regístrate",
@@ -94,7 +100,20 @@
   "fieldTitleEventName": "Nombre de evento",
   "fieldTitleEventDescription": "Descripcion",
   "placeholderEventName": "Introduce el nombre del evento",
-  "captionEventDescription": "{count}/5000",
+    "captionEventDescription": "{count}/5000",
+  "titleInfo": "Información",
+  "textPollVoteCount": "({count} votos)",
+  "@textPollVoteCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "buttonPollVote": "Votar",
+  "snackbarVoteSuccessful": "Se ha registrado tu voto correctamente",
+  "buttonPollChangeVote": "Cambiar mi voto",
+  "buttonDeadlinePassed": "Demasiado tarde",
   "inlineErrorInvalidLengthName": "El texto debe tener entre 3 y 100 caracteres",
   "inlineErrorInvalidLengthDescription": "El texto debe tener entre 4 y 5000 caracteres",
   "step2OptionParty": "Fiesta",
