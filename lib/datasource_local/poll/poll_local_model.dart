@@ -28,10 +28,14 @@ class PollLocalModel extends HiveObject {
   @HiveField(7)
   final int localCreationTime;
 
+  @HiveField(8)
+  final String? localImageUrl;
+
   PollLocalModel({
     required this.localId,
     required this.localName,
     required this.localDescription,
+    this.localImageUrl,
     required this.localOptions,
     required this.localUserSelectedOptionIds,
     required this.localVoteDeadline,

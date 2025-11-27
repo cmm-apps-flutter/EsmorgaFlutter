@@ -97,7 +97,20 @@
   "registerConfirmationErrorTitle": "Expired or invalid code!",
   "registerConfirmationButtonRetry": "Try again",
   "registerConfirmationButtonCancel": "Cancel",
-  "registrationPasswordMismatchError": "Passwords do not match, please try again!",
+    "registrationPasswordMismatchError": "Passwords do not match, please try again!",
+  "titleInfo": "Information",
+  "textPollVoteCount": "({count} votes)",
+  "@textPollVoteCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "buttonPollVote": "Vote",
+  "snackbarVoteSuccessful": "Your vote has been registered correctly",
+  "buttonPollChangeVote": "Change my vote",
+  "buttonDeadlinePassed": "Too late",
   "registrationReusedPasswordError": "The new password must be different from the current one.",
   "screenCreateEventTitle": "Create your event",
   "stepContinueButton": "Continue",

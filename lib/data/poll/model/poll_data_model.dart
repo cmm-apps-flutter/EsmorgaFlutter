@@ -4,16 +4,18 @@ class PollDataModel {
   final String dataId;
   final String dataName;
   final String dataDescription;
+  final String? dataImageUrl;
   final List<PollOptionDataModel> dataOptions;
   final List<String> dataUserSelectedOptionIds;
   final int dataVoteDeadline;
   final bool dataIsMultipleChoice;
   final int dataCreationTime;
 
-  const PollDataModel({
+  PollDataModel({
     required this.dataId,
     required this.dataName,
     required this.dataDescription,
+    this.dataImageUrl,
     required this.dataOptions,
     required this.dataUserSelectedOptionIds,
     required this.dataVoteDeadline,
@@ -21,15 +23,16 @@ class PollDataModel {
     int? dataCreationTime,
   }) : dataCreationTime = dataCreationTime ?? 0;
 
-  factory PollDataModel.fromRemoteModel(PollRemoteModel remote) {
+  factory PollDataModel.fromRemoteModel(PollRemoteModel remoteModel) {
     return PollDataModel(
-      dataId: remote.pollId,
-      dataName: remote.pollName,
-      dataDescription: remote.description,
-      dataOptions: remote.options.map((e) => PollOptionDataModel.fromRemoteModel(e)).toList(),
-      dataUserSelectedOptionIds: remote.userSelectedOptions,
-      dataVoteDeadline: DateTime.parse(remote.voteDeadline).millisecondsSinceEpoch,
-      dataIsMultipleChoice: remote.isMultipleChoice,
+      dataId: remoteModel.pollId,
+      dataName: remoteModel.pollName,
+      dataDescription: remoteModel.description,
+      dataImageUrl: remoteModel.imageUrl,
+      dataOptions: remoteModel.options.map((e) => PollOptionDataModel.fromRemoteModel(e)).toList(),
+      dataUserSelectedOptionIds: remoteModel.userSelectedOptions,
+      dataVoteDeadline: DateTime.parse(remoteModel.voteDeadline).millisecondsSinceEpoch,
+      dataIsMultipleChoice: remoteModel.isMultipleChoice,
       dataCreationTime: DateTime.now().millisecondsSinceEpoch,
     );
   }
@@ -38,6 +41,7 @@ class PollDataModel {
     String? dataId,
     String? dataName,
     String? dataDescription,
+    String? dataImageUrl,
     List<PollOptionDataModel>? dataOptions,
     List<String>? dataUserSelectedOptionIds,
     int? dataVoteDeadline,
@@ -48,6 +52,7 @@ class PollDataModel {
       dataId: dataId ?? this.dataId,
       dataName: dataName ?? this.dataName,
       dataDescription: dataDescription ?? this.dataDescription,
+      dataImageUrl: dataImageUrl ?? this.dataImageUrl,
       dataOptions: dataOptions ?? this.dataOptions,
       dataUserSelectedOptionIds: dataUserSelectedOptionIds ?? this.dataUserSelectedOptionIds,
       dataVoteDeadline: dataVoteDeadline ?? this.dataVoteDeadline,

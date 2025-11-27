@@ -19,4 +19,15 @@ class PollRemoteDatasourceImpl implements PollDatasource {
     // Remote datasource doesn't cache locally
     throw UnimplementedError();
   }
+
+  @override
+  Future<PollDataModel> votePoll(String pollId, List<String> selectedOptions) async {
+    final remotePoll = await _api.votePoll(pollId, selectedOptions);
+    return PollDataModel.fromRemoteModel(remotePoll);
+  }
+
+  @override
+  Future<void> savePoll(PollDataModel poll) async {
+    throw UnimplementedError();
+  }
 }

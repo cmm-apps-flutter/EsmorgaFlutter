@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/domain/event/model/event.dart';
+import 'package:esmorga_flutter/domain/poll/model/poll.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_loader.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
@@ -16,9 +17,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:esmorga_flutter/view/home_tab/model/poll_ui_model.dart';
 
 class HomeTabScreen extends StatelessWidget {
-  final void Function(Event) onDetailsClicked;
+  final Future<void> Function(Event) onDetailsClicked;
+  final Future<void> Function(Poll) onPollClicked;
 
-  const HomeTabScreen({super.key, required this.onDetailsClicked});
+  const HomeTabScreen({
+    super.key,
+    required this.onDetailsClicked,
+    required this.onPollClicked,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,15 +32,20 @@ class HomeTabScreen extends StatelessWidget {
       create: (ctx) => getIt<HomeTabCubit>(),
       child: _HomeTabForm(
         onDetailsClicked: onDetailsClicked,
+        onPollClicked: onPollClicked,
       ),
     );
   }
 }
 
 class _HomeTabForm extends StatefulWidget {
-  final ValueChanged<Event> onDetailsClicked;
+  final Future<void> Function(Event) onDetailsClicked;
+  final Future<void> Function(Poll) onPollClicked;
 
-  const _HomeTabForm({required this.onDetailsClicked});
+  const _HomeTabForm({
+    required this.onDetailsClicked,
+    required this.onPollClicked,
+  });
 
   @override
   State<_HomeTabForm> createState() => _HomeTabFormState();
@@ -49,9 +60,13 @@ class _HomeTabFormState extends State<_HomeTabForm> {
     super.initState();
     _cubit = context.read<HomeTabCubit>();
     _cubit.loadEvents();
-    _effectSubscription = _cubit.effects.listen((effect) {
+    _effectSubscription = _cubit.effects.listen((effect) async {
       if (effect is NavigateToEventDetailsEffect) {
-        widget.onDetailsClicked(effect.event);
+        await widget.onDetailsClicked(effect.event);
+        _cubit.loadEvents();
+      } else if (effect is NavigateToPollDetailsEffect) {
+        await widget.onPollClicked(effect.poll);
+        _cubit.loadEvents();
       }
     });
   }
@@ -91,6 +106,7 @@ class _HomeTabFormState extends State<_HomeTabForm> {
                   events: state.eventList,
                   polls: state.pollList,
                   onDetailsClicked: _cubit.onEventClicked,
+                  onPollClicked: _cubit.onPollClicked,
                 );
               }
               return Column(
@@ -255,12 +271,14 @@ class HomeTabWidget extends StatelessWidget {
   final List<HomeTabUiModel> events;
   final List<PollUiModel> polls;
   final ValueChanged<String> onDetailsClicked;
+  final ValueChanged<String> onPollClicked;
 
   const HomeTabWidget({
     super.key,
     required this.events,
     required this.polls,
     required this.onDetailsClicked,
+    required this.onPollClicked,
   });
 
   @override
@@ -278,9 +296,7 @@ class HomeTabWidget extends StatelessWidget {
                   imageUrl: poll.imageUrl,
                   title: poll.title,
                   subtitle1: poll.deadline,
-                  onTap: () {
-                    // Handle poll tap if needed
-                  },
+                  onTap: () => onPollClicked(poll.id),
                 ),
               )),
         ],

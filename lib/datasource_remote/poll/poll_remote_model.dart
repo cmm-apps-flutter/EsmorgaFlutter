@@ -21,6 +21,7 @@ class PollRemoteModel {
   final String pollId;
   final String pollName;
   final String description;
+  final String? imageUrl;
   final List<PollOptionRemoteModel> options;
   final List<String> userSelectedOptions;
   final String voteDeadline;
@@ -30,6 +31,7 @@ class PollRemoteModel {
     required this.pollId,
     required this.pollName,
     required this.description,
+    this.imageUrl,
     required this.options,
     required this.userSelectedOptions,
     required this.voteDeadline,
@@ -41,6 +43,7 @@ class PollRemoteModel {
       pollId: json['pollId'] as String,
       pollName: json['pollName'] as String,
       description: json['description'] as String,
+      imageUrl: json['imageUrl'] as String?,
       options: (json['options'] as List).map((e) => PollOptionRemoteModel.fromJson(e as Map<String, dynamic>)).toList(),
       userSelectedOptions: (json['userSelectedOptions'] as List).map((e) => e as String).toList(),
       voteDeadline: json['voteDeadline'] as String,
