@@ -128,4 +128,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
     _effectController.close();
     return super.close();
   }
+  void viewAttendeesPressed() {
+  _emitEffect(NavigateToAttendeesEffect(_event.id));
+}
 }

@@ -48,6 +48,13 @@ class _EventDetailFormState extends State<_EventDetailForm> {
       if (effect is NavigateBackEffect) {
         context.pop();
       } else if (effect is NavigateToLoginEffect) {
+        widget.goToLogin();
+      } else if (effect is NavigateToAttendeesEffect) {
+        context.push('/event_attendees/${effect.eventId}');
+      }   
+      if (effect is NavigateBackEffect) {
+        context.pop();
+      } else if (effect is NavigateToLoginEffect) {
         debugPrint("Navigate");
         widget.goToLogin();
       } else if (effect is ShowJoinSuccessEffect) {
@@ -172,9 +179,7 @@ class _EventDetailFormState extends State<_EventDetailForm> {
                 ],
                 if (ui.currentAttendeeCount > 0 && ui.showViewAttendants)
                   InkWell(
-                    onTap: () {
-                      context.push('/event_attendees/${ui.id}');
-                    },
+                    onTap: () => _cubit.viewAttendeesPressed(),
                     child: EsmorgaText(
                       text: l10n.button_view_attendees,
                       style: EsmorgaTextStyle.button,
