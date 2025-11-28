@@ -1,4 +1,6 @@
 import 'package:esmorga_flutter/di.dart';
+import 'package:esmorga_flutter/ds/esmorga_checkbox_row.dart';
+import 'package:esmorga_flutter/ds/esmorga_row.dart';
 import 'package:esmorga_flutter/view/events/event_attendees/cubbit/event_attendees_cubit.dart';
 import 'package:esmorga_flutter/view/events/event_attendees/cubbit/event_attendees_state.dart';
 import 'package:esmorga_flutter/ds/esmorga_full_screen_error.dart';
@@ -64,7 +66,8 @@ class _EventAttendeesForm extends StatelessWidget {
                 const SizedBox(height: 16),
                 EsmorgaText(
                   text: l10n.title_name,
-                  style: EsmorgaTextStyle.heading2),
+                  style: EsmorgaTextStyle.heading2
+                ),
                 const SizedBox(height: 34),
                 ListView.builder(
                   shrinkWrap: true,
@@ -72,18 +75,16 @@ class _EventAttendeesForm extends StatelessWidget {
                   itemCount: attendees.users.length,
                   itemBuilder: (_, index) {
                     final userName = attendees.users[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 17.0),
-                      child: EsmorgaText(
-                        text: '${index + 1}. $userName',
-                        style: EsmorgaTextStyle.caption,
-                      ),
+                    return EsmorgaCheckboxRow(
+                      text: '${index + 1}. $userName',
+                      showCheckbox: false,
+                      isSelected: false,
                     );
                   },
                 ),
-              ],
-            ),
-          );
+            ],
+          ),
+        );
         },
       ),
     );

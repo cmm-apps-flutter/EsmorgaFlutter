@@ -108,9 +108,8 @@ class AppRoutes {
             return BlocProvider(
                 create: (context) => getIt<EventDetailCubit>(param1: context, param2: event),
                 child: EventDetailScreen(
-                  goToLogin: () {
-                    context.push(login);
-                  },
+                  goToLogin: () => context.push(login),
+                  goToAttendees: (eventId) => context.push('/event_attendees/$eventId'),
                 ));
           },
         ),

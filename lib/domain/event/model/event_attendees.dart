@@ -1,17 +1,20 @@
+import 'package:esmorga_flutter/datasource_remote/event/event_attendees_remote_model.dart';
 
 class EventAttendees {
   final int totalUsers;
-  final List<String> users;
+  final List<EventAttendeeRemoteModel> users;
 
   EventAttendees({required this.totalUsers, required this.users});
 
   factory EventAttendees.fromJson(Map<String, dynamic> json) {
-    final usersList = (json['users'] as List<dynamic>?)
-        ?.map((e) => e.toString())
-        .toList() ?? [];
+    final attendeesJson = (json['users'] as List<dynamic>?) ?? [];
+    final attendees = attendeesJson
+        .map((e) => EventAttendeeRemoteModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+
     return EventAttendees(
-      totalUsers: json['totalUsers'] ?? 0,
-      users: usersList,
+      totalUsers: attendees.length,
+      users: attendees,
     );
   }
 }

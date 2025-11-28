@@ -3,6 +3,7 @@ import 'package:esmorga_flutter/data/event/event_datasource.dart';
 import 'package:esmorga_flutter/data/event/mapper/event_mapper.dart';
 import 'package:esmorga_flutter/data/user/datasource/user_datasource.dart';
 import 'package:esmorga_flutter/data/event/model/event_data_model.dart';
+import 'package:esmorga_flutter/datasource_remote/event/event_attendees_remote_model.dart';
 import 'package:esmorga_flutter/domain/event/event_repository.dart';
 import 'package:esmorga_flutter/domain/event/model/event.dart';
 import 'package:esmorga_flutter/domain/event/model/event_attendees.dart';
@@ -79,9 +80,13 @@ class EventRepositoryImpl implements EventRepository {
   Future<EventAttendees> getEventAttendees(String eventId) async {
     final attendeesData = await remoteEventDatasource.getEventAttendees(eventId);
 
+    final users = attendeesData.users
+        .map((name) => EventAttendeeRemoteModel(name: name))
+        .toList();
+
     return EventAttendees(
-      totalUsers: attendeesData.totalUsers,
-      users: attendeesData.users,
+      totalUsers: users.length,
+      users: users,
     );
   }
 }

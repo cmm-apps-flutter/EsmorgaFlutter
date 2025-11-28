@@ -15,19 +15,30 @@ import 'package:url_launcher/url_launcher.dart';
 
 class EventDetailScreen extends StatelessWidget {
   final Function() goToLogin;
-  const EventDetailScreen({Key? key, required this.goToLogin})
-      : super(key: key);
+  final void Function(String eventId) goToAttendees;
+  const EventDetailScreen({
+    Key? key,
+    required this.goToLogin,
+    required this.goToAttendees,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return _EventDetailForm(goToLogin: goToLogin);
+    return _EventDetailForm(
+      goToLogin: goToLogin,
+      goToAttendees: goToAttendees,
+    );
   }
 }
 
 class _EventDetailForm extends StatefulWidget {
   final Function() goToLogin;
-  const _EventDetailForm({Key? key, required this.goToLogin}) : super(key: key);
-
+  final void Function(String eventId) goToAttendees;
+  const _EventDetailForm({
+      Key? key,
+      required this.goToLogin,
+      required this.goToAttendees,
+    }) : super(key: key);
   @override
   State<_EventDetailForm> createState() => _EventDetailFormState();
 }
@@ -50,7 +61,7 @@ class _EventDetailFormState extends State<_EventDetailForm> {
       } else if (effect is NavigateToLoginEffect) {
         widget.goToLogin();
       } else if (effect is NavigateToAttendeesEffect) {
-        context.push('/event_attendees/${effect.eventId}');
+        widget.goToAttendees(effect.eventId);
       }   
       if (effect is NavigateBackEffect) {
         context.pop();
@@ -177,7 +188,7 @@ class _EventDetailFormState extends State<_EventDetailForm> {
                   ),
                   const Spacer(),
                 ],
-                if (ui.currentAttendeeCount > 0 && ui.showViewAttendants)
+                if (ui.showViewAttendants)
                   InkWell(
                     onTap: () => _cubit.viewAttendeesPressed(),
                     child: EsmorgaText(
