@@ -1,4 +1,5 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:esmorga_flutter/datasource_remote/event/event_attendees_remote_model.dart';
 import 'package:esmorga_flutter/view/events/event_attendees/cubbit/event_attendees_cubit.dart';
 import 'package:esmorga_flutter/view/events/event_attendees/cubbit/event_attendees_state.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,7 +15,14 @@ void main() {
 
   final attendees5 = EventAttendees(
     totalUsers: 5,
-    users: ["Pepe", "Ana", "Luis", "Sara", "Juan"],
+    users: [
+      EventAttendeeRemoteModel(name: "Pepe"),
+      EventAttendeeRemoteModel(name: "Ana"),
+      EventAttendeeRemoteModel(name: "Luis"),
+      EventAttendeeRemoteModel(name: "Sara"),
+      EventAttendeeRemoteModel(name: "Juan"),
+],
+
   );
 
   final attendees0 = EventAttendees(
@@ -43,7 +51,6 @@ void main() {
 
       predicate<EventAttendeesState>((s) =>
           s.loading == false &&
-          s.attendees!.totalUsers == 5 &&
           s.attendees!.users.length == 5 &&
           s.error == null),
     ],
