@@ -1,6 +1,5 @@
 import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/ds/esmorga_checkbox_row.dart';
-import 'package:esmorga_flutter/ds/esmorga_row.dart';
 import 'package:esmorga_flutter/view/events/event_attendees/cubbit/event_attendees_cubit.dart';
 import 'package:esmorga_flutter/view/events/event_attendees/cubbit/event_attendees_state.dart';
 import 'package:esmorga_flutter/ds/esmorga_full_screen_error.dart';

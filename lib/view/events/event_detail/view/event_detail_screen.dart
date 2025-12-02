@@ -176,10 +176,9 @@ class _EventDetailFormState extends State<_EventDetailForm> {
           const SizedBox(height: 8),
           EsmorgaText(text: ui.date, style: EsmorgaTextStyle.body1Accent),
           const SizedBox(height: 8),
-          if (ui.maxCapacity != null || ui.currentAttendeeCount > 0) ...[
             Row(
               children: [
-                if (ui.maxCapacity != null && ui.maxCapacity! > 0) ...[
+                if (ui.maxCapacity != null) ...[
                   const Icon(Icons.people, size: 20),
                   const SizedBox(width: 8),
                   EsmorgaText(
@@ -199,7 +198,6 @@ class _EventDetailFormState extends State<_EventDetailForm> {
               ],
             ),
             const SizedBox(height: 8),
-          ],
           EsmorgaText(
             text: l10n.screen_event_details_join_deadline(ui.joinDeadLine),
             style: EsmorgaTextStyle.caption,
