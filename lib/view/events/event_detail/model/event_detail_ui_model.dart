@@ -15,7 +15,7 @@ class EventDetailUiModel {
   final String joinDeadLine;
   final bool buttonEnabled;
   final String buttonText;
-
+  final bool showViewAttendants;
 
   EventDetailUiModel({
     required this.id,
@@ -31,6 +31,7 @@ class EventDetailUiModel {
     required this.joinDeadLine,
     required this.buttonEnabled,
     required this.buttonText,
+    required this.showViewAttendants,
   });
 
   Event toDomain() {

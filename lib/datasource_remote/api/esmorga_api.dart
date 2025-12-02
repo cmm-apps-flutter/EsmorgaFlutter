@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:esmorga_flutter/datasource_remote/config/environment_config.dart';
+import 'package:esmorga_flutter/datasource_remote/event/event_attendees_remote_model.dart';
 import 'package:esmorga_flutter/datasource_remote/event/event_remote_model.dart';
 import 'package:esmorga_flutter/datasource_remote/poll/poll_remote_model.dart';
 import 'package:http/http.dart' as http;
@@ -75,6 +76,20 @@ class EsmorgaApi {
     );
     if (result.statusCode != 200) {
       throw Exception('Failed to change password');
+    }
+  }
+  Future<List<EventAttendeeRemoteModel>> getEventAttendees(String eventId) async {
+    final url = Uri.parse('${baseUrl}events/$eventId/users');
+    final result = await authenticatedHttpClient.get(url);
+
+    if (result.statusCode == 200) {
+      final jsonData = json.decode(result.body) as Map<String, dynamic>;
+      final users = (jsonData['users'] as List)
+          .map((e) => EventAttendeeRemoteModel.fromJson({'name': e}))
+          .toList();
+      return users;
+    } else {
+      throw Exception('Failed to load event attendees');
     }
   }
 

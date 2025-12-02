@@ -126,7 +126,7 @@ class _MyEventsLoading extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16.0),
             child: EsmorgaText(
-              text: localizations.screenEventListLoading,
+              text: localizations.body_loader,
               style: EsmorgaTextStyle.heading1,
             ),
           ),

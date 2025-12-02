@@ -33,6 +33,9 @@
   "placeholderPassword": "Ingresa tu contraseña",
   "screenEventDetailsDescription": "Detalles del evento",
   "screenEventDetailsLocation": "Localización",
+  "screenEventListEmptyText": "No hay eventos disponibles. Por favor vuelve más tarde.",
+  "body_loader": "Cargando …",
+  "screenEventListTitle": "Listado de eventos",
   "titleExplore": "Está pasando…",
   "titlePolls": "Encuestas",
   "titleEvents": "Eventos",
@@ -130,5 +133,8 @@
   "errorEventFull": "El evento está completo",
   "button_join_event_closed": "Demasiado tarde",
   "screen_event_details_join_deadline": "Únete antes del {date}",
-  "loginError": "Ups, hubo un error. Revisa tus datos e inténtalo de nuevo"
+  "loginError": "Ups, hubo un error. Revisa tus datos e inténtalo de nuevo",
+  "button_view_attendees": "Ver asistentes",
+  "title_event_attendees": "Listado de Asistentes",
+  "title_name": "Nombre"
 }

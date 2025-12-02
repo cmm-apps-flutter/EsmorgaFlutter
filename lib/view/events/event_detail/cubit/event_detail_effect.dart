@@ -16,3 +16,7 @@ class OpenMapsEffect extends EventDetailEffect {
 }
 class ShowEventFullSnackbarEffect extends EventDetailEffect {}
 class ShowJoinClosedEffect extends EventDetailEffect {}
+class NavigateToAttendeesEffect extends EventDetailEffect {
+  final String eventId;
+  NavigateToAttendeesEffect(this.eventId);
+}

@@ -62,6 +62,7 @@ class EventDetailUiMapper {
       joinDeadLine: dateFormatter.formatEventDate(event.joinDeadline),
       buttonEnabled: buttonEnabled,
       buttonText: buttonText,
+      showViewAttendants: isAuthenticated && event.currentAttendeeCount > 0,
     );
   }
 }

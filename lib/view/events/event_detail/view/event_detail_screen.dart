@@ -15,19 +15,30 @@ import 'package:url_launcher/url_launcher.dart';
 
 class EventDetailScreen extends StatelessWidget {
   final Function() goToLogin;
-  const EventDetailScreen({Key? key, required this.goToLogin})
-      : super(key: key);
+  final void Function(String eventId) goToAttendees;
+  const EventDetailScreen({
+    Key? key,
+    required this.goToLogin,
+    required this.goToAttendees,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return _EventDetailForm(goToLogin: goToLogin);
+    return _EventDetailForm(
+      goToLogin: goToLogin,
+      goToAttendees: goToAttendees,
+    );
   }
 }
 
 class _EventDetailForm extends StatefulWidget {
   final Function() goToLogin;
-  const _EventDetailForm({Key? key, required this.goToLogin}) : super(key: key);
-
+  final void Function(String eventId) goToAttendees;
+  const _EventDetailForm({
+      Key? key,
+      required this.goToLogin,
+      required this.goToAttendees,
+    }) : super(key: key);
   @override
   State<_EventDetailForm> createState() => _EventDetailFormState();
 }
@@ -45,6 +56,13 @@ class _EventDetailFormState extends State<_EventDetailForm> {
     _effectSubscription = _cubit.effects.listen((effect) {
       if (!mounted) return;
       final l10n = getIt<LocalizationService>().current;
+      if (effect is NavigateBackEffect) {
+        context.pop();
+      } else if (effect is NavigateToLoginEffect) {
+        widget.goToLogin();
+      } else if (effect is NavigateToAttendeesEffect) {
+        widget.goToAttendees(effect.eventId);
+      }   
       if (effect is NavigateBackEffect) {
         context.pop();
       } else if (effect is NavigateToLoginEffect) {
@@ -158,25 +176,30 @@ class _EventDetailFormState extends State<_EventDetailForm> {
           const SizedBox(height: 8),
           EsmorgaText(text: ui.date, style: EsmorgaTextStyle.body1Accent),
           const SizedBox(height: 8),
-          if (ui.maxCapacity != null) ...[
             Row(
               children: [
-                const Icon(Icons.people, size: 20),
-                const SizedBox(width: 8),
-                EsmorgaText(
-                  text: l10n.labelCapacity(
-                    ui.currentAttendeeCount,
-                    ui.maxCapacity!,
+                if (ui.maxCapacity != null) ...[
+                  const Icon(Icons.people, size: 20),
+                  const SizedBox(width: 8),
+                  EsmorgaText(
+                    text: l10n.labelCapacity(ui.currentAttendeeCount, ui.maxCapacity!),
+                    style: EsmorgaTextStyle.body1Accent,
                   ),
-                  style: EsmorgaTextStyle.body1Accent,
-                  key: const Key('event_detail_capacity_label'),
-                ),
+                  const Spacer(),
+                ],
+                if (ui.showViewAttendants)
+                  InkWell(
+                    onTap: () => _cubit.viewAttendeesPressed(),
+                    child: EsmorgaText(
+                      text: l10n.button_view_attendees,
+                      style: EsmorgaTextStyle.button,
+                    ),
+                  ),
               ],
             ),
             const SizedBox(height: 8),
-          ],
           EsmorgaText(
-            text: l10n.screen_event_details_join_deadline(ui.joinDeadLine!),
+            text: l10n.screen_event_details_join_deadline(ui.joinDeadLine),
             style: EsmorgaTextStyle.caption,
           ),
           const SizedBox(height: 24),

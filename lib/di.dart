@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:esmorga_flutter/data/event/event_repository_impl.dart';
 import 'package:esmorga_flutter/data/poll/poll_repository_impl.dart';
 import 'package:esmorga_flutter/datasource_remote/config/environment_config.dart';
-import 'package:esmorga_flutter/domain/user/model/user.dart';
+import 'package:esmorga_flutter/view/events/event_attendees/cubbit/event_attendees_cubit.dart';
 import 'package:http/io_client.dart';
 import 'package:http_proxy/http_proxy.dart';
 import 'package:intl/intl.dart';
@@ -226,14 +226,15 @@ Future<void> setupDi(Locale locale) async {
         l10n: getIt<LocalizationService>(),
       ));
 
+  getIt.registerFactoryParam<VerifyAccountCubit, BuildContext, String>((context, verificationCode) => VerifyAccountCubit(
+        userRepository: getIt(),
+        verificationCode: verificationCode,
+      ));
+
+  getIt.registerFactory<EventAttendeesCubit>(() => EventAttendeesCubit(getIt<EventRepository>()));
+
   getIt.registerFactoryParam<PollDetailCubit, Poll, void>((poll, _) => PollDetailCubit(
         poll: poll,
         votePollUseCase: getIt(),
       ));
-
-  getIt
-      .registerFactoryParam<VerifyAccountCubit, BuildContext, String>((context, verificationCode) => VerifyAccountCubit(
-            userRepository: getIt(),
-            verificationCode: verificationCode,
-          ));
 }

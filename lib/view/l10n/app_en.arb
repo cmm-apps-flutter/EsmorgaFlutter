@@ -40,6 +40,9 @@
   "placeholderPassword": "Input your password",
   "screenEventDetailsDescription": "Event details",
   "screenEventDetailsLocation": "Location",
+  "screenEventListEmptyText": "No events available now. Please come back later.",
+  "body_loader": "Loading …",
+  "screenEventListTitle": "Event list",
   "titleExplore": "It's happening...",
   "titlePolls": "Polls",
   "titleEvents": "Events",
@@ -144,5 +147,8 @@
   "errorEventFull": "Event full",
   "button_join_event_closed": "Too late",
   "screen_event_details_join_deadline": "Join before {date}",
-  "loginError": "Oops, something went wrong. Please review your data and try again."
+  "loginError": "Oops, something went wrong. Please review your data and try again.",
+  "button_view_attendees": "See attendees",
+  "title_event_attendees": "List of Attendees",
+  "title_name": "Name"
 }

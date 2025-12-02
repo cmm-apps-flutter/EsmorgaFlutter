@@ -1,3 +1,4 @@
+import 'package:esmorga_flutter/data/event/model/event_attendees_data_model.dart';
 import 'package:esmorga_flutter/data/event/model/event_data_model.dart';
 
 abstract class EventDatasource {
@@ -17,5 +18,8 @@ abstract class EventDatasource {
   Future<void> deleteCacheEvents() async {
     throw UnimplementedError('getEventById is not supported by this datasource');
   }
-}
 
+  Future<EventAttendeesDataModel> getEventAttendees(String eventId) async {
+    throw UnimplementedError('getEventAttendees is not supported by this datasource');
+  }
+}

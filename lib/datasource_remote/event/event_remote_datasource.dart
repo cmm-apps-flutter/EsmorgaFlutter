@@ -1,4 +1,5 @@
 import 'package:esmorga_flutter/data/event/event_datasource.dart';
+import 'package:esmorga_flutter/data/event/model/event_attendees_data_model.dart';
 import 'package:esmorga_flutter/data/event/model/event_data_model.dart';
 import 'package:esmorga_flutter/datasource_remote/api/esmorga_api.dart';
 import 'package:esmorga_flutter/datasource_remote/api/esmorga_guest_api.dart';
@@ -64,5 +65,14 @@ class EventRemoteDatasourceImpl implements EventDatasource {
   Future<EventDataModel> getEventById(String eventId) {
     // TODO: implement getEventById
     throw UnimplementedError();
+  }
+
+  @override
+  Future<EventAttendeesDataModel> getEventAttendees(String eventId) async {
+    final attendees = await eventApi.getEventAttendees(eventId);
+    return EventAttendeesDataModel(
+      users: attendees.map((e) => e.name).toList(),
+      totalUsers: attendees.length,
+    );
   }
 }

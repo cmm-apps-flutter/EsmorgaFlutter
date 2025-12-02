@@ -283,4 +283,49 @@ void main() {
       verify(() => eventRepository.leaveEvent(any())).called(1);
     },
   );
+  blocTest<EventDetailCubit, EventDetailState>(
+  'View Attendees button visible triggers navigation',
+  build: () {
+    when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
+    return EventDetailCubit(
+      eventRepository: eventRepository,
+      userRepository: userRepository,
+      event: baseEvent.copyWith(currentAttendeeCount: 2),
+      l10n: l10n,
+    );
+  },
+  act: (c) async {
+    await c.start();
+    c.viewAttendeesPressed();
+  },
+  expect: () => [
+    isA<EventDetailState>().having((s) => s.loading, 'loading', true),
+    isA<EventDetailState>().having((s) => s.loading, 'loading', false),
+  ],
+  wait: const Duration(milliseconds: 10),
+  verify: (c) {
+    expect(c.effects, emits(isA<NavigateToAttendeesEffect>()));
+  },
+);
+
+blocTest<EventDetailCubit, EventDetailState>(
+  'View Attendees button hidden when no attendees',
+  build: () {
+    when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
+    return EventDetailCubit(
+      eventRepository: eventRepository,
+      userRepository: userRepository,
+      event: baseEvent.copyWith(currentAttendeeCount: 0),
+      l10n: l10n,
+    );
+  },
+  act: (c) => c.start(),
+  expect: () => [
+    isA<EventDetailState>().having((s) => s.loading, 'loading', true),
+    isA<EventDetailState>()
+        .having((s) => s.loading, 'loading', false)
+        .having((s) => s.uiModel.showViewAttendants, 'showViewAttendants', false),
+  ],
+);
+
 }
