@@ -74,10 +74,19 @@ class _EventAttendeesForm extends StatelessWidget {
                   itemCount: attendees.users.length,
                   itemBuilder: (_, index) {
                     final userName = attendees.users[index];
-                    return EsmorgaCheckboxRow(
-                      text: '${index + 1}. $userName',
-                      showCheckbox: false,
-                      isSelected: false,
+                    return Column(
+                      children: [
+                        Divider(height: 1, thickness: 1, color:Theme.of(context).colorScheme.secondary),
+                        const SizedBox(height: 8),
+                        EsmorgaCheckboxRow(
+                          text: '${index + 1}. $userName',
+                          showCheckbox: false,
+                          isSelected: false,
+                        ),
+                        const SizedBox(height: 8),
+                        if (index == attendees.users.length - 1)
+                        Divider(height: 1, thickness: 1,color: Theme.of(context).colorScheme.secondary,),
+                      ],
                     );
                   },
                 ),
