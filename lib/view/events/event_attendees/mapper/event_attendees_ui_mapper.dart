@@ -27,7 +27,7 @@ class EventAttendeesUiMapper {
     return EventAttendeesUiModel(
       users: attendees.users.map((e) => EventAttendeeUiModel(
         name: e.name,
-        isPaid: false,
+        isPaid: e.isPaid,
       )).toList(),
       isAdmin: isAdmin, 
     );

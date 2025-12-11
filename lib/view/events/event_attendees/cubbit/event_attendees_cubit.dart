@@ -11,48 +11,60 @@ class EventAttendeesCubit extends Cubit<EventAttendeesState> {
   final EventRepository eventRepository;
   final UserRepository userRepository;
 
-  EventAttendeesCubit({
+  EventAttendeesCubit( {
     required this.eventRepository,
     required this.userRepository
   }) : super(const EventAttendeesState());
 
-Future<void> loadAttendees(String eventId) async {
-  emit(EventAttendeesState.loading());
-  try {
-    final results = await Future.wait([
-      userRepository.getUser(), 
-      eventRepository.getEventAttendees(eventId),
-    ]);
-    
-    final user = results[0] as User; 
-    final attendees = results[1] as EventAttendees; 
+  Future<void> loadAttendees(String eventId) async { 
+    emit(EventAttendeesState.loading());
+    try {
+      final results = await Future.wait([
+        userRepository.getUser(), 
+        eventRepository.getEventAttendees(eventId), 
+        eventRepository.getLocallyStoredPaidStatus(eventId), 
+      ]);
+      
+      final user = results[0] as User; 
+      final attendees = results[1] as EventAttendees; 
+      final localPaidStatuses = results[2] as Map<String, bool>;
 
-    final bool isAdmin = user.role == RoleType.admin;
+      final bool isAdmin = user.role == RoleType.admin;
+      if (attendees.totalUsers > 0) {
+        
+        final updatedUsers = attendees.users.map((user) {
+            final isPaidLocally = localPaidStatuses[user.name] ?? user.isPaid; 
+            return user.copyWith(isPaid: isPaidLocally);
+        }).toList();
 
-    if (attendees.totalUsers > 0) {
-      final uiModel = EventAttendeesUiMapper.map(attendees, isAdmin); 
-      emit(EventAttendeesState.success(uiModel));
-    } else {
-      emit(EventAttendeesState.empty());
+        final updatedAttendees = attendees.copyWith(users: updatedUsers); 
+
+        final uiModel = EventAttendeesUiMapper.map(updatedAttendees, isAdmin); 
+        emit(EventAttendeesState.success(uiModel));
+        
+      } else {
+        emit(EventAttendeesState.empty());
+      }
+    } catch (e) {
+      emit(EventAttendeesState.error(e.toString()));
     }
-  } catch (e) {
-    emit(EventAttendeesState.error(e.toString()));
   }
-}
   
-  void togglePaidStatus(String name) {
-    final currentAttendees = state.attendees;
-    if (currentAttendees != null && currentAttendees.isAdmin) {
-      final updatedUsers = currentAttendees.users.map((user) {
+  void togglePaidStatus(String name, String eventId) async {
+      final currentAttendees = state.attendees;
+      if (currentAttendees != null && currentAttendees.isAdmin) {
+        final updatedUsers = currentAttendees.users.map((user) {
         if (user.name == name) {
           return user.copyWith(isPaid: !user.isPaid);
         }
         return user;
-      }).toList();
+        }).toList();
 
-      final updatedUiModel = currentAttendees.copyWith(users: updatedUsers);
-
-      emit(EventAttendeesState.success(updatedUiModel));
+        final updatedUiModel = currentAttendees.copyWith(users: updatedUsers);
+        emit(EventAttendeesState.success(updatedUiModel));
+        
+        final newPaid = updatedUsers.firstWhere((u) => u.name == name).isPaid;
+        await eventRepository.updatePaidStatus(eventId, name, newPaid);
     }
   }
 }

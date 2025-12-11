@@ -89,4 +89,14 @@ class EventRepositoryImpl implements EventRepository {
       users: users,
     );
   }
+
+  @override
+  Future<void> updatePaidStatus(String eventId, String userName, bool isPaid) async {
+    await localEventDatasource.savePaidStatus(eventId, userName, isPaid);
+  }
+
+  @override
+  Future<Map<String, bool>> getLocallyStoredPaidStatus(String eventId) async {
+    return await localEventDatasource.getPaidStatuses(eventId);
+  }
 }

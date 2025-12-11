@@ -5,4 +5,14 @@ class EventAttendees {
   final List<EventAttendeeRemoteModel> users;
 
   EventAttendees({required this.totalUsers, required this.users});
+  
+  EventAttendees copyWith({
+    int? totalUsers,
+    List<EventAttendeeRemoteModel>? users,
+  }) {
+    return EventAttendees(
+      totalUsers: totalUsers ?? this.totalUsers, 
+      users: users ?? this.users, 
+    );
+  }
 }

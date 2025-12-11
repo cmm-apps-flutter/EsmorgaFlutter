@@ -63,9 +63,23 @@ class _EventAttendeesForm extends StatelessWidget {
                   style: EsmorgaTextStyle.title,
                 ),
                 const SizedBox(height: 16),
-                EsmorgaText(
-                  text: l10n.title_name,
-                  style: EsmorgaTextStyle.heading2
+                Row(
+                  children: [
+                    Expanded(
+                      child: EsmorgaText(
+                        text: l10n.title_name, 
+                        style: EsmorgaTextStyle.heading2,
+                      ),
+                    ),
+                    if (attendees.isAdmin)
+                      Padding(
+                        padding: const EdgeInsets.only(right:0), 
+                        child: EsmorgaText(
+                          text: l10n.title_payment_status,
+                          style: EsmorgaTextStyle.heading2,
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 34),
                 ListView.builder(
@@ -75,6 +89,7 @@ class _EventAttendeesForm extends StatelessWidget {
                   itemBuilder: (_, index) {
                     final user = attendees.users[index];
                     return Column(
+                      key: ValueKey(user.name),
                       children: [
                         Divider(height: 1, thickness: 1, color:Theme.of(context).colorScheme.secondary),
                         const SizedBox(height: 8),
@@ -84,7 +99,7 @@ class _EventAttendeesForm extends StatelessWidget {
                           isSelected: user.isPaid,
                           onTap: () { 
                             if (attendees.isAdmin) {
-                              cubit.togglePaidStatus(user.name);
+                              cubit.togglePaidStatus(user.name, eventId);
                             }
                           },
                         ),

@@ -46,9 +46,21 @@ class EventLocalDatasourceImpl implements EventDatasource {
 
   @override
   Future<void> cacheEvents(List<EventDataModel> events) async {
-    await eventsBox.clear();
-    final localEvents = events.toEventLocalModelList();
-    final eventMap = {for (var e in localEvents) e.localId: e};
+    final eventMap = <String, EventLocalModel>{};
+
+    for (final eventDataModel in events) {
+      
+      final existingLocalModel = eventsBox.get(eventDataModel.dataId);
+      
+      final newLocalModel = eventDataModel.toEventLocalModel(); 
+      
+      if (existingLocalModel != null) {
+        newLocalModel.paidUsers = existingLocalModel.paidUsers;
+      }
+
+      eventMap[newLocalModel.localId] = newLocalModel;
+    }
+    
     await eventsBox.putAll(eventMap);
   }
 
@@ -58,8 +70,43 @@ class EventLocalDatasourceImpl implements EventDatasource {
   }
 
   @override
-Future<EventAttendeesDataModel> getEventAttendees(String eventId) async {
-  return EventAttendeesDataModel(totalUsers: 0, users: []);
-}
-}
+  Future<EventAttendeesDataModel> getEventAttendees(String eventId) async {
+    return EventAttendeesDataModel(totalUsers: 0, users: []);
+  }
 
+  @override
+  Future<void> savePaidStatus(String eventId, String userName, bool isPaid) async {
+    final event = eventsBox.get(eventId);
+    if (event == null) return;
+
+    event.paidUsers = event.paidUsers ?? [];
+
+    if (isPaid) {
+      if (!event.paidUsers.contains(userName)) {
+        event.paidUsers.add(userName);
+      }
+    } else {
+      event.paidUsers.remove(userName);
+    }
+
+    await event.save(); 
+    final savedEvent = eventsBox.get(eventId);
+  }
+
+  @override
+  Future<Map<String, bool>> getPaidStatuses(String eventId) async {
+    final event = eventsBox.get(eventId);
+
+    if (event == null) {
+      return {}; 
+    }
+
+    final paidUsers = event.paidUsers ?? [];
+    final paidStatusMap = <String, bool>{};
+
+    for (final userName in paidUsers) {
+      paidStatusMap[userName] = true; 
+    }
+    return paidStatusMap;
+  }
+}
