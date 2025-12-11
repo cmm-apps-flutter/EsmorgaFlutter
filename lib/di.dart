@@ -231,7 +231,7 @@ Future<void> setupDi(Locale locale) async {
         verificationCode: verificationCode,
       ));
 
-  getIt.registerFactory<EventAttendeesCubit>(() => EventAttendeesCubit(getIt<EventRepository>()));
+  getIt.registerFactory(() => EventAttendeesCubit(eventRepository: getIt(), userRepository: getIt()));
 
   getIt.registerFactoryParam<PollDetailCubit, Poll, void>((poll, _) => PollDetailCubit(
         poll: poll,

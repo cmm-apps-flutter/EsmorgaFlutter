@@ -27,7 +27,7 @@ class _EventAttendeesForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = getIt<LocalizationService>().current;
-
+    final cubit = context.read<EventAttendeesCubit>();
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -73,15 +73,20 @@ class _EventAttendeesForm extends StatelessWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: attendees.users.length,
                   itemBuilder: (_, index) {
-                    final userName = attendees.users[index];
+                    final user = attendees.users[index];
                     return Column(
                       children: [
                         Divider(height: 1, thickness: 1, color:Theme.of(context).colorScheme.secondary),
                         const SizedBox(height: 8),
                         EsmorgaCheckboxRow(
-                          text: '${index + 1}. $userName',
-                          showCheckbox: false,
-                          isSelected: false,
+                          text: '${index + 1}. ${user.name}',
+                          showCheckbox: attendees.isAdmin,
+                          isSelected: user.isPaid,
+                          onTap: () { 
+                            if (attendees.isAdmin) {
+                              cubit.togglePaidStatus(user.name);
+                            }
+                          },
                         ),
                         const SizedBox(height: 8),
                         if (index == attendees.users.length - 1)
