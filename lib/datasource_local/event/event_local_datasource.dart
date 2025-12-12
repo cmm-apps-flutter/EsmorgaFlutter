@@ -34,21 +34,47 @@ class EventLocalDatasourceImpl implements EventDatasource {
 
   @override
   Future<void> joinEvent(EventDataModel event) async {
-    final localEvent = event.toEventLocalModel();
-    await eventsBox.put(event.dataId, localEvent);
+    final existingLocalModel = eventsBox.get(event.dataId);
+    
+    final newLocalModel = event.toEventLocalModel();
+    
+    if (existingLocalModel != null) {
+      newLocalModel.attendees = existingLocalModel.attendees;
+    }
+    
+    await eventsBox.put(event.dataId, newLocalModel);
   }
 
   @override
   Future<void> leaveEvent(EventDataModel event) async {
-    final localEvent = event.toEventLocalModel();
-    await eventsBox.put(event.dataId, localEvent);
+    final existingLocalModel = eventsBox.get(event.dataId);
+    
+    final newLocalModel = event.toEventLocalModel();
+    
+    if (existingLocalModel != null) {
+      newLocalModel.attendees = existingLocalModel.attendees;
+    }
+
+    await eventsBox.put(event.dataId, newLocalModel);
   }
 
   @override
   Future<void> cacheEvents(List<EventDataModel> events) async {
-    await eventsBox.clear();
-    final localEvents = events.toEventLocalModelList();
-    final eventMap = {for (var e in localEvents) e.localId: e};
+    final eventMap = <String, EventLocalModel>{};
+
+    for (final eventDataModel in events) {
+      
+      final existingLocalModel = eventsBox.get(eventDataModel.dataId);
+      
+      final newLocalModel = eventDataModel.toEventLocalModel(); 
+      
+      if (existingLocalModel != null) {
+        newLocalModel.attendees = existingLocalModel.attendees;
+      }
+
+      eventMap[newLocalModel.localId] = newLocalModel;
+    }
+    
     await eventsBox.putAll(eventMap);
   }
 
@@ -58,8 +84,51 @@ class EventLocalDatasourceImpl implements EventDatasource {
   }
 
   @override
-Future<EventAttendeesDataModel> getEventAttendees(String eventId) async {
-  return EventAttendeesDataModel(totalUsers: 0, users: []);
-}
-}
+  Future<EventAttendeesDataModel> getEventAttendees(String eventId) async {
+    return EventAttendeesDataModel(totalUsers: 0, users: []);
+  }
 
+  @override
+  Future<void> savePaidStatus(String eventId, String userName, bool isPaid) async {
+    final event = eventsBox.get(eventId);
+    if (event == null) return;
+
+    event.attendees = event.attendees ?? [];
+
+    final existingAttendeeIndex = event.attendees.indexWhere((a) => a.userName == userName);
+
+    if (existingAttendeeIndex >= 0) {
+      event.attendees[existingAttendeeIndex] = EventAttendeeLocalModel(
+        userName: userName,
+        isPaid: isPaid,
+      );
+    } else if (isPaid) {
+      event.attendees.add(EventAttendeeLocalModel(
+        userName: userName,
+        isPaid: true,
+      ));
+    }
+
+    await event.save(); 
+  }
+
+  @override
+  Future<Map<String, bool>> getPaidStatuses(String eventId) async {
+    final event = eventsBox.get(eventId);
+
+    if (event == null) {
+      return {}; 
+    }
+
+    final attendees = event.attendees ?? [];
+    
+    final paidStatusMap = <String, bool>{};
+
+    for (final attendee in attendees) {
+      if (attendee.isPaid) {
+        paidStatusMap[attendee.userName] = true; 
+      }
+    }
+    return paidStatusMap;
+  }
+}

@@ -75,4 +75,14 @@ class EventRemoteDatasourceImpl implements EventDatasource {
       totalUsers: attendees.length,
     );
   }
+
+  @override
+  Future<void> savePaidStatus(String eventId, String userName, bool isPaid) async { 
+    throw UnimplementedError();
+  }
+    
+  @override
+  Future<Map<String, bool>> getPaidStatuses(String eventId) {
+    throw UnimplementedError();
+  }
 }

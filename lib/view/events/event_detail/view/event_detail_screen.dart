@@ -191,7 +191,7 @@ class _EventDetailFormState extends State<_EventDetailForm> {
                   InkWell(
                     onTap: () => _cubit.viewAttendeesPressed(),
                     child: EsmorgaText(
-                      text: l10n.button_view_attendees,
+                      text: l10n.buttonViewAttendees,
                       style: EsmorgaTextStyle.button,
                     ),
                   ),
@@ -199,7 +199,7 @@ class _EventDetailFormState extends State<_EventDetailForm> {
             ),
             const SizedBox(height: 8),
           EsmorgaText(
-            text: l10n.screen_event_details_join_deadline(ui.joinDeadLine),
+            text: l10n.screenEventDetailsJoinDeadline(ui.joinDeadLine),
             style: EsmorgaTextStyle.caption,
           ),
           const SizedBox(height: 24),

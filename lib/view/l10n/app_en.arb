@@ -145,10 +145,11 @@
   "buttonJoinEventDisabled": "Full",
   "snackbarEventFull": "The event has reached maximum capacity.",
   "errorEventFull": "Event full",
-  "button_join_event_closed": "Too late",
-  "screen_event_details_join_deadline": "Join before {date}",
+  "buttonJoinEventClosed": "Too late",
+  "screenEventDetailsJoinDeadline": "Join before {date}",
   "loginError": "Oops, something went wrong. Please review your data and try again.",
-  "button_view_attendees": "See attendees",
-  "title_event_attendees": "List of Attendees",
-  "title_name": "Name"
+  "buttonViewAttendees": "See attendees",
+  "titleEventAttendees": "List of Attendees",
+  "titleName": "Name",
+  "titlePaymentStatus": "Payment"
 }
