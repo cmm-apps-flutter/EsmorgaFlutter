@@ -1,6 +1,4 @@
-import 'package:esmorga_flutter/domain/event/model/event_attendees.dart';
-import 'package:esmorga_flutter/domain/user/model/role_type.dart';
-import 'package:esmorga_flutter/domain/user/model/user.dart';
+import 'package:esmorga_flutter/domain/event/attendees/usecase/get_event_attendees_use_case.dart';
 import 'package:esmorga_flutter/domain/user/repository/user_repository.dart';
 import 'package:esmorga_flutter/view/events/event_attendees/mapper/event_attendees_ui_mapper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,38 +8,24 @@ import 'event_attendees_state.dart';
 class EventAttendeesCubit extends Cubit<EventAttendeesState> {
   final EventRepository eventRepository;
   final UserRepository userRepository;
+  final GetEventAttendeesUseCase _getEventAttendeesUseCase;
 
-  EventAttendeesCubit( {
+  EventAttendeesCubit({required GetEventAttendeesUseCase getEventAttendeesUseCase,
     required this.eventRepository,
-    required this.userRepository
-  }) : super(const EventAttendeesState());
-
-  Future<void> loadAttendees(String eventId) async { 
+    required this.userRepository,
+  })  : _getEventAttendeesUseCase = getEventAttendeesUseCase,
+        super(EventAttendeesState());
+      
+  Future<void> loadAttendees(String eventId) async {
     emit(EventAttendeesState.loading());
     try {
-      final results = await Future.wait([
-        userRepository.getUser(), 
-        eventRepository.getEventAttendees(eventId), 
-        eventRepository.getLocallyStoredPaidStatus(eventId), 
-      ]);
-      
-      final user = results[0] as User; 
-      final attendees = results[1] as EventAttendees; 
-      final localPaidStatuses = results[2] as Map<String, bool>;
+      final (combinedAttendees, isAdmin) = 
+          await _getEventAttendeesUseCase.execute(eventId);
 
-      final bool isAdmin = user.role == RoleType.admin;
-      if (attendees.totalUsers > 0) {
+      if (combinedAttendees.isNotEmpty) {
         
-        final updatedUsers = attendees.users.map((user) {
-            final isPaidLocally = localPaidStatuses[user.name] ?? user.isPaid; 
-            return user.copyWith(isPaid: isPaidLocally);
-        }).toList();
-
-        final updatedAttendees = attendees.copyWith(users: updatedUsers); 
-
-        final uiModel = EventAttendeesUiMapper.map(updatedAttendees, isAdmin); 
+        final uiModel = EventAttendeesUiMapper.map(combinedAttendees, isAdmin);
         emit(EventAttendeesState.success(uiModel));
-        
       } else {
         emit(EventAttendeesState.empty());
       }
@@ -63,8 +47,8 @@ class EventAttendeesCubit extends Cubit<EventAttendeesState> {
         final updatedUiModel = currentAttendees.copyWith(users: updatedUsers);
         emit(EventAttendeesState.success(updatedUiModel));
         
-        final newPaid = updatedUsers.firstWhere((u) => u.name == name).isPaid;
-        await eventRepository.updatePaidStatus(eventId, name, newPaid);
+        final isPaidStatus = updatedUsers.firstWhere((u) => u.name == name).isPaid;
+        await eventRepository.updatePaidStatus(eventId, name, isPaidStatus);
     }
   }
 }

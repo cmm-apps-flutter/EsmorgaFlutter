@@ -41,7 +41,7 @@ class EventLocalModel extends HiveObject {
   final int localJoinDeadline;
 
   @HiveField(12)
-  List<String> paidUsers;
+  List<EventAttendeeLocalModel> attendees;
 
   EventLocalModel({
     required this.localId,
@@ -56,8 +56,8 @@ class EventLocalModel extends HiveObject {
     required this.localCurrentAttendeeCount,
     required this.localMaxCapacity,
     required this.localJoinDeadline,
-    required this.paidUsers,
-  }){ this.paidUsers = paidUsers ?? []; }
+    required this.attendees,
+  }){ this.attendees = attendees ?? []; }
 }
 
 @HiveType(typeId: 1)
@@ -78,3 +78,16 @@ class EventLocationLocalModel {
   });
 }
 
+@HiveType(typeId: 4) 
+class EventAttendeeLocalModel {
+  @HiveField(0)
+  final String userName;
+
+  @HiveField(1)
+  final bool isPaid;
+
+  EventAttendeeLocalModel({
+    required this.userName,
+    required this.isPaid,
+  });
+}

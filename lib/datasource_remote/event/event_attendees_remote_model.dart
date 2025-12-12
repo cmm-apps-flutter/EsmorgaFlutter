@@ -1,19 +1,15 @@
 class EventAttendeeRemoteModel {
   final String name;
-  final bool isPaid;
 
   EventAttendeeRemoteModel({
     required this.name,
-    this.isPaid = false,
   });
 
   EventAttendeeRemoteModel copyWith({
     String? name,
-    bool? isPaid,
   }) {
     return EventAttendeeRemoteModel(
       name: name ?? this.name, 
-      isPaid: isPaid ?? this.isPaid,
     );
   }
 
@@ -23,7 +19,6 @@ class EventAttendeeRemoteModel {
     }
     return EventAttendeeRemoteModel(
       name: json['name'] as String,
-      isPaid: false,
     );
   }
 }

@@ -43,7 +43,7 @@ extension EventDataModelToLocalMapper on EventDataModel {
       localCurrentAttendeeCount: dataCurrentAttendeeCount,
       localMaxCapacity: dataMaxCapacity,
       localJoinDeadline: dataJoinDeadLine,
-      paidUsers: [],
+      attendees: [],
     );
   }
 }

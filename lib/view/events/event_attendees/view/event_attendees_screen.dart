@@ -59,7 +59,7 @@ class _EventAttendeesForm extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 EsmorgaText(
-                  text: l10n.title_event_attendees,
+                  text: l10n.titleEventAttendees,
                   style: EsmorgaTextStyle.title,
                 ),
                 const SizedBox(height: 16),
@@ -67,7 +67,7 @@ class _EventAttendeesForm extends StatelessWidget {
                   children: [
                     Expanded(
                       child: EsmorgaText(
-                        text: l10n.title_name, 
+                        text: l10n.titleName, 
                         style: EsmorgaTextStyle.heading2,
                       ),
                     ),
@@ -75,7 +75,7 @@ class _EventAttendeesForm extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.only(right:0), 
                         child: EsmorgaText(
-                          text: l10n.title_payment_status,
+                          text: l10n.titlePaymentStatus,
                           style: EsmorgaTextStyle.heading2,
                         ),
                       ),

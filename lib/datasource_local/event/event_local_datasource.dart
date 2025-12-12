@@ -34,14 +34,28 @@ class EventLocalDatasourceImpl implements EventDatasource {
 
   @override
   Future<void> joinEvent(EventDataModel event) async {
-    final localEvent = event.toEventLocalModel();
-    await eventsBox.put(event.dataId, localEvent);
+    final existingLocalModel = eventsBox.get(event.dataId);
+    
+    final newLocalModel = event.toEventLocalModel();
+    
+    if (existingLocalModel != null) {
+      newLocalModel.attendees = existingLocalModel.attendees;
+    }
+    
+    await eventsBox.put(event.dataId, newLocalModel);
   }
 
   @override
   Future<void> leaveEvent(EventDataModel event) async {
-    final localEvent = event.toEventLocalModel();
-    await eventsBox.put(event.dataId, localEvent);
+    final existingLocalModel = eventsBox.get(event.dataId);
+    
+    final newLocalModel = event.toEventLocalModel();
+    
+    if (existingLocalModel != null) {
+      newLocalModel.attendees = existingLocalModel.attendees;
+    }
+
+    await eventsBox.put(event.dataId, newLocalModel);
   }
 
   @override
@@ -55,7 +69,7 @@ class EventLocalDatasourceImpl implements EventDatasource {
       final newLocalModel = eventDataModel.toEventLocalModel(); 
       
       if (existingLocalModel != null) {
-        newLocalModel.paidUsers = existingLocalModel.paidUsers;
+        newLocalModel.attendees = existingLocalModel.attendees;
       }
 
       eventMap[newLocalModel.localId] = newLocalModel;
@@ -79,18 +93,23 @@ class EventLocalDatasourceImpl implements EventDatasource {
     final event = eventsBox.get(eventId);
     if (event == null) return;
 
-    event.paidUsers = event.paidUsers ?? [];
+    event.attendees = event.attendees ?? [];
 
-    if (isPaid) {
-      if (!event.paidUsers.contains(userName)) {
-        event.paidUsers.add(userName);
-      }
-    } else {
-      event.paidUsers.remove(userName);
+    final existingAttendeeIndex = event.attendees.indexWhere((a) => a.userName == userName);
+
+    if (existingAttendeeIndex >= 0) {
+      event.attendees[existingAttendeeIndex] = EventAttendeeLocalModel(
+        userName: userName,
+        isPaid: isPaid,
+      );
+    } else if (isPaid) {
+      event.attendees.add(EventAttendeeLocalModel(
+        userName: userName,
+        isPaid: true,
+      ));
     }
 
     await event.save(); 
-    final savedEvent = eventsBox.get(eventId);
   }
 
   @override
@@ -101,11 +120,14 @@ class EventLocalDatasourceImpl implements EventDatasource {
       return {}; 
     }
 
-    final paidUsers = event.paidUsers ?? [];
+    final attendees = event.attendees ?? [];
+    
     final paidStatusMap = <String, bool>{};
 
-    for (final userName in paidUsers) {
-      paidStatusMap[userName] = true; 
+    for (final attendee in attendees) {
+      if (attendee.isPaid) {
+        paidStatusMap[attendee.userName] = true; 
+      }
     }
     return paidStatusMap;
   }

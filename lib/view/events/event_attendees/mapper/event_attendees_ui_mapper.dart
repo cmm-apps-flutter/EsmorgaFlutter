@@ -1,4 +1,4 @@
-import 'package:esmorga_flutter/domain/event/model/event_attendees.dart';
+import 'package:esmorga_flutter/domain/event/model/event_attendee_domain_model.dart';
 import 'package:esmorga_flutter/view/events/event_attendees/mapper/event_attendee_ui_model.dart';
 
 class EventAttendeesUiModel {
@@ -22,12 +22,16 @@ class EventAttendeesUiModel {
     );
   }
 }
+
 class EventAttendeesUiMapper {
-  static EventAttendeesUiModel map(EventAttendees attendees, bool isAdmin) { 
+  static EventAttendeesUiModel map(
+    List<EventAttendeeDomainModel> combinedAttendees,
+    bool isAdmin
+  ) { 
     return EventAttendeesUiModel(
-      users: attendees.users.map((e) => EventAttendeeUiModel(
-        name: e.name,
-        isPaid: e.isPaid,
+      users: combinedAttendees.map((domainModel) => EventAttendeeUiModel(
+        name: domainModel.name,
+        isPaid: domainModel.isPaid, 
       )).toList(),
       isAdmin: isAdmin, 
     );

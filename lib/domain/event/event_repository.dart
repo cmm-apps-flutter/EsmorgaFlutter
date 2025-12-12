@@ -7,5 +7,5 @@ abstract class EventRepository {
   Future<void> leaveEvent(Event event);
   Future<EventAttendees> getEventAttendees(String eventId);
   Future<void> updatePaidStatus(String eventId, String userName, bool isPaid);
-  Future<Map<String, bool>> getLocallyStoredPaidStatus(String eventId);
+  Future<Map<String, bool>> getPaidStatus(String eventId);
 }
