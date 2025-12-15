@@ -1,7 +1,17 @@
 class EventAttendeeRemoteModel {
   final String name;
 
-  EventAttendeeRemoteModel({required this.name});
+  EventAttendeeRemoteModel({
+    required this.name,
+  });
+
+  EventAttendeeRemoteModel copyWith({
+    String? name,
+  }) {
+    return EventAttendeeRemoteModel(
+      name: name ?? this.name, 
+    );
+  }
 
   factory EventAttendeeRemoteModel.fromJson(Map<String, dynamic> json) {
     if (!json.containsKey('name')) {

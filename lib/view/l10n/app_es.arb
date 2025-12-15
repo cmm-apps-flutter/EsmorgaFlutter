@@ -131,10 +131,11 @@
   "buttonJoinEventDisabled": "Lleno",
   "snackbarEventFull": "El evento ya ha alcanzado el aforo máximo.",
   "errorEventFull": "El evento está completo",
-  "button_join_event_closed": "Demasiado tarde",
-  "screen_event_details_join_deadline": "Únete antes del {date}",
+  "buttonJoinEventClosed": "Demasiado tarde",
+  "screenEventDetailsJoinDeadline": "Únete antes del {date}",
   "loginError": "Ups, hubo un error. Revisa tus datos e inténtalo de nuevo",
-  "button_view_attendees": "Ver asistentes",
-  "title_event_attendees": "Listado de Asistentes",
-  "title_name": "Nombre"
+  "buttonViewAttendees": "Ver asistentes",
+  "titleEventAttendees": "Listado de Asistentes",
+  "titleName": "Nombre",
+  "titlePaymentStatus": "Pago"
 }

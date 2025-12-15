@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:esmorga_flutter/data/event/event_repository_impl.dart';
 import 'package:esmorga_flutter/data/poll/poll_repository_impl.dart';
 import 'package:esmorga_flutter/datasource_remote/config/environment_config.dart';
+import 'package:esmorga_flutter/domain/event/attendees/usecase/get_event_attendees_use_case.dart';
 import 'package:esmorga_flutter/view/events/event_attendees/cubbit/event_attendees_cubit.dart';
 import 'package:http/io_client.dart';
 import 'package:http_proxy/http_proxy.dart';
@@ -55,7 +56,6 @@ import 'package:go_router/go_router.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:esmorga_flutter/data/poll/poll_datasource.dart';
 
 final getIt = GetIt.instance;
@@ -76,6 +76,7 @@ Future<void> setupDi(Locale locale) async {
   await locService.load(locale);
   getIt.registerSingleton<LocalizationService>(locService);
   getIt.registerSingleton<AppLocalizations>(locService.current);
+  Hive.registerAdapter(EventAttendeeLocalModelAdapter());
   getIt.registerSingleton<FormValidator>(FormValidator());
   // -----------------------------
   // STORAGE
@@ -196,6 +197,10 @@ Future<void> setupDi(Locale locale) async {
   ));
   getIt.registerSingleton<GetPollsUseCase>(GetPollsUseCase(getIt<PollRepository>()));
   getIt.registerSingleton<VotePollUseCase>(VotePollUseCase(getIt<PollRepository>()));
+  getIt.registerSingleton<GetEventAttendeesUseCase>(GetEventAttendeesUseCase(
+    getIt<EventRepository>(),
+    getIt<UserRepository>(),
+  ));
 
   // -----------------------------
   // CUBITS
@@ -231,7 +236,7 @@ Future<void> setupDi(Locale locale) async {
         verificationCode: verificationCode,
       ));
 
-  getIt.registerFactory<EventAttendeesCubit>(() => EventAttendeesCubit(getIt<EventRepository>()));
+  getIt.registerFactory(() => EventAttendeesCubit(eventRepository: getIt(), userRepository: getIt(), getEventAttendeesUseCase: getIt()));
 
   getIt.registerFactoryParam<PollDetailCubit, Poll, void>((poll, _) => PollDetailCubit(
         poll: poll,

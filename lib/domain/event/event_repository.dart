@@ -6,4 +6,6 @@ abstract class EventRepository {
   Future<void> joinEvent(Event event);
   Future<void> leaveEvent(Event event);
   Future<EventAttendees> getEventAttendees(String eventId);
+  Future<void> updatePaidStatus(String eventId, String userName, bool isPaid);
+  Future<Map<String, bool>> getPaidStatus(String eventId);
 }

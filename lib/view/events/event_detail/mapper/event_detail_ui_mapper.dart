@@ -36,7 +36,7 @@ class EventDetailUiMapper {
     if (!isAuthenticated) {
       buttonText = l10n.current.buttonLoginToJoin;
     } else if (isDeadlinePassed) {
-      buttonText = l10n.current.button_join_event_closed;
+      buttonText = l10n.current.buttonJoinEventClosed;
     } else if (isFull && !event.userJoined) {
       buttonText = l10n.current.buttonJoinEventDisabled;
     } else {
