@@ -89,28 +89,20 @@ class EventLocalDatasourceImpl implements EventDatasource {
   }
 
   @override
-  Future<void> savePaidStatus(String eventId, String userName, bool isPaid) async {
+  Future<void> savePaidStatus(String eventId, EventAttendeeLocalModel attendee) async {
     final event = eventsBox.get(eventId);
     if (event == null) return;
 
-    event.attendees = event.attendees ?? [];
-
-    final existingAttendeeIndex = event.attendees.indexWhere((a) => a.userName == userName);
+    final attendeesList = event.attendees ?? []; 
+    final existingAttendeeIndex = attendeesList.indexWhere((a) => a.userName == attendee.userName); 
 
     if (existingAttendeeIndex >= 0) {
-      event.attendees[existingAttendeeIndex] = EventAttendeeLocalModel(
-        userName: userName,
-        isPaid: isPaid,
-      );
-    } else if (isPaid) {
-      event.attendees.add(EventAttendeeLocalModel(
-        userName: userName,
-        isPaid: true,
-      ));
+      event.attendees[existingAttendeeIndex] = attendee;
+    } else {
+      event.attendees.add(attendee); 
     }
-
     await event.save(); 
-  }
+}
 
   @override
   Future<Map<String, bool>> getPaidStatuses(String eventId) async {

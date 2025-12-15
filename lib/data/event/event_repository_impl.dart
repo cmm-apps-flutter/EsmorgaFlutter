@@ -3,6 +3,7 @@ import 'package:esmorga_flutter/data/event/event_datasource.dart';
 import 'package:esmorga_flutter/data/event/mapper/event_mapper.dart';
 import 'package:esmorga_flutter/data/user/datasource/user_datasource.dart';
 import 'package:esmorga_flutter/data/event/model/event_data_model.dart';
+import 'package:esmorga_flutter/datasource_local/event/event_local_model.dart';
 import 'package:esmorga_flutter/datasource_remote/event/event_attendees_remote_model.dart';
 import 'package:esmorga_flutter/domain/event/event_repository.dart';
 import 'package:esmorga_flutter/domain/event/model/event.dart';
@@ -93,7 +94,12 @@ class EventRepositoryImpl implements EventRepository {
 
   @override
   Future<void> updatePaidStatus(String eventId, String userName, bool isPaid) async {
-    await localEventDatasource.savePaidStatus(eventId, userName, isPaid);
+      final attendeeModel = EventAttendeeLocalModel(
+          userName: userName,
+          isPaid: isPaid,
+      );
+
+      await localEventDatasource.savePaidStatus(eventId, attendeeModel);
   }
 
   @override
