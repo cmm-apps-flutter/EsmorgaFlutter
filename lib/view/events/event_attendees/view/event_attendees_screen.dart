@@ -1,5 +1,6 @@
 import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/ds/esmorga_checkbox_row.dart';
+import 'package:esmorga_flutter/ds/esmorga_loader.dart';
 import 'package:esmorga_flutter/view/events/event_attendees/cubbit/event_attendees_cubit.dart';
 import 'package:esmorga_flutter/view/events/event_attendees/cubbit/event_attendees_state.dart';
 import 'package:esmorga_flutter/ds/esmorga_full_screen_error.dart';
@@ -40,7 +41,19 @@ class _EventAttendeesForm extends StatelessWidget {
       body: BlocBuilder<EventAttendeesCubit, EventAttendeesState>(
         builder: (context, state) {
           if (state.loading) {
-            return const Center(child: CircularProgressIndicator());
+            return Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  EsmorgaText(text: l10n.titleEventAttendees,style: EsmorgaTextStyle.title),
+                  const SizedBox(height: 20),
+                  EsmorgaText(text: l10n.body_loader, style: EsmorgaTextStyle.heading1),
+                  const SizedBox(height: 16),
+                  const EsmorgaLinearLoader(),
+                ],
+              ),
+            );
           }
 
           if (state.error != null) {
