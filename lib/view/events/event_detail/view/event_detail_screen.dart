@@ -57,17 +57,11 @@ class _EventDetailFormState extends State<_EventDetailForm> {
       if (!mounted) return;
       final l10n = getIt<LocalizationService>().current;
       if (effect is NavigateBackEffect) {
-        context.pop();
+        context.pop(effect.eventChanged);
       } else if (effect is NavigateToLoginEffect) {
         widget.goToLogin();
       } else if (effect is NavigateToAttendeesEffect) {
         widget.goToAttendees(effect.eventId);
-      }   
-      if (effect is NavigateBackEffect) {
-        context.pop();
-      } else if (effect is NavigateToLoginEffect) {
-        debugPrint("Navigate");
-        widget.goToLogin();
       } else if (effect is ShowJoinSuccessEffect) {
         _showSnack(l10n.snackbarEventJoined);
       } else if (effect is ShowLeaveSuccessEffect) {
@@ -78,7 +72,7 @@ class _EventDetailFormState extends State<_EventDetailForm> {
         _showSnack(l10n.defaultErrorTitle);
       } else if (effect is OpenMapsEffect) {
         _openMaps(effect.lat, effect.lng, effect.name);
-      }
+      } 
     });
   }
 

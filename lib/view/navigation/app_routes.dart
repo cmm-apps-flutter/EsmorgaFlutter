@@ -173,7 +173,8 @@ class AppRoutes {
                 key: state.pageKey,
                 child: MyEventsScreen(
                   onDetailsClicked: (event) async {
-                    await context.push(AppRoutes.eventDetail, extra: event); 
+                      final didChange = await context.push(AppRoutes.eventDetail, extra: event) as bool?;
+                      return didChange;
                   },
                   onSignInClicked: () {
                     context.push(login);

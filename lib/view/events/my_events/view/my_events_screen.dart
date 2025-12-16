@@ -12,7 +12,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 
 class MyEventsScreen extends StatelessWidget {
-  final Future<void> Function(Event) onDetailsClicked;
+  final Future<bool?> Function(Event) onDetailsClicked;
   final void Function() onSignInClicked;
 
   const MyEventsScreen({super.key, required this.onDetailsClicked, required this.onSignInClicked});
@@ -27,7 +27,7 @@ class MyEventsScreen extends StatelessWidget {
 }
 
 class _MyEventsForm extends StatefulWidget {
-  final Future<void> Function(Event) onDetailsClicked;
+  final Future<bool?> Function(Event) onDetailsClicked; 
   final void Function() onSignInClicked;
 
   const _MyEventsForm(this.onDetailsClicked, this.onSignInClicked);
@@ -50,8 +50,10 @@ class _MyEventsFormState extends State<_MyEventsForm> {
           SnackBar(content: Text(AppLocalizations.of(context)!.snackbarNoInternet)),
         );
       } else if (effect is MyEventsEffectNavigateToEventDetail) {
-        await widget.onDetailsClicked(effect.event);
-        _cubit.load(forceRefresh: true);
+        final didChange = await widget.onDetailsClicked(effect.event); 
+        if (didChange == true) {
+          _cubit.load(forceRefresh: true);
+        }
       } else if (effect is MyEventsEffectNavigateToSignIn) {
         widget.onSignInClicked();
       }
