@@ -172,8 +172,8 @@ class AppRoutes {
               pageBuilder: (context, state) => CustomTransitionPage(
                 key: state.pageKey,
                 child: MyEventsScreen(
-                  onDetailsClicked: (event) {
-                    context.push(AppRoutes.eventDetail, extra: event);
+                  onDetailsClicked: (event) async {
+                    await context.push(AppRoutes.eventDetail, extra: event); 
                   },
                   onSignInClicked: () {
                     context.push(login);
