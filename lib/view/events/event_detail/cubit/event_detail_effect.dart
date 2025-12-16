@@ -2,7 +2,10 @@
 
 abstract class EventDetailEffect {}
 
-class NavigateBackEffect extends EventDetailEffect {}
+class NavigateBackEffect extends EventDetailEffect {
+  final bool eventChanged;
+  NavigateBackEffect(this.eventChanged);
+}
 class NavigateToLoginEffect extends EventDetailEffect {}
 class ShowJoinSuccessEffect extends EventDetailEffect {}
 class ShowLeaveSuccessEffect extends EventDetailEffect {}

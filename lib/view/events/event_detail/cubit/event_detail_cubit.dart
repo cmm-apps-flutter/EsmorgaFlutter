@@ -12,8 +12,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class EventDetailCubit extends Cubit<EventDetailState> {
   final EventRepository eventRepository;
   final UserRepository userRepository;
-  final LocalizationService l10n; 
+  final LocalizationService l10n;
   Event _event;
+  bool _hasChanged = false;
 
   final _effectController = StreamController<EventDetailEffect>.broadcast();
   Stream<EventDetailEffect> get effects => _effectController.stream;
@@ -21,7 +22,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
   EventDetailCubit({
     required this.eventRepository,
     required this.userRepository,
-    required this.l10n, 
+    required this.l10n,
     required Event event,
   })  : _event = event,
         super(EventDetailState(
@@ -87,6 +88,8 @@ class EventDetailCubit extends Cubit<EventDetailState> {
       }
 
       _event = updated;
+      _hasChanged = true; 
+
       emit(state.copyWith(
         uiModel: EventDetailUiMapper.map(
           updated,
@@ -119,7 +122,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
     }
   }
 
-  void backPressed() => _emitEffect(NavigateBackEffect());
+  void backPressed() => _emitEffect(NavigateBackEffect(_hasChanged));
 
   void _emitEffect(EventDetailEffect effect) => _effectController.add(effect);
 
@@ -128,7 +131,8 @@ class EventDetailCubit extends Cubit<EventDetailState> {
     _effectController.close();
     return super.close();
   }
+
   void viewAttendeesPressed() {
-  _emitEffect(NavigateToAttendeesEffect(_event.id));
-}
+    _emitEffect(NavigateToAttendeesEffect(_event.id));
+  }
 }
