@@ -15,6 +15,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
   final UserRepository userRepository;
   final LocalizationService l10n;
   Event _event;
+  bool _hasChanged = false;
 
   final _effectController = StreamController<EventDetailEffect>.broadcast();
   Stream<EventDetailEffect> get effects => _effectController.stream;
@@ -88,6 +89,8 @@ class EventDetailCubit extends Cubit<EventDetailState> {
       }
 
       _event = updated;
+      _hasChanged = true;
+
       emit(state.copyWith(
         uiModel: EventDetailUiMapper.map(
           updated,
@@ -121,7 +124,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
     }
   }
 
-  void backPressed() => _emitEffect(NavigateBackEffect());
+  void backPressed() => _emitEffect(NavigateBackEffect(_hasChanged));
 
   void _emitEffect(EventDetailEffect effect) => _effectController.add(effect);
 
@@ -129,5 +132,9 @@ class EventDetailCubit extends Cubit<EventDetailState> {
   Future<void> close() {
     _effectController.close();
     return super.close();
+  }
+
+  void viewAttendeesPressed() {
+    _emitEffect(NavigateToAttendeesEffect(_event.id));
   }
 }

@@ -1,4 +1,5 @@
 import 'package:esmorga_flutter/data/event/event_datasource.dart';
+import 'package:esmorga_flutter/data/event/model/event_attendees_data_model.dart';
 import 'package:esmorga_flutter/data/event/model/event_data_model.dart';
 import 'package:esmorga_flutter/datasource_local/event/event_local_model.dart';
 import 'package:esmorga_flutter/datasource_local/event/mapper/event_local_mapper.dart';
@@ -33,21 +34,47 @@ class EventLocalDatasourceImpl implements EventDatasource {
 
   @override
   Future<void> joinEvent(EventDataModel event) async {
-    final localEvent = event.toEventLocalModel();
-    await eventsBox.put(event.dataId, localEvent);
+    final existingLocalModel = eventsBox.get(event.dataId);
+    
+    final newLocalModel = event.toEventLocalModel();
+    
+    if (existingLocalModel != null) {
+      newLocalModel.attendees = existingLocalModel.attendees;
+    }
+    
+    await eventsBox.put(event.dataId, newLocalModel);
   }
 
   @override
   Future<void> leaveEvent(EventDataModel event) async {
-    final localEvent = event.toEventLocalModel();
-    await eventsBox.put(event.dataId, localEvent);
+    final existingLocalModel = eventsBox.get(event.dataId);
+    
+    final newLocalModel = event.toEventLocalModel();
+    
+    if (existingLocalModel != null) {
+      newLocalModel.attendees = existingLocalModel.attendees;
+    }
+
+    await eventsBox.put(event.dataId, newLocalModel);
   }
 
   @override
   Future<void> cacheEvents(List<EventDataModel> events) async {
-    await eventsBox.clear();
-    final localEvents = events.toEventLocalModelList();
-    final eventMap = {for (var e in localEvents) e.localId: e};
+    final eventMap = <String, EventLocalModel>{};
+
+    for (final eventDataModel in events) {
+      
+      final existingLocalModel = eventsBox.get(eventDataModel.dataId);
+      
+      final newLocalModel = eventDataModel.toEventLocalModel(); 
+      
+      if (existingLocalModel != null) {
+        newLocalModel.attendees = existingLocalModel.attendees;
+      }
+
+      eventMap[newLocalModel.localId] = newLocalModel;
+    }
+    
     await eventsBox.putAll(eventMap);
   }
 
@@ -55,5 +82,45 @@ class EventLocalDatasourceImpl implements EventDatasource {
   Future<void> deleteCacheEvents() async {
     await eventsBox.clear();
   }
+
+  @override
+  Future<EventAttendeesDataModel> getEventAttendees(String eventId) async {
+    return EventAttendeesDataModel(totalUsers: 0, users: []);
+  }
+
+  @override
+  Future<void> savePaidStatus(String eventId, EventAttendeeLocalModel attendee) async {
+    final event = eventsBox.get(eventId);
+    if (event == null) return;
+
+    final attendeesList = event.attendees ?? []; 
+    final existingAttendeeIndex = attendeesList.indexWhere((a) => a.userName == attendee.userName); 
+
+    if (existingAttendeeIndex >= 0) {
+      event.attendees[existingAttendeeIndex] = attendee;
+    } else {
+      event.attendees.add(attendee); 
+    }
+    await event.save(); 
 }
 
+  @override
+  Future<Map<String, bool>> getPaidStatuses(String eventId) async {
+    final event = eventsBox.get(eventId);
+
+    if (event == null) {
+      return {}; 
+    }
+
+    final attendees = event.attendees ?? [];
+    
+    final paidStatusMap = <String, bool>{};
+
+    for (final attendee in attendees) {
+      if (attendee.isPaid) {
+        paidStatusMap[attendee.userName] = true; 
+      }
+    }
+    return paidStatusMap;
+  }
+}

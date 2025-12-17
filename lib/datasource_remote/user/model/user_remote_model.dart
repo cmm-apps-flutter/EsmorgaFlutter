@@ -25,7 +25,7 @@ class UserRemoteModel extends Equatable {
     final name = (profile != null ? profile['name'] : json['name']) as String? ?? '';
     final lastName = (profile != null ? profile['lastName'] : json['lastName']) as String? ?? '';
     final email = (profile != null ? profile['email'] : json['email']) as String? ?? '';
-    final role = (profile != null ? profile['role'] : json['role']) as String? ?? 'USER';
+    final role = profile?['role'] ?? 'USER';
 
     return UserRemoteModel(
       name: name,

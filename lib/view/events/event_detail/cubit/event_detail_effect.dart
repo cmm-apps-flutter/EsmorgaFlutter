@@ -2,7 +2,10 @@
 
 abstract class EventDetailEffect {}
 
-class NavigateBackEffect extends EventDetailEffect {}
+class NavigateBackEffect extends EventDetailEffect {
+  final bool eventChanged;
+  NavigateBackEffect(this.eventChanged);
+}
 class NavigateToLoginEffect extends EventDetailEffect {}
 class ShowJoinSuccessEffect extends EventDetailEffect {}
 class ShowLeaveSuccessEffect extends EventDetailEffect {}
@@ -16,3 +19,7 @@ class OpenMapsEffect extends EventDetailEffect {
 }
 class ShowEventFullSnackbarEffect extends EventDetailEffect {}
 class ShowJoinClosedEffect extends EventDetailEffect {}
+class NavigateToAttendeesEffect extends EventDetailEffect {
+  final String eventId;
+  NavigateToAttendeesEffect(this.eventId);
+}

@@ -26,7 +26,7 @@ class UserRemoteDatasourceImpl implements UserDatasource {
       dataName: userRemoteModel.name,
       dataLastName: userRemoteModel.lastName,
       dataEmail: userRemoteModel.email,
-      dataRole: RoleType.user,
+      dataRole: RoleTypeExtension.fromString(userRemoteModel.role),
     );
   }
 

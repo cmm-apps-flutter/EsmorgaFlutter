@@ -33,7 +33,7 @@ class MyEventsCubit extends Cubit<MyEventsState> {
 
   MyEventsCubit({required this.eventRepository, required this.userRepository}) : super(const MyEventsState());
 
-  Future<void> load() async {
+  Future<void> load({bool forceRefresh = false}) async {
     emit(const MyEventsState(loading: true));
     try {
       await userRepository.getUser();
@@ -42,7 +42,7 @@ class MyEventsCubit extends Cubit<MyEventsState> {
       return;
     }
     try {
-      final events = await eventRepository.getEvents(forceRefresh: false);
+      final events = await eventRepository.getEvents(forceRefresh: forceRefresh); 
       _myEvents = events.where((e) => e.userJoined).toList();
       if (_myEvents.isEmpty) {
         emit(const MyEventsState(loading: false, error: MyEventsEffectType.emptyList));
