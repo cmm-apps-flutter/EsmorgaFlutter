@@ -35,10 +35,10 @@ class _EventDetailForm extends StatefulWidget {
   final Function() goToLogin;
   final void Function(String eventId) goToAttendees;
   const _EventDetailForm({
-      Key? key,
-      required this.goToLogin,
-      required this.goToAttendees,
-    }) : super(key: key);
+    Key? key,
+    required this.goToLogin,
+    required this.goToAttendees,
+  }) : super(key: key);
   @override
   State<_EventDetailForm> createState() => _EventDetailFormState();
 }
@@ -64,6 +64,8 @@ class _EventDetailFormState extends State<_EventDetailForm> {
         widget.goToAttendees(effect.eventId);
       } else if (effect is ShowJoinSuccessEffect) {
         _showSnack(l10n.snackbarEventJoined);
+      } else if (effect is ShowEventFullSnackbarEffect) {
+        _showSnack(l10n.snackbarEventFull);
       } else if (effect is ShowLeaveSuccessEffect) {
         _showSnack(l10n.snackbarEventLeft);
       } else if (effect is ShowNoNetworkEffect) {
@@ -72,7 +74,7 @@ class _EventDetailFormState extends State<_EventDetailForm> {
         _showSnack(l10n.defaultErrorTitle);
       } else if (effect is OpenMapsEffect) {
         _openMaps(effect.lat, effect.lng, effect.name);
-      } 
+      }
     });
   }
 
@@ -101,8 +103,7 @@ class _EventDetailFormState extends State<_EventDetailForm> {
     );
   }
 
-  Widget _buildBody(
-      BuildContext context, EventDetailState state, AppLocalizations l10n) {
+  Widget _buildBody(BuildContext context, EventDetailState state, AppLocalizations l10n) {
     String safeDecode(String raw) {
       if (!raw.contains('%')) return raw;
       final hasValidPattern = RegExp(r'%[0-9A-Fa-f]{2}').hasMatch(raw);
@@ -132,7 +133,7 @@ class _EventDetailFormState extends State<_EventDetailForm> {
         ),
       );
     }
-    
+
     final ui = state.uiModel;
 
     return SingleChildScrollView(
@@ -170,43 +171,38 @@ class _EventDetailFormState extends State<_EventDetailForm> {
           const SizedBox(height: 8),
           EsmorgaText(text: ui.date, style: EsmorgaTextStyle.body1Accent),
           const SizedBox(height: 8),
-            Row(
-              children: [
-                if (ui.maxCapacity != null) ...[
-                  const Icon(Icons.people, size: 20),
-                  const SizedBox(width: 8),
-                  EsmorgaText(
-                    text: l10n.labelCapacity(ui.currentAttendeeCount, ui.maxCapacity!),
-                    style: EsmorgaTextStyle.body1Accent,
-                  ),
-                  const Spacer(),
-                ],
-                if (ui.showViewAttendants)
-                  InkWell(
-                    onTap: () => _cubit.viewAttendeesPressed(),
-                    child: EsmorgaText(
-                      text: l10n.buttonViewAttendees,
-                      style: EsmorgaTextStyle.button,
-                    ),
-                  ),
+          Row(
+            children: [
+              if (ui.maxCapacity != null) ...[
+                const Icon(Icons.people, size: 20),
+                const SizedBox(width: 8),
+                EsmorgaText(
+                  text: l10n.labelCapacity(ui.currentAttendeeCount, ui.maxCapacity!),
+                  style: EsmorgaTextStyle.body1Accent,
+                ),
+                const Spacer(),
               ],
-            ),
-            const SizedBox(height: 8),
+              if (ui.showViewAttendants)
+                InkWell(
+                  onTap: () => _cubit.viewAttendeesPressed(),
+                  child: EsmorgaText(
+                    text: l10n.buttonViewAttendees,
+                    style: EsmorgaTextStyle.button,
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
           EsmorgaText(
             text: l10n.screenEventDetailsJoinDeadline(ui.joinDeadLine),
             style: EsmorgaTextStyle.caption,
           ),
           const SizedBox(height: 24),
-          EsmorgaText(
-              text: l10n.screenEventDetailsDescription,
-              style: EsmorgaTextStyle.heading2),
+          EsmorgaText(text: l10n.screenEventDetailsDescription, style: EsmorgaTextStyle.heading2),
           const SizedBox(height: 8),
-          EsmorgaText(
-              text: safeDecode(ui.description), style: EsmorgaTextStyle.body1),
+          EsmorgaText(text: safeDecode(ui.description), style: EsmorgaTextStyle.body1),
           const SizedBox(height: 24),
-          EsmorgaText(
-              text: l10n.screenEventDetailsLocation,
-              style: EsmorgaTextStyle.heading2),
+          EsmorgaText(text: l10n.screenEventDetailsLocation, style: EsmorgaTextStyle.heading2),
           const SizedBox(height: 8),
           EsmorgaText(text: ui.locationName, style: EsmorgaTextStyle.body1),
           if (ui.showNavigateButton) ...[
@@ -219,7 +215,6 @@ class _EventDetailFormState extends State<_EventDetailForm> {
             ),
           ],
           const SizedBox(height: 24),
-          
           EsmorgaButton(
             text: ui.buttonText,
             isLoading: state.joinLeaving,
@@ -240,8 +235,7 @@ class _EventDetailFormState extends State<_EventDetailForm> {
 
   void _openMaps(double lat, double lng, String name) async {
     final query = Uri.encodeComponent(name);
-    final uri = Uri.parse(
-        'https://www.google.com/maps/search/?api=1&query=$lat,$lng($query)');
+    final uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng($query)');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else if (mounted) {

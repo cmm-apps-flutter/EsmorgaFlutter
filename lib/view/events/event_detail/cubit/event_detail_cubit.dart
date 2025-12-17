@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:esmorga_flutter/domain/error/exceptions.dart';
 import 'package:esmorga_flutter/domain/event/event_repository.dart';
 import 'package:esmorga_flutter/domain/event/model/event.dart';
 import 'package:esmorga_flutter/domain/user/repository/user_repository.dart';
@@ -74,8 +75,8 @@ class EventDetailCubit extends Cubit<EventDetailState> {
         await eventRepository.leaveEvent(_event);
         updated = _event.copyWith(
           userJoined: false,
-          currentAttendeeCount: (_event.currentAttendeeCount - 1)
-              .clamp(0, _event.maxCapacity ?? _event.currentAttendeeCount),
+          currentAttendeeCount:
+              (_event.currentAttendeeCount - 1).clamp(0, _event.maxCapacity ?? _event.currentAttendeeCount),
         );
         _emitEffect(ShowLeaveSuccessEffect());
       } else {
@@ -88,7 +89,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
       }
 
       _event = updated;
-      _hasChanged = true; 
+      _hasChanged = true;
 
       emit(state.copyWith(
         uiModel: EventDetailUiMapper.map(
@@ -98,11 +99,12 @@ class EventDetailCubit extends Cubit<EventDetailState> {
         ),
         joinLeaving: false,
       ));
+    } on EventFullException {
+      _emitEffect(ShowEventFullSnackbarEffect());
+      emit(state.copyWith(joinLeaving: false));
     } catch (e) {
       final msg = e.toString().toLowerCase();
-      if (msg.contains('422')) {
-        _emitEffect(ShowEventFullSnackbarEffect());
-      } else if (msg.contains('network') || msg.contains('connection')) {
+      if (msg.contains('network') || msg.contains('connection')) {
         _emitEffect(ShowNoNetworkEffect());
       } else {
         _emitEffect(ShowGenericErrorEffect());

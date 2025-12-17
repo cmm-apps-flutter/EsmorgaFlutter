@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:esmorga_flutter/di.dart';
+import 'package:esmorga_flutter/domain/error/exceptions.dart';
 import 'package:esmorga_flutter/domain/event/event_repository.dart';
 import 'package:esmorga_flutter/domain/event/model/event.dart';
 import 'package:esmorga_flutter/domain/event/model/event_location.dart';
@@ -31,6 +32,7 @@ class _FakeFormatter implements EsmorgaDateTimeFormatter {
   @override
   String formatTimeWithMillisUtcSuffix(int hour, int minute) => 'timeZ';
 }
+
 class _MockLocalizationService extends Mock implements LocalizationService {}
 
 void main() {
@@ -51,11 +53,11 @@ void main() {
     tags: const [],
     currentAttendeeCount: 2,
     maxCapacity: 10,
-    joinDeadline: DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch, 
+    joinDeadline: DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch,
   );
-  
+
   final deadlinePassedEvent = baseEvent.copyWith(
-    joinDeadline: DateTime(2020, 1, 1).millisecondsSinceEpoch, 
+    joinDeadline: DateTime(2020, 1, 1).millisecondsSinceEpoch,
     currentAttendeeCount: 2,
     userJoined: false,
   );
@@ -77,7 +79,6 @@ void main() {
     userJoined: false,
   );
 
-
   setUpAll(() {
     registerFallbackValue(baseEvent);
   });
@@ -94,94 +95,91 @@ void main() {
     getIt.reset();
   });
 
-    blocTest<EventDetailCubit, EventDetailState>(
-      'loads event and sets isAuthenticated true when getUser succeeds',
-      build: () {
-        when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
-        return EventDetailCubit(eventRepository: eventRepository, userRepository: userRepository, event: baseEvent, l10n: l10n);
-      },
-      act: (c) => c.start(),
-      expect: () => [
-        isA<EventDetailState>().having((s) => s.loading, 'loading', true),
-        isA<EventDetailState>()
-            .having((s) => s.loading, 'loading', false)
-            .having((s) => s.isAuthenticated, 'isAuthenticated', true),
-      ],
-    );
+  blocTest<EventDetailCubit, EventDetailState>(
+    'loads event and sets isAuthenticated true when getUser succeeds',
+    build: () {
+      when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
+      return EventDetailCubit(
+          eventRepository: eventRepository, userRepository: userRepository, event: baseEvent, l10n: l10n);
+    },
+    act: (c) => c.start(),
+    expect: () => [
+      isA<EventDetailState>().having((s) => s.loading, 'loading', true),
+      isA<EventDetailState>()
+          .having((s) => s.loading, 'loading', false)
+          .having((s) => s.isAuthenticated, 'isAuthenticated', true),
+    ],
+  );
 
-    blocTest<EventDetailCubit, EventDetailState>(
-      'join flow emits submitting, updated event userJoined true and success effect',
-      build: () {
-        when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
-        when(() => eventRepository.joinEvent(any())).thenAnswer((_) async {});
-        return EventDetailCubit(eventRepository: eventRepository, userRepository: userRepository, event: baseEvent, l10n: l10n);
-      },
-      act: (c) async {
-        final effectFuture = c.effects.firstWhere((e) => e is ShowJoinSuccessEffect);
-        await c.start();
-        await c.primaryPressed();
-        await effectFuture;
-      },
-      expect: () => [
-        isA<EventDetailState>().having((s) => s.loading, 'loading', true),
-        isA<EventDetailState>().having((s) => s.loading, 'loading', false).having((s) => s.isAuthenticated, 'isAuthenticated', true),
-        isA<EventDetailState>().having((s) => s.joinLeaving, 'joinLeaving', true),
-        isA<EventDetailState>()
-            .having((s) => s.joinLeaving, 'joinLeaving', false)
-            .having((s) => s.uiModel.userJoined, 'joined', true),
-      ],
-    );
+  blocTest<EventDetailCubit, EventDetailState>(
+    'join flow emits submitting, updated event userJoined true and success effect',
+    build: () {
+      when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
+      when(() => eventRepository.joinEvent(any())).thenAnswer((_) async {});
+      return EventDetailCubit(
+          eventRepository: eventRepository, userRepository: userRepository, event: baseEvent, l10n: l10n);
+    },
+    act: (c) async {
+      final effectFuture = c.effects.firstWhere((e) => e is ShowJoinSuccessEffect);
+      await c.start();
+      await c.primaryPressed();
+      await effectFuture;
+    },
+    expect: () => [
+      isA<EventDetailState>().having((s) => s.loading, 'loading', true),
+      isA<EventDetailState>()
+          .having((s) => s.loading, 'loading', false)
+          .having((s) => s.isAuthenticated, 'isAuthenticated', true),
+      isA<EventDetailState>().having((s) => s.joinLeaving, 'joinLeaving', true),
+      isA<EventDetailState>()
+          .having((s) => s.joinLeaving, 'joinLeaving', false)
+          .having((s) => s.uiModel.userJoined, 'joined', true),
+    ],
+  );
 
-    blocTest<EventDetailCubit, EventDetailState>(
-      'navigate pressed emits openMaps effect when coords present',
-      build: () {
-        when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
-        return EventDetailCubit(eventRepository: eventRepository, userRepository: userRepository, event: baseEvent, l10n: l10n);
-      },
-      act: (c) async {
-        final effectFuture = c.effects.firstWhere((e) => e is OpenMapsEffect);
-        c.start();
-        await Future<void>.delayed(const Duration(milliseconds: 5));
-        c.navigatePressed();
-        await effectFuture;
-      },
-      expect: () => [
-        isA<EventDetailState>().having((s) => s.loading, 'loading', true),
-        isA<EventDetailState>(),
-      ],
-    );
+  blocTest<EventDetailCubit, EventDetailState>(
+    'navigate pressed emits openMaps effect when coords present',
+    build: () {
+      when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
+      return EventDetailCubit(
+          eventRepository: eventRepository, userRepository: userRepository, event: baseEvent, l10n: l10n);
+    },
+    act: (c) async {
+      final effectFuture = c.effects.firstWhere((e) => e is OpenMapsEffect);
+      c.start();
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+      c.navigatePressed();
+      await effectFuture;
+    },
+    expect: () => [
+      isA<EventDetailState>().having((s) => s.loading, 'loading', true),
+      isA<EventDetailState>(),
+    ],
+  );
 
-    blocTest<EventDetailCubit, EventDetailState>(
-      'uiModel has the correct capacity values',
-      build: () {
-        when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
-        return EventDetailCubit(
-          eventRepository: eventRepository,
-          userRepository: userRepository,
-          event: baseEvent,
-          l10n: l10n
-        );
-      },
-      act: (cubit) => cubit.start(),
-      expect: () => [
-        isA<EventDetailState>().having((s) => s.loading, 'loading', true),
-        isA<EventDetailState>()
-            .having((s) => s.loading, 'loading', false)
-            .having((s) => s.uiModel.currentAttendeeCount, 'currentAttendeeCount', 2)
-            .having((s) => s.uiModel.maxCapacity, 'maxCapacity', 10),
-      ],
-    );  
+  blocTest<EventDetailCubit, EventDetailState>(
+    'uiModel has the correct capacity values',
+    build: () {
+      when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
+      return EventDetailCubit(
+          eventRepository: eventRepository, userRepository: userRepository, event: baseEvent, l10n: l10n);
+    },
+    act: (cubit) => cubit.start(),
+    expect: () => [
+      isA<EventDetailState>().having((s) => s.loading, 'loading', true),
+      isA<EventDetailState>()
+          .having((s) => s.loading, 'loading', false)
+          .having((s) => s.uiModel.currentAttendeeCount, 'currentAttendeeCount', 2)
+          .having((s) => s.uiModel.maxCapacity, 'maxCapacity', 10),
+    ],
+  );
 
   blocTest<EventDetailCubit, EventDetailState>(
     'isJoinEnabled is false when joinDeadline is in the past',
     build: () {
       when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
       return EventDetailCubit(
-        eventRepository: eventRepository,
-        userRepository: userRepository,
-        event: deadlinePassedEvent,
-        l10n: l10n
-      );
+          eventRepository: eventRepository, userRepository: userRepository, event: deadlinePassedEvent, l10n: l10n);
     },
     act: (c) => c.start(),
     expect: () => [
@@ -196,11 +194,7 @@ void main() {
     'isJoinEnabled is true when joinDeadline is in the future',
     build: () {
       return EventDetailCubit(
-        eventRepository: eventRepository,
-        userRepository: userRepository,
-        event: deadlineFutureEvent,
-        l10n: l10n
-      );
+          eventRepository: eventRepository, userRepository: userRepository, event: deadlineFutureEvent, l10n: l10n);
     },
     act: (c) => c.start(),
     expect: () => [
@@ -216,11 +210,7 @@ void main() {
     build: () {
       when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
       return EventDetailCubit(
-        eventRepository: eventRepository,
-        userRepository: userRepository,
-        event: deadlinePassedEvent,
-        l10n: l10n
-      );
+          eventRepository: eventRepository, userRepository: userRepository, event: deadlinePassedEvent, l10n: l10n);
     },
     act: (c) async {
       final effectFuture = c.effects.firstWhere((e) => e is ShowJoinClosedEffect);
@@ -237,11 +227,7 @@ void main() {
     'isJoinEnabled is true when event is full but deadline is in the future (Cubit logic)',
     build: () {
       return EventDetailCubit(
-        eventRepository: eventRepository,
-        userRepository: userRepository,
-        event: fullEvent,
-        l10n: l10n
-      );
+          eventRepository: eventRepository, userRepository: userRepository, event: fullEvent, l10n: l10n);
     },
     act: (c) => c.start(),
     expect: () => [
@@ -258,11 +244,7 @@ void main() {
       when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
       when(() => eventRepository.leaveEvent(any())).thenAnswer((_) async {});
       return EventDetailCubit(
-        eventRepository: eventRepository,
-        userRepository: userRepository,
-        event: fullJoinedEvent,
-        l10n: l10n
-      );
+          eventRepository: eventRepository, userRepository: userRepository, event: fullJoinedEvent, l10n: l10n);
     },
     act: (c) async {
       final effectFuture = c.effects.firstWhere((e) => e is ShowLeaveSuccessEffect);
@@ -272,7 +254,9 @@ void main() {
     },
     expect: () => [
       isA<EventDetailState>().having((s) => s.loading, 'loading', true),
-      isA<EventDetailState>().having((s) => s.loading, 'loading', false).having((s) => s.isAuthenticated, 'isAuthenticated', true),
+      isA<EventDetailState>()
+          .having((s) => s.loading, 'loading', false)
+          .having((s) => s.isAuthenticated, 'isAuthenticated', true),
       isA<EventDetailState>().having((s) => s.joinLeaving, 'joinLeaving', true),
       isA<EventDetailState>()
           .having((s) => s.joinLeaving, 'joinLeaving', false)
@@ -283,49 +267,77 @@ void main() {
       verify(() => eventRepository.leaveEvent(any())).called(1);
     },
   );
+
   blocTest<EventDetailCubit, EventDetailState>(
-  'View Attendees button visible triggers navigation',
-  build: () {
-    when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
-    return EventDetailCubit(
-      eventRepository: eventRepository,
-      userRepository: userRepository,
-      event: baseEvent.copyWith(currentAttendeeCount: 2),
-      l10n: l10n,
-    );
-  },
-  act: (c) async {
-    await c.start();
-    c.viewAttendeesPressed();
-  },
-  expect: () => [
-    isA<EventDetailState>().having((s) => s.loading, 'loading', true),
-    isA<EventDetailState>().having((s) => s.loading, 'loading', false),
-  ],
-  wait: const Duration(milliseconds: 10),
-  verify: (c) {
-    expect(c.effects, emits(isA<NavigateToAttendeesEffect>()));
-  },
-);
+    'join flow emits ShowEventFullSnackbarEffect when repository throws EventFullException',
+    build: () {
+      when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
+      when(() => eventRepository.joinEvent(any())).thenThrow(EventFullException());
+      return EventDetailCubit(
+        eventRepository: eventRepository,
+        userRepository: userRepository,
+        event: baseEvent,
+        l10n: l10n,
+      );
+    },
+    act: (c) async {
+      final effectFuture = c.effects.firstWhere((e) => e is ShowEventFullSnackbarEffect);
+      await c.start();
+      await c.primaryPressed();
+      await effectFuture;
+    },
+    expect: () => [
+      isA<EventDetailState>().having((s) => s.loading, 'loading', true),
+      isA<EventDetailState>()
+          .having((s) => s.loading, 'loading', false)
+          .having((s) => s.isAuthenticated, 'isAuthenticated', true),
+      isA<EventDetailState>().having((s) => s.joinLeaving, 'joinLeaving', true),
+      isA<EventDetailState>().having((s) => s.joinLeaving, 'joinLeaving', false),
+    ],
+  );
 
-blocTest<EventDetailCubit, EventDetailState>(
-  'View Attendees button hidden when no attendees',
-  build: () {
-    when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
-    return EventDetailCubit(
-      eventRepository: eventRepository,
-      userRepository: userRepository,
-      event: baseEvent.copyWith(currentAttendeeCount: 0),
-      l10n: l10n,
-    );
-  },
-  act: (c) => c.start(),
-  expect: () => [
-    isA<EventDetailState>().having((s) => s.loading, 'loading', true),
-    isA<EventDetailState>()
-        .having((s) => s.loading, 'loading', false)
-        .having((s) => s.uiModel.showViewAttendants, 'showViewAttendants', false),
-  ],
-);
+  blocTest<EventDetailCubit, EventDetailState>(
+    'View Attendees button visible triggers navigation',
+    build: () {
+      when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
+      return EventDetailCubit(
+        eventRepository: eventRepository,
+        userRepository: userRepository,
+        event: baseEvent.copyWith(currentAttendeeCount: 2),
+        l10n: l10n,
+      );
+    },
+    act: (c) async {
+      await c.start();
+      c.viewAttendeesPressed();
+    },
+    expect: () => [
+      isA<EventDetailState>().having((s) => s.loading, 'loading', true),
+      isA<EventDetailState>().having((s) => s.loading, 'loading', false),
+    ],
+    wait: const Duration(milliseconds: 10),
+    verify: (c) {
+      expect(c.effects, emits(isA<NavigateToAttendeesEffect>()));
+    },
+  );
 
+  blocTest<EventDetailCubit, EventDetailState>(
+    'View Attendees button hidden when no attendees',
+    build: () {
+      when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
+      return EventDetailCubit(
+        eventRepository: eventRepository,
+        userRepository: userRepository,
+        event: baseEvent.copyWith(currentAttendeeCount: 0),
+        l10n: l10n,
+      );
+    },
+    act: (c) => c.start(),
+    expect: () => [
+      isA<EventDetailState>().having((s) => s.loading, 'loading', true),
+      isA<EventDetailState>()
+          .having((s) => s.loading, 'loading', false)
+          .having((s) => s.uiModel.showViewAttendants, 'showViewAttendants', false),
+    ],
+  );
 }

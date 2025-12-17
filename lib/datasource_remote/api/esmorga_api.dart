@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:esmorga_flutter/domain/error/exceptions.dart';
 import 'package:esmorga_flutter/datasource_remote/config/environment_config.dart';
 import 'package:esmorga_flutter/datasource_remote/event/event_attendees_remote_model.dart';
 import 'package:esmorga_flutter/datasource_remote/event/event_remote_model.dart';
@@ -47,8 +48,15 @@ class EsmorgaApi {
       headers: {'Content-Type': 'application/json'},
       body: json.encode({'eventId': eventId}),
     );
-    if (result.statusCode != 204) {
-      throw Exception('Failed to join event');
+    if (result.statusCode == 204) {
+      return;
+    } else if (result.statusCode == 422) {
+      throw EventFullException();
+    } else {
+      throw EsmorgaException(
+        code: result.statusCode,
+        message: 'Failed to join event',
+      );
     }
   }
 
