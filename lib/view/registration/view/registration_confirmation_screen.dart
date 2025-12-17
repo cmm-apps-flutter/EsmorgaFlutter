@@ -1,7 +1,7 @@
 import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
-import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
+import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:esmorga_flutter/view/registration/cubit/registration_confirmation_cubit.dart';
 import 'package:esmorga_flutter/view/registration/cubit/registration_confirmation_state.dart';
 import 'package:flutter/material.dart';
@@ -51,7 +51,7 @@ class _RegistrationConfirmationFormState extends State<_RegistrationConfirmation
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = getIt<LocalizationService>().current;
 
     return BlocConsumer<RegistrationConfirmationCubit, RegistrationConfirmationState>(
       listener: (context, state) {

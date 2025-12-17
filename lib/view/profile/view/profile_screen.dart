@@ -4,7 +4,7 @@ import 'package:esmorga_flutter/ds/esmorga_loader.dart';
 import 'package:esmorga_flutter/ds/esmorga_row.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
 import 'package:esmorga_flutter/view/home/logged_out_view.dart';
-import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
+import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:esmorga_flutter/view/profile/cubit/profile_cubit.dart';
 import 'package:esmorga_flutter/view/profile/cubit/profile_state.dart';
 import 'package:flutter/material.dart';
@@ -54,7 +54,7 @@ class _ProfileFormState extends State<_ProfileForm> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = getIt<LocalizationService>().current;
     return BlocListener<ProfileCubit, ProfileState>(
       listenWhen: (prev, curr) => prev.oneOffAction != curr.oneOffAction || prev.errorMessage != curr.errorMessage,
       listener: (context, state) {
