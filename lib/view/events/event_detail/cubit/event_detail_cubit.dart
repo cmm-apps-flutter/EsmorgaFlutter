@@ -101,10 +101,10 @@ class EventDetailCubit extends Cubit<EventDetailState> {
       ));
     } on EventFullException {
       _emitEffect(ShowEventFullSnackbarEffect());
-      // _event = _event.copyWith(
-      //     userJoined: false,
-      //     currentAttendeeCount: _event.maxCapacity ?? _event.currentAttendeeCount,
-      //   );
+      _event = _event.copyWith(
+          userJoined: false,
+          currentAttendeeCount: _event.maxCapacity ?? _event.currentAttendeeCount,
+        );
       emit(state.copyWith(
         uiModel: EventDetailUiMapper.map(
           _event,
