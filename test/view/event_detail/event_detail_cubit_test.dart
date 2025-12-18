@@ -269,7 +269,7 @@ void main() {
   );
 
   blocTest<EventDetailCubit, EventDetailState>(
-    'join flow emits ShowEventFullSnackbarEffect when repository throws EventFullException',
+    'join flow emits ShowEventFullSnackbarEffect and updates the UI with disabled button when repository throws EventFullException',
     build: () {
       when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
       when(() => eventRepository.joinEvent(any())).thenThrow(EventFullException());
@@ -292,7 +292,10 @@ void main() {
           .having((s) => s.loading, 'loading', false)
           .having((s) => s.isAuthenticated, 'isAuthenticated', true),
       isA<EventDetailState>().having((s) => s.joinLeaving, 'joinLeaving', true),
-      isA<EventDetailState>().having((s) => s.joinLeaving, 'joinLeaving', false),
+      isA<EventDetailState>()
+          .having((s) => s.joinLeaving, 'joinLeaving', false)
+          .having((s) => s.uiModel.buttonEnabled, 'primary button enabled', false)
+          .having((s) => s.uiModel.buttonText, 'primary button text', l10n.current.buttonJoinEventDisabled)
     ],
   );
 

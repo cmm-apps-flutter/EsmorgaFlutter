@@ -101,7 +101,18 @@ class EventDetailCubit extends Cubit<EventDetailState> {
       ));
     } on EventFullException {
       _emitEffect(ShowEventFullSnackbarEffect());
-      emit(state.copyWith(joinLeaving: false));
+      _event = _event.copyWith(
+          userJoined: false,
+          currentAttendeeCount: _event.maxCapacity ?? _event.currentAttendeeCount,
+        );
+      emit(state.copyWith(
+        uiModel: EventDetailUiMapper.map(
+          _event,
+          isAuthenticated: state.isAuthenticated,
+          l10n: l10n,
+        ),
+        joinLeaving: false,
+      ));
     } catch (e) {
       final msg = e.toString().toLowerCase();
       if (msg.contains('network') || msg.contains('connection')) {
