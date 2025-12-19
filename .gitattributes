@@ -1,0 +1,2 @@
+test/metadata/* filter=lfs diff=lfs merge=lfs -text
+test/metadata/** filter=lfs diff=lfs merge=lfs -text
