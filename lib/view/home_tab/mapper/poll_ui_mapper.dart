@@ -13,7 +13,7 @@ extension PollUiMapper on Poll {
       id: id,
       title: name,
       deadline: '${l10n.textPollVoteDeadline} ${formatter.formatEventDate(voteDeadline.millisecondsSinceEpoch)}',
-      imageUrl: null,
+      imageUrl: imageUrl,
     );
   }
 }
