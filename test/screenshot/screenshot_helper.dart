@@ -10,7 +10,7 @@ void screenshotGolden(
   Future<void> Function(WidgetTester tester)? beforeScreenshot,
   Future<void> Function(WidgetTester tester)? afterBuild,
   String? screenshotPath,
-  double allowedDiffPercent = 0.02,
+  double allowedDiffPercent = 0.00,
 }) {
   final devices = [GoldenScreenshotDevices.androidPhone.device, GoldenScreenshotDevices.iphone.device];
   testGoldens(description, (tester) async {
