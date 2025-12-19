@@ -36,6 +36,13 @@ jobs:
       - name: Run tests
         run: flutter test --coverage
 
+      - name: Upload screenshot failures
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshot-test-failures
+          path: "**/failures/"
+
       - name: Upload test coverage to artifact
         if: always()
         uses: actions/upload-artifact@v4
