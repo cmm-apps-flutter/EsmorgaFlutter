@@ -1,0 +1,287 @@
+{
+    "flows": [
+        {
+            "id": "flow_onboarding",
+            "name": "ONBOARDING",
+            "entryScreenId": "screen_splash",
+            "exitType": "close",
+            "screenIds": [
+                "screen_splash"
+            ]
+        },
+        {
+            "id": "flow_auth",
+            "name": "AUTH",
+            "entryScreenId": "screen_login",
+            "exitType": "close",
+            "screenIds": [
+                "screen_login",
+                "screen_register",
+                "screen_recover_password",
+                "screen_registration_confirmation",
+                "screen_verify_account"
+            ]
+        },
+        {
+            "id": "flow_main",
+            "name": "MAIN TAB & FEATURES",
+            "entryScreenId": "screen_home_tab",
+            "exitType": "close",
+            "screenIds": [
+                "screen_home_tab",
+                "screen_my_events",
+                "screen_profile",
+                "screen_change_password",
+                "screen_event_detail",
+                "screen_poll_detail",
+                "screen_event_attendees"
+            ]
+        }
+    ],
+    "screens": [
+        {
+            "id": "screen_splash",
+            "name": "Splash",
+            "screenshot": "assets/goldens/splash/splash_initial_android.png"
+        },
+        {
+            "id": "screen_login",
+            "name": "Login",
+            "screenshot": "assets/goldens/login/login_initial_android.png"
+        },
+        {
+            "id": "screen_register",
+            "name": "Register",
+            "screenshot": "assets/goldens/register_initial_android.png"
+        },
+        {
+            "id": "screen_recover_password",
+            "name": "Recover Password",
+            "screenshot": "assets/goldens/recover_password_initial_android.png"
+        },
+        {
+            "id": "screen_registration_confirmation",
+            "name": "Reg. Confirmation",
+            "screenshot": "assets/goldens/registration_confirmation_initial_android.png"
+        },
+        {
+            "id": "screen_verify_account",
+            "name": "Verify Account",
+            "screenshot": "assets/goldens/verify_account_initial_android.png"
+        },
+        {
+            "id": "screen_change_password",
+            "name": "Change Password",
+            "screenshot": "assets/goldens/change_password_initial_android.png"
+        },
+        {
+            "id": "screen_home_tab",
+            "name": "Events Feed",
+            "screenshot": "assets/goldens/home_tab_content_android.png"
+        },
+        {
+            "id": "screen_my_events",
+            "name": "My Events",
+            "screenshot": "assets/goldens/my_events_content_android.png"
+        },
+        {
+            "id": "screen_profile",
+            "name": "Profile",
+            "screenshot": "assets/goldens/profile/profile_logged_in_android.png"
+        },
+        {
+            "id": "screen_event_detail",
+            "name": "Event Detail",
+            "screenshot": "assets/goldens/event_detail_user_available_android.png"
+        },
+        {
+            "id": "screen_poll_detail",
+            "name": "Poll Detail",
+            "screenshot": "assets/goldens/poll_detail_multiple_choice_android.png"
+        },
+        {
+            "id": "screen_event_attendees",
+            "name": "Event Attendees",
+            "screenshot": "assets/goldens/event_attendees_user_android.png"
+        }
+    ],
+    "flowScreens": [
+        {
+            "id": "fs_splash",
+            "flowId": "flow_onboarding",
+            "screenId": "screen_splash",
+            "role": "entry"
+        },
+        {
+            "id": "fs_login",
+            "flowId": "flow_auth",
+            "screenId": "screen_login",
+            "role": "entry"
+        },
+        {
+            "id": "fs_register",
+            "flowId": "flow_auth",
+            "screenId": "screen_register"
+        },
+        {
+            "id": "fs_recover",
+            "flowId": "flow_auth",
+            "screenId": "screen_recover_password"
+        },
+        {
+            "id": "fs_reg_conf",
+            "flowId": "flow_auth",
+            "screenId": "screen_registration_confirmation"
+        },
+        {
+            "id": "fs_verify",
+            "flowId": "flow_auth",
+            "screenId": "screen_verify_account"
+        },
+        {
+            "id": "fs_change_pass",
+            "flowId": "flow_main",
+            "screenId": "screen_change_password"
+        },
+        {
+            "id": "fs_home",
+            "flowId": "flow_main",
+            "screenId": "screen_home_tab",
+            "role": "entry"
+        },
+        {
+            "id": "fs_my_events",
+            "flowId": "flow_main",
+            "screenId": "screen_my_events",
+            "role": "entry"
+        },
+        {
+            "id": "fs_profile",
+            "flowId": "flow_main",
+            "screenId": "screen_profile",
+            "role": "entry"
+        },
+        {
+            "id": "fs_event_detail",
+            "flowId": "flow_main",
+            "screenId": "screen_event_detail"
+        },
+        {
+            "id": "fs_poll_detail",
+            "flowId": "flow_main",
+            "screenId": "screen_poll_detail"
+        },
+        {
+            "id": "fs_event_attendees",
+            "flowId": "flow_main",
+            "screenId": "screen_event_attendees"
+        }
+    ],
+    "transitions": [
+        {
+            "id": "t_splash_home",
+            "flowId": "flow_onboarding",
+            "fromScreenId": "screen_splash",
+            "toScreenId": "screen_home_tab",
+            "label": "Auto"
+        },
+        {
+            "id": "t_login_reg",
+            "flowId": "flow_auth",
+            "fromScreenId": "screen_login",
+            "toScreenId": "screen_register",
+            "label": "No account?"
+        },
+        {
+            "id": "t_login_recover",
+            "flowId": "flow_auth",
+            "fromScreenId": "screen_login",
+            "toScreenId": "screen_recover_password",
+            "label": "Forgot pass?"
+        },
+        {
+            "id": "t_reg_conf",
+            "flowId": "flow_auth",
+            "fromScreenId": "screen_register",
+            "toScreenId": "screen_registration_confirmation",
+            "label": "Success"
+        },
+        {
+            "id": "t_reg_back",
+            "flowId": "flow_auth",
+            "fromScreenId": "screen_register",
+            "toScreenId": "screen_login",
+            "label": "Back"
+        },
+        {
+            "id": "t_conf_back",
+            "flowId": "flow_auth",
+            "fromScreenId": "screen_registration_confirmation",
+            "toScreenId": "screen_login",
+            "label": "Done"
+        },
+        {
+            "id": "t_recover_back",
+            "flowId": "flow_auth",
+            "fromScreenId": "screen_recover_password",
+            "toScreenId": "screen_login",
+            "label": "Email sent"
+        },
+        {
+            "id": "t_home_detail",
+            "flowId": "flow_main",
+            "fromScreenId": "screen_home_tab",
+            "toScreenId": "screen_event_detail",
+            "label": "Tap Event"
+        },
+        {
+            "id": "t_home_poll",
+            "flowId": "flow_main",
+            "fromScreenId": "screen_home_tab",
+            "toScreenId": "screen_poll_detail",
+            "label": "Tap Poll"
+        },
+        {
+            "id": "t_myevents_detail",
+            "flowId": "flow_main",
+            "fromScreenId": "screen_my_events",
+            "toScreenId": "screen_event_detail",
+            "label": "Tap Event"
+        },
+        {
+            "id": "t_profile_change_pass",
+            "flowId": "flow_main",
+            "fromScreenId": "screen_profile",
+            "toScreenId": "screen_change_password",
+            "label": "Change Pass"
+        },
+        {
+            "id": "t_profile_logout",
+            "flowId": "flow_main",
+            "fromScreenId": "screen_profile",
+            "toScreenId": "screen_login",
+            "label": "Logout"
+        },
+        {
+            "id": "t_detail_attendees",
+            "flowId": "flow_main",
+            "fromScreenId": "screen_event_detail",
+            "toScreenId": "screen_event_attendees",
+            "label": "View All"
+        },
+        {
+            "id": "t_nav_myevents",
+            "flowId": "flow_main",
+            "fromScreenId": "screen_home_tab",
+            "toScreenId": "screen_my_events",
+            "label": "Tab"
+        },
+        {
+            "id": "t_nav_profile",
+            "flowId": "flow_main",
+            "fromScreenId": "screen_home_tab",
+            "toScreenId": "screen_profile",
+            "label": "Tab"
+        }
+    ]
+}
