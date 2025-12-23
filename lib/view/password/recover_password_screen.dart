@@ -4,7 +4,7 @@ import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
 import 'package:esmorga_flutter/ds/esmorga_text_field.dart';
-import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
+import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:esmorga_flutter/view/password/recover_password_cubit.dart';
 import 'package:esmorga_flutter/view/password/recover_password_state.dart';
 import 'package:flutter/material.dart';
@@ -62,7 +62,7 @@ class _RecoverPasswordFormState extends State<_RecoverPasswordForm> {
   @override
   Widget build(BuildContext context) {
     if (!_initialized) return const SizedBox.shrink();
-    final l = AppLocalizations.of(context)!;
+    final l = getIt<LocalizationService>().current;
     return BlocConsumer<RecoverPasswordCubit, RecoverPasswordState>(
       listener: (context, state) {
         if (state.isSuccess) {
@@ -71,17 +71,12 @@ class _RecoverPasswordFormState extends State<_RecoverPasswordForm> {
           );
           context.go('/login');
         } else if (state.status == RecoverPasswordStatus.failure) {
-          final msg = state.networkFailure
-              ? l.snackbarNoInternet
-              : l.defaultErrorTitle;
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(msg)));
+          final msg = state.networkFailure ? l.snackbarNoInternet : l.defaultErrorTitle;
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
         }
       },
       builder: (context, state) {
-        final emailError = (state.emailBlurred || state.attemptedSubmit)
-            ? state.emailError
-            : null;
+        final emailError = (state.emailBlurred || state.attemptedSubmit) ? state.emailError : null;
         return Scaffold(
           appBar: AppBar(
             leading: IconButton(
@@ -117,9 +112,7 @@ class _RecoverPasswordFormState extends State<_RecoverPasswordForm> {
                 EsmorgaButton(
                   text: l.forgotPasswordButton,
                   isLoading: state.isSubmitting,
-                  isEnabled: !state.isSubmitting &&
-                      emailError == null &&
-                      state.email.isNotEmpty,
+                  isEnabled: !state.isSubmitting && emailError == null && state.email.isNotEmpty,
                   onClick: _submit,
                   key: const Key('recover_password_send_button'),
                 ),

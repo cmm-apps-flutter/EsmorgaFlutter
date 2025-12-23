@@ -8,11 +8,13 @@ on:
 jobs:
   test:
     name: Run Flutter tests
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Set up Java (required for Flutter)
         uses: actions/setup-java@v4
@@ -33,6 +35,13 @@ jobs:
 
       - name: Run tests
         run: flutter test --coverage
+
+      - name: Upload screenshot failures
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshot-test-failures
+          path: "**/failures/"
 
       - name: Upload test coverage to artifact
         if: always()

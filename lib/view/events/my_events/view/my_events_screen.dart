@@ -6,7 +6,7 @@ import 'package:esmorga_flutter/ds/esmorga_text.dart';
 import 'package:esmorga_flutter/view/events/my_events/cubit/my_events_cubit.dart';
 import 'package:esmorga_flutter/view/home/logged_out_view.dart';
 import 'package:esmorga_flutter/view/home_tab/model/home_tab_ui_model.dart';
-import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
+import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
@@ -27,7 +27,7 @@ class MyEventsScreen extends StatelessWidget {
 }
 
 class _MyEventsForm extends StatefulWidget {
-  final Future<bool?> Function(Event) onDetailsClicked; 
+  final Future<bool?> Function(Event) onDetailsClicked;
   final void Function() onSignInClicked;
 
   const _MyEventsForm(this.onDetailsClicked, this.onSignInClicked);
@@ -47,10 +47,10 @@ class _MyEventsFormState extends State<_MyEventsForm> {
     _cubit.effects.listen((effect) async {
       if (effect is MyEventsEffectShowNoNetworkPrompt) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.snackbarNoInternet)),
+          SnackBar(content: Text(getIt<LocalizationService>().current.snackbarNoInternet)),
         );
       } else if (effect is MyEventsEffectNavigateToEventDetail) {
-        final didChange = await widget.onDetailsClicked(effect.event); 
+        final didChange = await widget.onDetailsClicked(effect.event);
         if (didChange == true) {
           _cubit.load(forceRefresh: true);
         }
@@ -62,7 +62,7 @@ class _MyEventsFormState extends State<_MyEventsForm> {
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
+    final localizations = getIt<LocalizationService>().current;
 
     return Scaffold(
       body: SafeArea(
@@ -120,7 +120,7 @@ class _MyEventsLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
+    final localizations = getIt<LocalizationService>().current;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(

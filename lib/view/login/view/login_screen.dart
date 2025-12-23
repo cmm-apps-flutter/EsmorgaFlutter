@@ -3,6 +3,7 @@ import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
 import 'package:esmorga_flutter/ds/esmorga_text_field.dart';
 import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
+import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:esmorga_flutter/view/login/cubit/login_cubit.dart';
 import 'package:esmorga_flutter/view/login/cubit/login_state.dart';
 import 'package:flutter/material.dart';
@@ -99,7 +100,7 @@ class _LoginFormState extends State<_LoginForm> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = getIt<LocalizationService>().current;
     return BlocConsumer<LoginCubit, LoginState>(
       listener: (context, state) {
         if (state.initMessage != null) {
