@@ -185,11 +185,9 @@ class _PollDetailView extends StatelessWidget {
                           ),
                         const SizedBox(height: 24),
                         EsmorgaButton(
-                          text: isDeadlinePassed
-                              ? l10n.buttonDeadlinePassed
-                              : (hasVoted ? l10n.buttonPollChangeVote : l10n.buttonPollVote),
-                          isEnabled: !isDeadlinePassed && state.currentSelection.isNotEmpty,
-                          isLoading: state.isLoading,
+                          text: state.buttonText,
+                          isEnabled: state.isButtonEnabled,
+                          isLoading: state.isButtonLoading,
                           onClick: () => cubit.vote(),
                         ),
                       ],

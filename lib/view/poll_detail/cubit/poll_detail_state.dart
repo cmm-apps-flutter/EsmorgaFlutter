@@ -4,14 +4,18 @@ import 'package:esmorga_flutter/domain/poll/model/poll.dart';
 class PollDetailState extends Equatable {
   final Poll poll;
   final List<String> currentSelection;
-  final bool isLoading;
+  final bool isButtonLoading;
+  final String buttonText;
+  final bool isButtonEnabled;
   final String? error;
   final bool showSuccessMessage;
 
   const PollDetailState({
     required this.poll,
     this.currentSelection = const [],
-    this.isLoading = false,
+    this.isButtonLoading = false,
+    this.buttonText = '',
+    this.isButtonEnabled = false,
     this.error,
     this.showSuccessMessage = false,
   });
@@ -19,14 +23,18 @@ class PollDetailState extends Equatable {
   PollDetailState copyWith({
     Poll? poll,
     List<String>? currentSelection,
-    bool? isLoading,
+    bool? isButtonLoading,
+    String? buttonText,
+    bool? isButtonEnabled,
     String? error,
     bool? showSuccessMessage,
   }) {
     return PollDetailState(
       poll: poll ?? this.poll,
       currentSelection: currentSelection ?? this.currentSelection,
-      isLoading: isLoading ?? this.isLoading,
+      isButtonLoading: isButtonLoading ?? this.isButtonLoading,
+      buttonText: buttonText ?? this.buttonText,
+      isButtonEnabled: isButtonEnabled ?? this.isButtonEnabled,
       error: error,
       showSuccessMessage: showSuccessMessage ?? this.showSuccessMessage,
     );
@@ -36,18 +44,22 @@ class PollDetailState extends Equatable {
   PollDetailState copyWithClearError({
     Poll? poll,
     List<String>? currentSelection,
-    bool? isLoading,
+    bool? isButtonLoading,
+    String? buttonText,
+    bool? isButtonEnabled,
     bool? showSuccessMessage,
   }) {
     return PollDetailState(
       poll: poll ?? this.poll,
       currentSelection: currentSelection ?? this.currentSelection,
-      isLoading: isLoading ?? this.isLoading,
+      isButtonLoading: isButtonLoading ?? this.isButtonLoading,
+      buttonText: buttonText ?? this.buttonText,
+      isButtonEnabled: isButtonEnabled ?? this.isButtonEnabled,
       error: null,
       showSuccessMessage: showSuccessMessage ?? this.showSuccessMessage,
     );
   }
 
   @override
-  List<Object?> get props => [poll, currentSelection, isLoading, error, showSuccessMessage];
+  List<Object?> get props => [poll, currentSelection, isButtonLoading, error, showSuccessMessage];
 }
