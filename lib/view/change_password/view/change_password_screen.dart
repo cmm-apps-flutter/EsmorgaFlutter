@@ -75,7 +75,6 @@ class _ChangePasswordFormState extends State<_ChangePasswordForm> {
 
     return Scaffold(
         appBar: AppBar(
-          title: Text(l10n.resetPasswordScreenTitle),
           leading: BackButton(onPressed: () => context.pop()),
         ),
         body: Padding(
@@ -102,6 +101,16 @@ class _ChangePasswordFormState extends State<_ChangePasswordForm> {
                         BlocBuilder<ChangePasswordCubit, ChangePasswordState>(
                           builder: (ctx, state) {
                             final editing = state is ChangePasswordEditing ? state : const ChangePasswordEditing();
+                            // Update controllers with state values
+                            if (_currentCtrl.text != editing.currentPassword) {
+                              _currentCtrl.text = editing.currentPassword;
+                            }
+                            if (_newCtrl.text != editing.newPassword) {
+                              _newCtrl.text = editing.newPassword;
+                            }
+                            if (_repeatCtrl.text != editing.repeatPassword) {
+                              _repeatCtrl.text = editing.repeatPassword;
+                            }
                             return Column(children: [
                               EsmorgaTextField(
                                 controller: _currentCtrl,
