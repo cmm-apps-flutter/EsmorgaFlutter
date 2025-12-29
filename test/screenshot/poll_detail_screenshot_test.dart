@@ -74,6 +74,7 @@ void main() {
       when(() => cubit.state).thenReturn(PollDetailState(
         poll: poll,
         currentSelection: const [],
+        buttonText: 'Vote',
       ));
       return buildScreen();
     },
@@ -102,6 +103,8 @@ void main() {
       when(() => cubit.state).thenReturn(PollDetailState(
         poll: multiPoll,
         currentSelection: const ['1'],
+        buttonText: 'Change my vote',
+        isButtonEnabled: true,
       ));
       return PollDetailScreen(poll: multiPoll);
     },
@@ -125,6 +128,7 @@ void main() {
       when(() => cubit.state).thenReturn(PollDetailState(
         poll: passedPoll,
         currentSelection: const [],
+        buttonText: 'Too late',
       ));
       return PollDetailScreen(poll: passedPoll);
     },

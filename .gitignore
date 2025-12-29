@@ -22,6 +22,9 @@
 # Test coverage files
 coverage/
 
+# Screenshot tests failutes
+test/screenshot/failures/
+
 # Visual Studio Code related
 .vscode/
 
