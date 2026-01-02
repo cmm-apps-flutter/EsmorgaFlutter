@@ -26,6 +26,9 @@ class UserRemoteModel extends Equatable {
     final lastName = (profile != null ? profile['lastName'] : json['lastName']) as String? ?? '';
     final email = (profile != null ? profile['email'] : json['email']) as String? ?? '';
     final role = profile?['role'] ?? 'USER';
+    final ttl = json['ttl'] is int 
+          ? json['ttl'] as int
+          : int.tryParse('${json['ttl']}') ?? 0;
 
     return UserRemoteModel(
       name: name,
@@ -34,36 +37,8 @@ class UserRemoteModel extends Equatable {
       role: role,
       accessToken: json['accessToken'] as String? ?? '',
       refreshToken: json['refreshToken'] as String? ?? '',
-      expirationDate: json['expirationDate'] is int
-          ? json['expirationDate'] as int
-          : int.tryParse('${json['expirationDate']}') ?? 0,
+      expirationDate: DateTime.now().millisecondsSinceEpoch + ttl * 1000,
     );
-  }
-
-  Map<String, dynamic> toJson({bool nestedProfile = true}) {
-    if (nestedProfile) {
-      return {
-        'profile': {
-          'name': name,
-          'lastName': lastName,
-          'email': email,
-          'role': role,
-        },
-        'accessToken': accessToken,
-        'refreshToken': refreshToken,
-        'expirationDate': expirationDate,
-      };
-    }
-    // flat legacy form (if ever needed)
-    return {
-      'name': name,
-      'lastName': lastName,
-      'email': email,
-      'role': role,
-      'accessToken': accessToken,
-      'refreshToken': refreshToken,
-      'expirationDate': expirationDate,
-    };
   }
 
   @override
