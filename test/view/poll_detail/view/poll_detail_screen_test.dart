@@ -70,7 +70,11 @@ void main() {
   }
 
   testWidgets('renders poll details correctly', (tester) async {
-    when(() => cubit.state).thenReturn(PollDetailState(poll: poll));
+    when(() => cubit.state).thenReturn(PollDetailState(
+      poll: poll,
+      buttonText: 'Vote',
+      isButtonEnabled: true,
+    ));
 
     await tester.pumpWidget(createWidgetUnderTest());
 
@@ -96,6 +100,8 @@ void main() {
     when(() => cubit.state).thenReturn(PollDetailState(
       poll: poll,
       currentSelection: ['opt1'],
+      buttonText: 'Vote',
+      isButtonEnabled: true,
     ));
     when(() => cubit.vote()).thenAnswer((_) async {});
 
@@ -103,7 +109,7 @@ void main() {
 
     final buttonFinder = find.widgetWithText(ElevatedButton, 'Vote');
     expect(buttonFinder, findsOneWidget);
-    
+
     await tester.tap(buttonFinder);
     verify(() => cubit.vote()).called(1);
   });

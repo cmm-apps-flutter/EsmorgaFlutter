@@ -22,6 +22,9 @@
 # Test coverage files
 coverage/
 
+# Screenshot tests failutes
+test/screenshot/failures/
+
 # Visual Studio Code related
 .vscode/
 
@@ -666,6 +669,10 @@ $RECYCLE.BIN/
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 /.flutter-plugins-dependencies
 /EsmorgaFlutter.code-workspace
+# generated plugins
+**/generatedPluginRegistrant.*
+**/generated_plugin_registrant.cc
+**/generated_plugins.cmake
 
 
 lib/view/l10n/app_localization*.dart

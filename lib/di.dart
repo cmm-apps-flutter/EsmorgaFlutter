@@ -241,5 +241,6 @@ Future<void> setupDi(Locale locale) async {
   getIt.registerFactoryParam<PollDetailCubit, Poll, void>((poll, _) => PollDetailCubit(
         poll: poll,
         votePollUseCase: getIt(),
+        l10n: getIt<LocalizationService>(),
       ));
 }
