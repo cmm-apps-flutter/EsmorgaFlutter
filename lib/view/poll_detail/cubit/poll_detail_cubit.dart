@@ -77,8 +77,10 @@ class PollDetailCubit extends Cubit<PollDetailState> {
 
   static bool _getButtonEnabled(Poll poll, List<String> currentSelection, LocalizationService l10n) {
     final isDeadlinePassed = DateTime.now().isAfter(poll.voteDeadline);
-    final hasVoteChanged = (poll.userSelectedOptionIds.length != currentSelection.length) ||
-        poll.userSelectedOptionIds.indexWhere(currentSelection.contains) == -1;
+
+    final originalSelection = poll.userSelectedOptionIds.toSet();
+    final hasVoteChanged = originalSelection.length != currentSelection.length || !originalSelection.containsAll(currentSelection);
+
     return !isDeadlinePassed && currentSelection.isNotEmpty && hasVoteChanged;
   }
 }
