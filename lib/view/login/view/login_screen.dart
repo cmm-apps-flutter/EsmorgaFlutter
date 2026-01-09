@@ -189,7 +189,7 @@ class _LoginFormState extends State<_LoginForm> {
                         placeholder: l10n.placeholderPassword,
                         errorText: showPasswordError,
                         isEnabled: !state.isSubmitting,
-                        obscureText: true,
+                        isPasswordField: true,
                         textInputAction: TextInputAction.done,
                         onChanged: (v) => _cubit.changePassword(v),
                         onSubmitted: (_) => _submit(),
