@@ -75,7 +75,7 @@ class _EsmorgaTextFieldState extends State<EsmorgaTextField> {
             suffixIcon: widget.isPasswordField
                 ? IconButton(
                     icon: Icon(
-                      _obscureText ? Icons.visibility_off : Icons.visibility,
+                      _obscureText ? Icons.visibility : Icons.visibility_off,
                       color: Theme.of(context).colorScheme.outline,
                     ),
                     onPressed: () {
