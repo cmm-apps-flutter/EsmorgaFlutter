@@ -90,4 +90,30 @@ void main() {
       return buildScreen();
     },
   );
+
+  screenshotGolden(
+    'reset_password_visible',
+    theme: lightTheme,
+    screenshotPath: 'reset_password',
+    buildHome: () {
+      when(() => cubit.state).thenReturn(const ResetPasswordState(
+        newPassword: 'newPassword123!',
+        repeatPassword: 'newPassword123!',
+      ));
+      return buildScreen();
+    },
+    afterBuild: (tester) async {
+      await tester.pumpAndSettle();
+
+      final fields = find.byType(TextField);
+      
+      await tester.ensureVisible(fields.at(0));
+      await tester.tap(find.descendant(of: fields.at(0), matching: find.byType(IconButton)));
+      
+      await tester.ensureVisible(fields.at(1));
+      await tester.tap(find.descendant(of: fields.at(1), matching: find.byType(IconButton)));
+      
+      await tester.pumpAndSettle();
+    },
+  );
 }

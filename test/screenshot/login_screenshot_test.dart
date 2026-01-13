@@ -98,4 +98,33 @@ void main() {
       await tester.pumpAndSettle();
     },
   );
+
+  screenshotGolden(
+    'login_password_visible',
+    theme: lightTheme,
+    screenshotPath: 'login',
+    buildHome: () {
+      return buildScreen();
+    },
+    afterBuild: (tester) async {
+      await tester.pumpAndSettle();
+      
+      final passwordFieldFinder = find.byKey(const Key('login_password_input'));
+      
+      await tester.ensureVisible(passwordFieldFinder);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(passwordFieldFinder, 'password123');
+      await tester.pumpAndSettle();
+
+      final visibilityButton = find.descendant(
+        of: passwordFieldFinder,
+        matching: find.byType(IconButton),
+      );
+
+      await tester.tap(visibilityButton);
+      
+      await tester.pumpAndSettle();
+    },
+  );
 }

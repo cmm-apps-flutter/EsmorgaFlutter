@@ -66,4 +66,44 @@ void main() {
       return buildScreen();
     },
   );
+
+  screenshotGolden(
+    'change_password_visible',
+    theme: lightTheme,
+    screenshotPath: 'change_password',
+    buildHome: () {
+      when(() => cubit.state).thenReturn(const ChangePasswordEditing(
+        currentPassword: 'Password123...',
+        newPassword: 'Password123.',
+        repeatPassword: 'Password123.',
+        isSubmitting: false,
+      ));
+      return buildScreen();
+    },
+    afterBuild: (tester) async {
+      await tester.pumpAndSettle();
+
+      final fields = find.byType(TextField);
+      
+      await tester.ensureVisible(fields.at(0));
+      await tester.tap(find.descendant(
+        of: fields.at(0), 
+        matching: find.byType(IconButton),
+      ));
+
+      await tester.ensureVisible(fields.at(1));
+      await tester.tap(find.descendant(
+        of: fields.at(1), 
+        matching: find.byType(IconButton),
+      ));
+
+      await tester.ensureVisible(fields.at(2));
+      await tester.tap(find.descendant(
+        of: fields.at(2), 
+        matching: find.byType(IconButton),
+      ));
+      
+      await tester.pumpAndSettle();
+    },
+  );
 }

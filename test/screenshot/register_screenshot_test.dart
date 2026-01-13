@@ -93,4 +93,37 @@ void main() {
       await tester.pumpAndSettle();
     },
   );
+
+  screenshotGolden(
+    'register_passwords_visible',
+    theme: lightTheme,
+    screenshotPath: 'register',
+    buildHome: () => buildScreen(),
+    afterBuild: (tester) async {
+      await tester.pumpAndSettle();
+      
+      await tester.enterText(find.byKey(const Key('registration_name_input')), 'John');
+      await tester.enterText(find.byKey(const Key('registration_last_name_input')), 'Doe');
+      await tester.enterText(find.byKey(const Key('registration_email_input')), 'john.doe@example.com');
+
+      final passFinder = find.byKey(const Key('registration_password_input'));
+      final repeatPassFinder = find.byKey(const Key('registration_repeat_password_input'));
+
+      await tester.ensureVisible(passFinder);
+      await tester.pumpAndSettle();
+      await tester.enterText(passFinder, 'Password123!');
+      
+      await tester.ensureVisible(repeatPassFinder);
+      await tester.pumpAndSettle();
+      await tester.enterText(repeatPassFinder, 'Password123!');
+
+      final eye1 = find.descendant(of: passFinder, matching: find.byType(IconButton));
+      final eye2 = find.descendant(of: repeatPassFinder, matching: find.byType(IconButton));
+
+      await tester.tap(eye1);
+      await tester.tap(eye2);
+      
+      await tester.pumpAndSettle();
+    },
+  );
 }
