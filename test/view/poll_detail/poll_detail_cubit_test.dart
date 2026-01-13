@@ -127,5 +127,23 @@ void main() {
             .having((s) => s.error, 'error', isNotNull),
       ],
     );
+
+    blocTest<PollDetailCubit, PollDetailState>(
+      'given multi poll with selected options when user changes one option but keeps count then isButtonEnabled is true',
+      build: () {
+        final poll = getPoll(multi: true, selectedOptions: ['opt1', 'opt2']);
+        return PollDetailCubit(poll: poll, votePollUseCase: votePollUseCase, l10n: l10n);
+      },
+      act: (cubit) {
+        cubit.toggleOption('opt2'); 
+        cubit.toggleOption('opt3'); 
+      },
+      expect: () => [
+        isA<PollDetailState>().having((s) => s.currentSelection, 'selection', ['opt1']).having(
+            (s) => s.isButtonEnabled, 'button enabled (after removal)', true),
+        isA<PollDetailState>().having((s) => s.currentSelection, 'selection', ['opt1', 'opt3']).having(
+            (s) => s.isButtonEnabled, 'button enabled (after adding other)', true),
+      ],
+    );
   });
 }
