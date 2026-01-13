@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:esmorga_flutter/domain/event/event_repository.dart';
 import 'package:esmorga_flutter/domain/event/model/event.dart';
+import 'package:esmorga_flutter/domain/user/model/role_type.dart';
 import 'package:esmorga_flutter/domain/user/repository/user_repository.dart';
 import 'package:esmorga_flutter/view/home_tab/mapper/home_tab_ui_mapper.dart';
 import 'package:esmorga_flutter/view/home_tab/model/home_tab_ui_model.dart';
@@ -28,6 +29,7 @@ class MyEventsCubit extends Cubit<MyEventsState> {
   final UserRepository userRepository;
 
   List<Event> _myEvents = [];
+  bool _isAdmin = false;
   final _effectController = StreamController<MyEventsEffect>.broadcast();
   Stream<MyEventsEffect> get effects => _effectController.stream;
 
@@ -36,24 +38,25 @@ class MyEventsCubit extends Cubit<MyEventsState> {
   Future<void> load({bool forceRefresh = false}) async {
     emit(const MyEventsState(loading: true));
     try {
-      await userRepository.getUser();
+      final userData = await userRepository.getUser();
+      _isAdmin = userData.role == RoleType.admin;
     } catch (_) {
-      emit(const MyEventsState(loading: false, error: MyEventsEffectType.notLoggedIn));
+      emit(MyEventsState(loading: false, isAdmin: _isAdmin, error: MyEventsEffectType.notLoggedIn));
       return;
     }
     try {
       final events = await eventRepository.getEvents(forceRefresh: forceRefresh); 
       _myEvents = events.where((e) => e.userJoined).toList();
       if (_myEvents.isEmpty) {
-        emit(const MyEventsState(loading: false, error: MyEventsEffectType.emptyList));
+        emit(MyEventsState(loading: false, isAdmin: _isAdmin, error: MyEventsEffectType.emptyList));
       } else {
-        emit(MyEventsState(loading: false, eventList: _myEvents.toHomeTabUiList()));
+        emit(MyEventsState(loading: false, isAdmin: _isAdmin, eventList: _myEvents.toHomeTabUiList()));
       }
     } catch (e) {
       if (e.toString().contains('network') || e.toString().contains('connection')) {
         _effectController.add(MyEventsEffectShowNoNetworkPrompt());
       }
-      emit(const MyEventsState(loading: false, error: MyEventsEffectType.unknown));
+      emit(MyEventsState(loading: false, isAdmin: _isAdmin, error: MyEventsEffectType.unknown));
     }
   }
 

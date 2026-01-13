@@ -15,7 +15,10 @@ class MyEventsScreen extends StatelessWidget {
   final Future<bool?> Function(Event) onDetailsClicked;
   final void Function() onSignInClicked;
 
-  const MyEventsScreen({super.key, required this.onDetailsClicked, required this.onSignInClicked});
+  const MyEventsScreen(
+      {super.key,
+      required this.onDetailsClicked,
+      required this.onSignInClicked});
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +50,9 @@ class _MyEventsFormState extends State<_MyEventsForm> {
     _cubit.effects.listen((effect) async {
       if (effect is MyEventsEffectShowNoNetworkPrompt) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(getIt<LocalizationService>().current.snackbarNoInternet)),
+          SnackBar(
+              content: Text(
+                  getIt<LocalizationService>().current.snackbarNoInternet)),
         );
       } else if (effect is MyEventsEffectNavigateToEventDetail) {
         final didChange = await widget.onDetailsClicked(effect.event);
@@ -63,55 +68,77 @@ class _MyEventsFormState extends State<_MyEventsForm> {
   @override
   Widget build(BuildContext context) {
     final localizations = getIt<LocalizationService>().current;
+    final double screenHeight = MediaQuery.of(context).size.height;
 
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
-              child: EsmorgaText(
-                text: localizations.screenMyEventsTitle,
-                style: EsmorgaTextStyle.heading1,
-                key: const Key('my_event_list_screen_title'),
+    return BlocBuilder<MyEventsCubit, MyEventsState>(builder: (context, state) {
+      return Scaffold(
+        floatingActionButton: state.isAdmin
+            ? Padding(
+                padding:
+                    EdgeInsets.only(bottom: screenHeight * 0.015, right: 20.0),
+                child: FloatingActionButton(
+                  backgroundColor: const Color(0xFF5D2531),
+                  shape: CircleBorder(), //circle shape
+                  onPressed: () {
+                    // Add admin action here
+                  },
+                  child: const Icon(
+                    Icons.add,
+                    color: Colors.white,
+                  ),
+                ),
+              )
+            : null,
+        body: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                    vertical: 32.0, horizontal: 16.0),
+                child: EsmorgaText(
+                  text: localizations.screenMyEventsTitle,
+                  style: EsmorgaTextStyle.heading1,
+                  key: const Key('my_event_list_screen_title'),
+                ),
               ),
-            ),
-            Expanded(
-              child: BlocBuilder<MyEventsCubit, MyEventsState>(
-                builder: (context, state) {
-                  if (state.loading) {
-                    return const _MyEventsLoading();
-                  }
-                  if (state.error != null) {
-                    switch (state.error!) {
-                      case MyEventsEffectType.notLoggedIn:
-                        return LoggedOutView(
-                          onSignIn: () => _cubit.signIn(),
-                        );
-                      case MyEventsEffectType.emptyList:
-                        return _MyEventsEmpty(localizations.screenMyEventsEmptyText);
-                      case MyEventsEffectType.unknown:
-                        return _MyEventsError(
-                          title: localizations.defaultErrorTitle,
-                          body: localizations.defaultErrorBody,
-                          buttonLabel: localizations.buttonRetry,
-                          onRetry: () => _cubit.load(),
-                        );
+              Expanded(
+                child: BlocBuilder<MyEventsCubit, MyEventsState>(
+                  builder: (context, state) {
+                    if (state.loading) {
+                      return const _MyEventsLoading();
                     }
-                  }
-                  return _MyEventsList(
-                      events: state.eventList,
-                      onEventClick: (eventId) {
-                        _cubit.onEventClick(eventId);
-                      });
-                },
+                    if (state.error != null) {
+                      switch (state.error!) {
+                        case MyEventsEffectType.notLoggedIn:
+                          return LoggedOutView(
+                            onSignIn: () => _cubit.signIn(),
+                          );
+                        case MyEventsEffectType.emptyList:
+                          return _MyEventsEmpty(
+                              localizations.screenMyEventsEmptyText);
+                        case MyEventsEffectType.unknown:
+                          return _MyEventsError(
+                            title: localizations.defaultErrorTitle,
+                            body: localizations.defaultErrorBody,
+                            buttonLabel: localizations.buttonRetry,
+                            onRetry: () => _cubit.load(),
+                          );
+                      }
+                    }
+                    return _MyEventsList(
+                        events: state.eventList,
+                        onEventClick: (eventId) {
+                          _cubit.onEventClick(eventId);
+                        });
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 }
 
@@ -285,7 +312,9 @@ class _MyEventsList extends StatelessWidget {
                         width: double.infinity,
                         height: 200.0,
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(16.0),
                         ),
                         child: Image.asset(
@@ -302,7 +331,9 @@ class _MyEventsList extends StatelessWidget {
                         width: double.infinity,
                         height: 200.0,
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(16.0),
                         ),
                         child: const Center(
