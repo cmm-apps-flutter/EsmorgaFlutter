@@ -103,6 +103,7 @@ class _ChangePasswordFormState extends State<_ChangePasswordForm> {
                         BlocBuilder<ChangePasswordCubit, ChangePasswordState>(
                           builder: (ctx, state) {
                             final editing = state is ChangePasswordEditing ? state : const ChangePasswordEditing();
+                            // Update controllers with state values
                             final bool hidePasswords = state is ChangePasswordEditing ? !state.showPassword : true;
 
                             if (_currentCtrl.text != editing.currentPassword) {
