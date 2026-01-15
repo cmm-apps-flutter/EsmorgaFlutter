@@ -102,10 +102,24 @@ class ChangePasswordCubit extends Cubit<ChangePasswordState> {
     emit(fn(s));
   }
 
-  void togglePasswordVisibility() {
+  void toggleCurrentPassword() {
     if (state is ChangePasswordEditing) {
-      final currentState = state as ChangePasswordEditing;
-      emit(currentState.copyWith(showPassword: !currentState.showPassword));
+      final s = state as ChangePasswordEditing;
+      emit(s.copyWith(showCurrentPassword: !s.showCurrentPassword));
+    }
+  }
+
+  void toggleNewPassword() {
+    if (state is ChangePasswordEditing) {
+      final s = state as ChangePasswordEditing;
+      emit(s.copyWith(showNewPassword: !s.showNewPassword));
+    }
+  }
+
+  void toggleRepeatPassword() {
+    if (state is ChangePasswordEditing) {
+      final s = state as ChangePasswordEditing;
+      emit(s.copyWith(showRepeatPassword: !s.showRepeatPassword));
     }
   }
 

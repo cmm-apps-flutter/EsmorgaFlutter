@@ -109,7 +109,8 @@ void main() {
         email: 'john.doe@example.com',
         password: 'Password123!',
         repeatPassword: 'Password123!',
-        showPassword: true, 
+        showPassword: true,
+        showRepeatPassword: true, 
       );
 
       final mockCubit = MockRegisterCubit();

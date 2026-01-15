@@ -26,6 +26,7 @@ class RegisterState extends Equatable {
   final bool passwordBlurred;
   final bool repeatPasswordBlurred;
   final bool showPassword;
+  final bool showRepeatPassword;
 
   const RegisterState({
     this.name = '',
@@ -48,6 +49,7 @@ class RegisterState extends Equatable {
     this.passwordBlurred = false,
     this.repeatPasswordBlurred = false,
     this.showPassword = false,
+    this.showRepeatPassword = false,
   });
 
   bool get isSubmitting => status == RegisterStatus.submitting;
@@ -88,6 +90,7 @@ class RegisterState extends Equatable {
     bool? passwordBlurred,
     bool? repeatPasswordBlurred,
     bool? showPassword,
+    bool? showRepeatPassword,
   }) {
     return RegisterState(
       name: name ?? this.name,
@@ -95,21 +98,22 @@ class RegisterState extends Equatable {
       email: email ?? this.email,
       password: password ?? this.password,
       repeatPassword: repeatPassword ?? this.repeatPassword,
-      nameError: nameError,
-      lastNameError: lastNameError,
-      emailError: emailError,
-      passwordError: passwordError,
-      repeatPasswordError: repeatPasswordError,
+      nameError: nameError ?? this.nameError,
+      lastNameError: lastNameError ?? this.lastNameError,
+      emailError: emailError ?? this.emailError,
+      passwordError: passwordError ?? this.passwordError,
+      repeatPasswordError: repeatPasswordError ?? this.repeatPasswordError,
       status: status ?? this.status,
       attemptedSubmit: attemptedSubmit ?? this.attemptedSubmit,
-      failureMessage: failureMessage,
-      successEmail: successEmail,
+      failureMessage: failureMessage ?? this.failureMessage,
+      successEmail: successEmail ?? this.successEmail,
       nameBlurred: nameBlurred ?? this.nameBlurred,
       lastNameBlurred: lastNameBlurred ?? this.lastNameBlurred,
       emailBlurred: emailBlurred ?? this.emailBlurred,
       passwordBlurred: passwordBlurred ?? this.passwordBlurred,
       repeatPasswordBlurred: repeatPasswordBlurred ?? this.repeatPasswordBlurred,
       showPassword: showPassword ?? this.showPassword,
+      showRepeatPassword: showRepeatPassword ?? this.showRepeatPassword,
     );
   }
 
@@ -134,7 +138,7 @@ class RegisterState extends Equatable {
         emailBlurred,
         passwordBlurred,
         repeatPasswordBlurred,
-        // 5. Añadimos a props
         showPassword,
+        showRepeatPassword,
       ];
 }

@@ -85,7 +85,9 @@ void main() {
         newPassword: 'Password123.',
         repeatPassword: 'Password123.',
         isSubmitting: false,
-        showPassword: true,
+        showCurrentPassword: true,
+        showNewPassword: true,
+        showRepeatPassword: true,
       );
 
       when(() => cubit.state).thenReturn(stateVisible);

@@ -20,7 +20,9 @@ class ChangePasswordEditing extends ChangePasswordState {
   final bool repeatTouched;
   final bool isSubmitting;
   
-  final bool showPassword;
+  final bool showCurrentPassword;
+  final bool showNewPassword;
+  final bool showRepeatPassword;
 
   const ChangePasswordEditing({
     this.currentPassword = '',
@@ -33,7 +35,9 @@ class ChangePasswordEditing extends ChangePasswordState {
     this.newTouched = false,
     this.repeatTouched = false,
     this.isSubmitting = false,
-    this.showPassword = false,
+    this.showCurrentPassword = false,
+    this.showNewPassword = false,
+    this.showRepeatPassword = false,
   });
 
   bool get isValid =>
@@ -55,7 +59,9 @@ class ChangePasswordEditing extends ChangePasswordState {
     bool? newTouched,
     bool? repeatTouched,
     bool? isSubmitting,
-    bool? showPassword,
+    bool? showCurrentPassword,
+    bool? showNewPassword,
+    bool? showRepeatPassword,
   }) {
     return ChangePasswordEditing(
       currentPassword: currentPassword ?? this.currentPassword,
@@ -68,7 +74,9 @@ class ChangePasswordEditing extends ChangePasswordState {
       newTouched: newTouched ?? this.newTouched,
       repeatTouched: repeatTouched ?? this.repeatTouched,
       isSubmitting: isSubmitting ?? this.isSubmitting,
-      showPassword: showPassword ?? this.showPassword,
+      showCurrentPassword: showCurrentPassword ?? this.showCurrentPassword,
+      showNewPassword: showNewPassword ?? this.showNewPassword,
+      showRepeatPassword: showRepeatPassword ?? this.showRepeatPassword,
     );
   }
 }

@@ -1,4 +1,3 @@
-
 import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
@@ -103,9 +102,7 @@ class _ChangePasswordFormState extends State<_ChangePasswordForm> {
                         BlocBuilder<ChangePasswordCubit, ChangePasswordState>(
                           builder: (ctx, state) {
                             final editing = state is ChangePasswordEditing ? state : const ChangePasswordEditing();
-                            // Update controllers with state values
-                            final bool hidePasswords = state is ChangePasswordEditing ? !state.showPassword : true;
-
+                            
                             if (_currentCtrl.text != editing.currentPassword) {
                               _currentCtrl.text = editing.currentPassword;
                             }
@@ -124,8 +121,8 @@ class _ChangePasswordFormState extends State<_ChangePasswordForm> {
                                 title: l10n.fieldTitlePassword,
                                 placeholder: l10n.placeholderPassword,
                                 isPasswordField: true,
-                                obscureText: hidePasswords, 
-                                onSuffixIconClick: _cubit.togglePasswordVisibility,
+                                obscureText: !editing.showCurrentPassword, 
+                                onSuffixIconClick: _cubit.toggleCurrentPassword,
                                 errorText: editing.currentErrorKey,
                                 isEnabled: !editing.isSubmitting,
                                 textInputAction: TextInputAction.next,
@@ -139,8 +136,8 @@ class _ChangePasswordFormState extends State<_ChangePasswordForm> {
                                 title: l10n.resetPasswordNewPasswordField,
                                 placeholder: l10n.placeholderNewPassword,
                                 isPasswordField: true,
-                                obscureText: hidePasswords,
-                                onSuffixIconClick: _cubit.togglePasswordVisibility,
+                                obscureText: !editing.showNewPassword,
+                                onSuffixIconClick: _cubit.toggleNewPassword,
                                 errorText: editing.newErrorKey,
                                 isEnabled: !editing.isSubmitting,
                                 textInputAction: TextInputAction.next,
@@ -154,8 +151,8 @@ class _ChangePasswordFormState extends State<_ChangePasswordForm> {
                                 title: l10n.resetPasswordRepeatPasswordField,
                                 placeholder: l10n.placeholderConfirmPassword,
                                 isPasswordField: true,
-                                obscureText: hidePasswords, 
-                                onSuffixIconClick: _cubit.togglePasswordVisibility,
+                                obscureText: !editing.showRepeatPassword, 
+                                onSuffixIconClick: _cubit.toggleRepeatPassword,
                                 errorText: editing.repeatErrorKey,
                                 isEnabled: !editing.isSubmitting,
                                 textInputAction: TextInputAction.done,

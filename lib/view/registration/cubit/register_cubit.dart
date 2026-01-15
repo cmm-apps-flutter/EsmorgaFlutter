@@ -65,9 +65,13 @@ class RegisterCubit extends Cubit<RegisterState> {
     final err = validator.validateRepeatPassword(state.repeatPassword, state.password, acceptsEmpty: false);
     emit(state.copyWith(repeatPasswordBlurred: true, repeatPasswordError: err));
   }
-
+  
   void togglePasswordVisibility() {
     emit(state.copyWith(showPassword: !state.showPassword));
+  }
+
+  void toggleRepeatPasswordVisibility() {
+    emit(state.copyWith(showRepeatPassword: !state.showRepeatPassword));
   }
 
   Future<void> submit() async {

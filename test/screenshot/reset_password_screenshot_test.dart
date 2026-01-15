@@ -114,7 +114,8 @@ void main() {
       final stateVisible = const ResetPasswordState(
         newPassword: 'newPassword123!',
         repeatPassword: 'newPassword123!',
-        showPassword: true,
+        showNewPassword: true,
+        showRepeatPassword: true,
       );
       
       when(() => cubit.state).thenReturn(stateVisible);
