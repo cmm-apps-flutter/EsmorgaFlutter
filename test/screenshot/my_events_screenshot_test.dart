@@ -79,7 +79,7 @@ void main() {
       when(() => cubit.state).thenReturn(MyEventsState(
         eventList: events,
         loading: false,
-        isAdmin: true,
+        showCreateButton: true,
       ));
       return buildScreen();
     },
@@ -108,7 +108,7 @@ void main() {
         eventList: [],
         error: MyEventsEffectType.emptyList,
         loading: false,
-        isAdmin: true,
+        showCreateButton: true,
       ));
       return buildScreen();
     },

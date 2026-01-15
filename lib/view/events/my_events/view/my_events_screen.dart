@@ -68,14 +68,16 @@ class _MyEventsFormState extends State<_MyEventsForm> {
   @override
   Widget build(BuildContext context) {
     final localizations = getIt<LocalizationService>().current;
-    final double screenHeight = MediaQuery.of(context).size.height;
+    // final double screenHeight = MediaQuery.of(context).size.height;
 
     return BlocBuilder<MyEventsCubit, MyEventsState>(builder: (context, state) {
       return Scaffold(
-        floatingActionButton: state.isAdmin
+        floatingActionButton: state.showCreateButton
             ? Padding(
-                padding:
-                    EdgeInsets.only(bottom: screenHeight * 0.015, right: 20.0),
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).padding.bottom + 10.0,
+                  right: 20.0,
+                ),
                 child: FloatingActionButton(
                   backgroundColor: const Color(0xFF5D2531),
                   shape: CircleBorder(), //circle shape

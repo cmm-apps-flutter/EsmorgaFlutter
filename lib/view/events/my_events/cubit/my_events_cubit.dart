@@ -29,7 +29,7 @@ class MyEventsCubit extends Cubit<MyEventsState> {
   final UserRepository userRepository;
 
   List<Event> _myEvents = [];
-  bool _isAdmin = false;
+  bool _showCreateButton = false;
   final _effectController = StreamController<MyEventsEffect>.broadcast();
   Stream<MyEventsEffect> get effects => _effectController.stream;
 
@@ -39,24 +39,24 @@ class MyEventsCubit extends Cubit<MyEventsState> {
     emit(const MyEventsState(loading: true));
     try {
       final userData = await userRepository.getUser();
-      _isAdmin = userData.role == RoleType.admin;
+      _showCreateButton = userData.role == RoleType.admin;
     } catch (_) {
-      emit(MyEventsState(loading: false, isAdmin: _isAdmin, error: MyEventsEffectType.notLoggedIn));
+      emit(MyEventsState(loading: false, showCreateButton: _showCreateButton, error: MyEventsEffectType.notLoggedIn));
       return;
     }
     try {
       final events = await eventRepository.getEvents(forceRefresh: forceRefresh); 
       _myEvents = events.where((e) => e.userJoined).toList();
       if (_myEvents.isEmpty) {
-        emit(MyEventsState(loading: false, isAdmin: _isAdmin, error: MyEventsEffectType.emptyList));
+        emit(MyEventsState(loading: false, showCreateButton: _showCreateButton, error: MyEventsEffectType.emptyList));
       } else {
-        emit(MyEventsState(loading: false, isAdmin: _isAdmin, eventList: _myEvents.toHomeTabUiList()));
+        emit(MyEventsState(loading: false, showCreateButton: _showCreateButton, eventList: _myEvents.toHomeTabUiList()));
       }
     } catch (e) {
       if (e.toString().contains('network') || e.toString().contains('connection')) {
         _effectController.add(MyEventsEffectShowNoNetworkPrompt());
       }
-      emit(MyEventsState(loading: false, isAdmin: _isAdmin, error: MyEventsEffectType.unknown));
+      emit(MyEventsState(loading: false, showCreateButton: _showCreateButton, error: MyEventsEffectType.unknown));
     }
   }
 
