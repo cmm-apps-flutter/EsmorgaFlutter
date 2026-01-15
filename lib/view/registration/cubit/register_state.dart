@@ -25,6 +25,7 @@ class RegisterState extends Equatable {
   final bool emailBlurred;
   final bool passwordBlurred;
   final bool repeatPasswordBlurred;
+  final bool showPassword;
 
   const RegisterState({
     this.name = '',
@@ -46,6 +47,7 @@ class RegisterState extends Equatable {
     this.emailBlurred = false,
     this.passwordBlurred = false,
     this.repeatPasswordBlurred = false,
+    this.showPassword = false,
   });
 
   bool get isSubmitting => status == RegisterStatus.submitting;
@@ -85,6 +87,7 @@ class RegisterState extends Equatable {
     bool? emailBlurred,
     bool? passwordBlurred,
     bool? repeatPasswordBlurred,
+    bool? showPassword,
   }) {
     return RegisterState(
       name: name ?? this.name,
@@ -106,6 +109,7 @@ class RegisterState extends Equatable {
       emailBlurred: emailBlurred ?? this.emailBlurred,
       passwordBlurred: passwordBlurred ?? this.passwordBlurred,
       repeatPasswordBlurred: repeatPasswordBlurred ?? this.repeatPasswordBlurred,
+      showPassword: showPassword ?? this.showPassword,
     );
   }
 
@@ -130,5 +134,7 @@ class RegisterState extends Equatable {
         emailBlurred,
         passwordBlurred,
         repeatPasswordBlurred,
+        // 5. Añadimos a props
+        showPassword,
       ];
 }

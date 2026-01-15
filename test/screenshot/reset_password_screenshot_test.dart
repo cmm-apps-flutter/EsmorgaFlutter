@@ -62,6 +62,13 @@ void main() {
       ));
       return buildScreen();
     },
+    afterBuild: (tester) async {
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('reset_password_new_input')), 'newPassword123!');
+      await tester.enterText(find.byKey(const Key('reset_password_repeat_input')), 'newPassword123!');
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pumpAndSettle();
+    },
   );
 
   screenshotGolden(
@@ -72,10 +79,18 @@ void main() {
       when(() => cubit.state).thenReturn(const ResetPasswordState(
         newPassword: 'newPassword123!',
         repeatPassword: 'mismatch',
+        newError: null,
         repeatError: 'Passwords do not match',
         repeatBlurred: true,
       ));
       return buildScreen();
+    },
+    afterBuild: (tester) async {
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('reset_password_new_input')), 'newPassword123!');
+      await tester.enterText(find.byKey(const Key('reset_password_repeat_input')), 'mismatch');
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pumpAndSettle();
     },
   );
 
@@ -96,23 +111,24 @@ void main() {
     theme: lightTheme,
     screenshotPath: 'reset_password',
     buildHome: () {
-      when(() => cubit.state).thenReturn(const ResetPasswordState(
+      final stateVisible = const ResetPasswordState(
         newPassword: 'newPassword123!',
         repeatPassword: 'newPassword123!',
-      ));
+        showPassword: true,
+      );
+      
+      when(() => cubit.state).thenReturn(stateVisible);
+      when(() => cubit.stream).thenAnswer((_) => Stream.value(stateVisible));
+      
       return buildScreen();
     },
     afterBuild: (tester) async {
       await tester.pumpAndSettle();
-
-      final fields = find.byType(TextField);
       
-      await tester.ensureVisible(fields.at(0));
-      await tester.tap(find.descendant(of: fields.at(0), matching: find.byType(IconButton)));
+      await tester.enterText(find.byKey(const Key('reset_password_new_input')), 'newPassword123!');
+      await tester.enterText(find.byKey(const Key('reset_password_repeat_input')), 'newPassword123!');
       
-      await tester.ensureVisible(fields.at(1));
-      await tester.tap(find.descendant(of: fields.at(1), matching: find.byType(IconButton)));
-      
+      FocusManager.instance.primaryFocus?.unfocus();
       await tester.pumpAndSettle();
     },
   );

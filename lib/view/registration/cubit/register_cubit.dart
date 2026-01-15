@@ -66,6 +66,10 @@ class RegisterCubit extends Cubit<RegisterState> {
     emit(state.copyWith(repeatPasswordBlurred: true, repeatPasswordError: err));
   }
 
+  void togglePasswordVisibility() {
+    emit(state.copyWith(showPassword: !state.showPassword));
+  }
+
   Future<void> submit() async {
     final nameError = validator.validateName(state.name, acceptsEmpty: false);
     final lastNameError = validator.validateLastName(state.lastName, acceptsEmpty: false);

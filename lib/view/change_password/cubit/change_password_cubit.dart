@@ -102,6 +102,13 @@ class ChangePasswordCubit extends Cubit<ChangePasswordState> {
     emit(fn(s));
   }
 
+  void togglePasswordVisibility() {
+    if (state is ChangePasswordEditing) {
+      final currentState = state as ChangePasswordEditing;
+      emit(currentState.copyWith(showPassword: !currentState.showPassword));
+    }
+  }
+
   String? _validateCurrent(String v) {
     if (v.isEmpty) return l10n.inlineErrorEmptyField;
     return validator.validatePassword(v, acceptsEmpty: false);

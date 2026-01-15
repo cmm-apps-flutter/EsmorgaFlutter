@@ -1,4 +1,3 @@
-
 enum ChangePasswordFailure { network, unauthorized, generic }
 
 sealed class ChangePasswordState {
@@ -20,6 +19,8 @@ class ChangePasswordEditing extends ChangePasswordState {
   final bool newTouched;
   final bool repeatTouched;
   final bool isSubmitting;
+  
+  final bool showPassword;
 
   const ChangePasswordEditing({
     this.currentPassword = '',
@@ -32,6 +33,7 @@ class ChangePasswordEditing extends ChangePasswordState {
     this.newTouched = false,
     this.repeatTouched = false,
     this.isSubmitting = false,
+    this.showPassword = false,
   });
 
   bool get isValid =>
@@ -53,6 +55,7 @@ class ChangePasswordEditing extends ChangePasswordState {
     bool? newTouched,
     bool? repeatTouched,
     bool? isSubmitting,
+    bool? showPassword,
   }) {
     return ChangePasswordEditing(
       currentPassword: currentPassword ?? this.currentPassword,
@@ -65,6 +68,7 @@ class ChangePasswordEditing extends ChangePasswordState {
       newTouched: newTouched ?? this.newTouched,
       repeatTouched: repeatTouched ?? this.repeatTouched,
       isSubmitting: isSubmitting ?? this.isSubmitting,
+      showPassword: showPassword ?? this.showPassword,
     );
   }
 }

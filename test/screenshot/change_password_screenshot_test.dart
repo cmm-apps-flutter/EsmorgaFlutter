@@ -65,6 +65,14 @@ void main() {
       ));
       return buildScreen();
     },
+    afterBuild: (tester) async {
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('current_password_input')), 'password');
+      await tester.enterText(find.byKey(const Key('new_password_input')), 'newPassword123!');
+      await tester.enterText(find.byKey(const Key('repeat_password_input')), 'newPassword123!');
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pumpAndSettle();
+    },
   );
 
   screenshotGolden(
@@ -72,37 +80,27 @@ void main() {
     theme: lightTheme,
     screenshotPath: 'change_password',
     buildHome: () {
-      when(() => cubit.state).thenReturn(const ChangePasswordEditing(
+      final stateVisible = const ChangePasswordEditing(
         currentPassword: 'Password123...',
         newPassword: 'Password123.',
         repeatPassword: 'Password123.',
         isSubmitting: false,
-      ));
+        showPassword: true,
+      );
+
+      when(() => cubit.state).thenReturn(stateVisible);
+      when(() => cubit.stream).thenAnswer((_) => Stream.value(stateVisible));
+
       return buildScreen();
     },
     afterBuild: (tester) async {
       await tester.pumpAndSettle();
 
-      final fields = find.byType(TextField);
+      await tester.enterText(find.byKey(const Key('current_password_input')), 'Password123...');
+      await tester.enterText(find.byKey(const Key('new_password_input')), 'Password123.');
+      await tester.enterText(find.byKey(const Key('repeat_password_input')), 'Password123.');
       
-      await tester.ensureVisible(fields.at(0));
-      await tester.tap(find.descendant(
-        of: fields.at(0), 
-        matching: find.byType(IconButton),
-      ));
-
-      await tester.ensureVisible(fields.at(1));
-      await tester.tap(find.descendant(
-        of: fields.at(1), 
-        matching: find.byType(IconButton),
-      ));
-
-      await tester.ensureVisible(fields.at(2));
-      await tester.tap(find.descendant(
-        of: fields.at(2), 
-        matching: find.byType(IconButton),
-      ));
-      
+      FocusManager.instance.primaryFocus?.unfocus();
       await tester.pumpAndSettle();
     },
   );

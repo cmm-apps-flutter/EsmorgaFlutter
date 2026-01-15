@@ -38,6 +38,10 @@ class ResetPasswordCubit extends Cubit<ResetPasswordState> {
     emit(state.copyWith(repeatBlurred: true, repeatError: err));
   }
 
+  void togglePasswordVisibility() {
+    emit(state.copyWith(showPassword: !state.showPassword));
+  }
+
   Future<void> submit() async {
     final newErr = _validateNewPassword(state.newPassword);
     final repeatErr = _validateRepeatPassword(state.repeatPassword, state.newPassword);
