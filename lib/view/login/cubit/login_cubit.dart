@@ -47,6 +47,10 @@ final l10n = getIt<LocalizationService>().current;
     emit(state.copyWith(initMessage: null));
   }
 
+  void togglePasswordVisibility() {
+    emit(state.copyWith(showPassword: !state.showPassword));
+  }
+
   Future<void> submit() async {
     final emailError = validator.validateEmail(state.email, acceptsEmpty: false);
     final passwordError = validator.validatePassword(state.password, acceptsEmpty: false);

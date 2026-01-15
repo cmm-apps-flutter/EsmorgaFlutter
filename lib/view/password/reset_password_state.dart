@@ -13,6 +13,8 @@ class ResetPasswordState extends Equatable {
   final bool codeInvalid;
   final ResetPasswordStatus status;
   final bool networkFailure;
+  final bool showNewPassword;
+  final bool showRepeatPassword;
 
   const ResetPasswordState({
     this.newPassword = '',
@@ -25,6 +27,8 @@ class ResetPasswordState extends Equatable {
     this.codeInvalid = false,
     this.status = ResetPasswordStatus.idle,
     this.networkFailure = false,
+    this.showNewPassword = false,
+    this.showRepeatPassword = false,
   });
 
   bool get isSubmitting => status == ResetPasswordStatus.submitting;
@@ -47,6 +51,8 @@ class ResetPasswordState extends Equatable {
     bool? codeInvalid,
     ResetPasswordStatus? status,
     bool? networkFailure,
+    bool? showNewPassword,
+    bool? showRepeatPassword,
   }) =>
       ResetPasswordState(
         newPassword: newPassword ?? this.newPassword,
@@ -59,6 +65,8 @@ class ResetPasswordState extends Equatable {
         codeInvalid: codeInvalid ?? this.codeInvalid,
         status: status ?? this.status,
         networkFailure: networkFailure ?? this.networkFailure,
+        showNewPassword: showNewPassword ?? this.showNewPassword,
+        showRepeatPassword: showRepeatPassword ?? this.showRepeatPassword,
       );
 
   @override
@@ -72,7 +80,9 @@ class ResetPasswordState extends Equatable {
         attemptedSubmit,
         codeInvalid,
         status,
-        networkFailure
+        networkFailure,
+        showNewPassword,
+        showRepeatPassword,
       ];
 }
 

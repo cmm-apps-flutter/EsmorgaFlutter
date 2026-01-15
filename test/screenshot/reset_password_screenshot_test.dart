@@ -62,6 +62,13 @@ void main() {
       ));
       return buildScreen();
     },
+    afterBuild: (tester) async {
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('reset_password_new_input')), 'newPassword123!');
+      await tester.enterText(find.byKey(const Key('reset_password_repeat_input')), 'newPassword123!');
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pumpAndSettle();
+    },
   );
 
   screenshotGolden(
@@ -72,10 +79,18 @@ void main() {
       when(() => cubit.state).thenReturn(const ResetPasswordState(
         newPassword: 'newPassword123!',
         repeatPassword: 'mismatch',
+        newError: null,
         repeatError: 'Passwords do not match',
         repeatBlurred: true,
       ));
       return buildScreen();
+    },
+    afterBuild: (tester) async {
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('reset_password_new_input')), 'newPassword123!');
+      await tester.enterText(find.byKey(const Key('reset_password_repeat_input')), 'mismatch');
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pumpAndSettle();
     },
   );
 
@@ -88,6 +103,34 @@ void main() {
         codeInvalid: true,
       ));
       return buildScreen();
+    },
+  );
+
+  screenshotGolden(
+    'reset_password_visible',
+    theme: lightTheme,
+    screenshotPath: 'reset_password',
+    buildHome: () {
+      final stateVisible = const ResetPasswordState(
+        newPassword: 'newPassword123!',
+        repeatPassword: 'newPassword123!',
+        showNewPassword: true,
+        showRepeatPassword: true,
+      );
+      
+      when(() => cubit.state).thenReturn(stateVisible);
+      when(() => cubit.stream).thenAnswer((_) => Stream.value(stateVisible));
+      
+      return buildScreen();
+    },
+    afterBuild: (tester) async {
+      await tester.pumpAndSettle();
+      
+      await tester.enterText(find.byKey(const Key('reset_password_new_input')), 'newPassword123!');
+      await tester.enterText(find.byKey(const Key('reset_password_repeat_input')), 'newPassword123!');
+      
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pumpAndSettle();
     },
   );
 }

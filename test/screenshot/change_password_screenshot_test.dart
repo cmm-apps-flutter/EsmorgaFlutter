@@ -65,5 +65,45 @@ void main() {
       ));
       return buildScreen();
     },
+    afterBuild: (tester) async {
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('current_password_input')), 'password');
+      await tester.enterText(find.byKey(const Key('new_password_input')), 'newPassword123!');
+      await tester.enterText(find.byKey(const Key('repeat_password_input')), 'newPassword123!');
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pumpAndSettle();
+    },
+  );
+
+  screenshotGolden(
+    'change_password_visible',
+    theme: lightTheme,
+    screenshotPath: 'change_password',
+    buildHome: () {
+      final stateVisible = const ChangePasswordEditing(
+        currentPassword: 'Password123...',
+        newPassword: 'Password123.',
+        repeatPassword: 'Password123.',
+        isSubmitting: false,
+        showCurrentPassword: true,
+        showNewPassword: true,
+        showRepeatPassword: true,
+      );
+
+      when(() => cubit.state).thenReturn(stateVisible);
+      when(() => cubit.stream).thenAnswer((_) => Stream.value(stateVisible));
+
+      return buildScreen();
+    },
+    afterBuild: (tester) async {
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byKey(const Key('current_password_input')), 'Password123...');
+      await tester.enterText(find.byKey(const Key('new_password_input')), 'Password123.');
+      await tester.enterText(find.byKey(const Key('repeat_password_input')), 'Password123.');
+      
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pumpAndSettle();
+    },
   );
 }

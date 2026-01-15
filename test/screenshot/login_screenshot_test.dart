@@ -4,17 +4,19 @@ import 'package:esmorga_flutter/ds/esmorga_theme.dart';
 import 'package:esmorga_flutter/view/l10n/app_localizations_en.dart';
 import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:esmorga_flutter/view/login/cubit/login_cubit.dart';
+import 'package:esmorga_flutter/view/login/cubit/login_state.dart';
 import 'package:esmorga_flutter/view/login/view/login_screen.dart';
 import 'package:esmorga_flutter/view/validation/form_validator.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'screenshot_helper.dart';
 
 class MockUserRepository extends Mock implements UserRepository {}
-
+class MockLoginCubit extends MockCubit<LoginState> implements LoginCubit {}
 class MockLocalizationService extends Mock implements LocalizationService {}
 
 void main() {
@@ -95,6 +97,38 @@ void main() {
       await tester.enterText(find.byKey(const Key('login_email_input')), 'test@example.com');
       await tester.enterText(find.byKey(const Key('login_password_input')), 'wrongpass');
       await tester.tap(find.byKey(const Key('login_login_button')));
+      await tester.pumpAndSettle();
+    },
+  );
+
+  screenshotGolden(
+    'login_password_visible',
+    theme: lightTheme,
+    screenshotPath: 'login',
+    buildHome: () {
+      final stateVisible = const LoginState(
+        email: 'test@example.com',
+        password: 'password123',
+        showPassword: true,
+      );
+
+      final mockCubit = MockLoginCubit();
+      when(() => mockCubit.state).thenReturn(stateVisible);
+      when(() => mockCubit.stream).thenAnswer((_) => Stream.value(stateVisible));
+
+      getIt.unregister<LoginCubit>();
+      getIt.registerFactoryParam<LoginCubit, BuildContext, String?>((_, __) => mockCubit);
+
+      return buildScreen();
+    },
+    afterBuild: (tester) async {
+      await tester.pumpAndSettle();
+      
+      await tester.enterText(find.byKey(const Key('login_email_input')), 'test@example.com');
+      await tester.enterText(find.byKey(const Key('login_password_input')), 'password123');
+      
+      FocusManager.instance.primaryFocus?.unfocus();
+      
       await tester.pumpAndSettle();
     },
   );

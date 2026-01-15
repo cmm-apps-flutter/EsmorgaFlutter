@@ -81,6 +81,7 @@ class _ResetPasswordFormState extends State<_ResetPasswordForm> {
       builder: (context, state) {
         final newErr = (state.newBlurred || state.attemptedSubmit) ? state.newError : null;
         final repeatErr = (state.repeatBlurred || state.attemptedSubmit) ? state.repeatError : null;
+
         return Scaffold(
           appBar: AppBar(
             leading: IconButton(
@@ -114,6 +115,8 @@ class _ResetPasswordFormState extends State<_ResetPasswordForm> {
                   title: l10n.resetPasswordNewPasswordField,
                   placeholder: l10n.placeholderNewPassword,
                   isPasswordField: true,
+                  obscureText: !state.showNewPassword,
+                  onSuffixIconClick: _cubit.toggleNewPasswordVisibility,
                   errorText: newErr,
                   textInputAction: TextInputAction.next,
                   onChanged: (v) => _cubit.onNewChanged(v),
@@ -126,6 +129,8 @@ class _ResetPasswordFormState extends State<_ResetPasswordForm> {
                   title: l10n.resetPasswordRepeatPasswordField,
                   placeholder: l10n.placeholderConfirmPassword,
                   isPasswordField: true,
+                  obscureText: !state.showRepeatPassword,
+                  onSuffixIconClick: _cubit.toggleRepeatPasswordVisibility,
                   errorText: repeatErr,
                   textInputAction: TextInputAction.done,
                   onChanged: (v) => _cubit.onRepeatChanged(v),

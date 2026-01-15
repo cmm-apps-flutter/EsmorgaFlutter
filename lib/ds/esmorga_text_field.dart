@@ -15,6 +15,10 @@ class EsmorgaTextField extends StatefulWidget {
   final ValueChanged<String>? onSubmitted;
   final int? maxLines;
   final List<TextInputFormatter>? inputFormatters;
+  
+  final bool? obscureText; 
+  
+  final VoidCallback? onSuffixIconClick;
 
   const EsmorgaTextField({
     super.key,
@@ -31,6 +35,8 @@ class EsmorgaTextField extends StatefulWidget {
     this.onSubmitted,
     this.maxLines = 1,
     this.inputFormatters,
+    this.obscureText,
+    this.onSuffixIconClick,
   });
 
   @override
@@ -38,16 +44,18 @@ class EsmorgaTextField extends StatefulWidget {
 }
 
 class _EsmorgaTextFieldState extends State<EsmorgaTextField> {
-  late bool _obscureText;
+  late bool _internalObscureText;
 
   @override
   void initState() {
     super.initState();
-    _obscureText = widget.isPasswordField;
+    _internalObscureText = widget.isPasswordField;
   }
 
   @override
   Widget build(BuildContext context) {
+    final bool effectiveObscureText = widget.obscureText ?? _internalObscureText;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -62,7 +70,7 @@ class _EsmorgaTextFieldState extends State<EsmorgaTextField> {
           controller: widget.controller,
           focusNode: widget.focusNode,
           enabled: widget.isEnabled,
-          obscureText: widget.isPasswordField ? _obscureText : false,
+          obscureText: widget.isPasswordField ? effectiveObscureText : false,
           keyboardType: widget.keyboardType,
           textInputAction: widget.textInputAction,
           maxLines: widget.maxLines,
@@ -75,13 +83,17 @@ class _EsmorgaTextFieldState extends State<EsmorgaTextField> {
             suffixIcon: widget.isPasswordField
                 ? IconButton(
                     icon: Icon(
-                      _obscureText ? Icons.visibility_off : Icons.visibility,
+                      effectiveObscureText ? Icons.visibility : Icons.visibility_off,
                       color: Theme.of(context).colorScheme.outline,
                     ),
                     onPressed: () {
-                      setState(() {
-                        _obscureText = !_obscureText;
-                      });
+                      if (widget.onSuffixIconClick != null) {
+                        widget.onSuffixIconClick!();
+                      } else {
+                        setState(() {
+                          _internalObscureText = !_internalObscureText;
+                        });
+                      }
                     },
                   )
                 : null,
