@@ -12,7 +12,8 @@ import 'package:mocktail/mocktail.dart';
 
 import 'screenshot_helper.dart';
 
-class MockMyEventsCubit extends MockCubit<MyEventsState> implements MyEventsCubit {}
+class MockMyEventsCubit extends MockCubit<MyEventsState>
+    implements MyEventsCubit {}
 
 class MockLocalizationService extends Mock implements LocalizationService {}
 
@@ -26,7 +27,8 @@ void main() {
     getIt.registerFactory<MyEventsCubit>(() => cubit);
     getIt.registerSingleton<LocalizationService>(localizationService);
     when(() => localizationService.current).thenReturn(AppLocalizationsEn());
-    when(() => cubit.load(forceRefresh: any(named: 'forceRefresh'))).thenAnswer((_) async {});
+    when(() => cubit.load(forceRefresh: any(named: 'forceRefresh')))
+        .thenAnswer((_) async {});
     when(() => cubit.effects).thenAnswer((_) => const Stream.empty());
   });
 
@@ -70,6 +72,20 @@ void main() {
   );
 
   screenshotGolden(
+    'my_events_content_admin',
+    theme: lightTheme,
+    screenshotPath: 'my_events',
+    buildHome: () {
+      when(() => cubit.state).thenReturn(MyEventsState(
+        eventList: events,
+        loading: false,
+        showCreateButton: true,
+      ));
+      return buildScreen();
+    },
+  );
+
+  screenshotGolden(
     'my_events_empty',
     theme: lightTheme,
     screenshotPath: 'my_events',
@@ -78,6 +94,21 @@ void main() {
         eventList: [],
         error: MyEventsEffectType.emptyList,
         loading: false,
+      ));
+      return buildScreen();
+    },
+  );
+
+  screenshotGolden(
+    'my_events_empty_admin',
+    theme: lightTheme,
+    screenshotPath: 'my_events',
+    buildHome: () {
+      when(() => cubit.state).thenReturn(const MyEventsState(
+        eventList: [],
+        error: MyEventsEffectType.emptyList,
+        loading: false,
+        showCreateButton: true,
       ));
       return buildScreen();
     },
