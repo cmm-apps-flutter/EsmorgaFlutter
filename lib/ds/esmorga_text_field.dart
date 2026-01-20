@@ -15,9 +15,9 @@ class EsmorgaTextField extends StatefulWidget {
   final ValueChanged<String>? onSubmitted;
   final int? maxLines;
   final List<TextInputFormatter>? inputFormatters;
-  
+
   final bool? obscureText; 
-  
+
   final VoidCallback? onSuffixIconClick;
 
   const EsmorgaTextField({

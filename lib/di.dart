@@ -35,6 +35,7 @@ import 'package:esmorga_flutter/view/deeplink/deep_link_service.dart';
 import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_cubit.dart';
 import 'package:esmorga_flutter/view/home_tab/cubit/home_tab_cubit.dart';
 import 'package:esmorga_flutter/view/events/my_events/cubit/my_events_cubit.dart';
+import 'package:esmorga_flutter/view/events/event_create/cubit/create_event_cubit.dart';
 import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
 import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:esmorga_flutter/view/login/cubit/login_cubit.dart';
@@ -207,6 +208,7 @@ Future<void> setupDi(Locale locale) async {
   // -----------------------------
   getIt.registerFactory(() => SplashCubit());
   getIt.registerFactory(() => MyEventsCubit(eventRepository: getIt(), userRepository: getIt()));
+  getIt.registerFactory(() => CreateEventCubit(l10n: getIt()));
   getIt.registerFactory(() => HomeTabCubit(
         eventRepository: getIt(),
         getPollsUseCase: getIt(),
@@ -236,7 +238,8 @@ Future<void> setupDi(Locale locale) async {
         verificationCode: verificationCode,
       ));
 
-  getIt.registerFactory(() => EventAttendeesCubit(eventRepository: getIt(), userRepository: getIt(), getEventAttendeesUseCase: getIt()));
+  getIt.registerFactory(() => EventAttendeesCubit(eventRepository: getIt(), userRepository: getIt(), getEventAttendeesUseCase:
+getIt()));
 
   getIt.registerFactoryParam<PollDetailCubit, Poll, void>((poll, _) => PollDetailCubit(
         poll: poll,
