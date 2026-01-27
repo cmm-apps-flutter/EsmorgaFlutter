@@ -3,6 +3,7 @@ import 'package:esmorga_flutter/domain/event/model/event.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_loader.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
+import 'package:esmorga_flutter/view/events/event_create/view/create_event_screen.dart';
 import 'package:esmorga_flutter/view/events/my_events/cubit/my_events_cubit.dart';
 import 'package:esmorga_flutter/view/home/logged_out_view.dart';
 import 'package:esmorga_flutter/view/home_tab/model/home_tab_ui_model.dart';
@@ -82,7 +83,11 @@ class _MyEventsFormState extends State<_MyEventsForm> {
                   backgroundColor: const Color(0xFF5D2531),
                   shape: CircleBorder(), //circle shape
                   onPressed: () {
-                    // Add admin action here
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const CreateEventScreen(),
+                      ),
+                    );
                   },
                   child: const Icon(
                     Icons.add,
