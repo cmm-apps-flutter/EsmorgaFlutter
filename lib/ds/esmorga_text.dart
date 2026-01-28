@@ -71,7 +71,7 @@ class EsmorgaText extends StatelessWidget {
           fontSize: 14,
           height: 21 / 14,
           letterSpacing: 0,
-        );
+        ); 
       case EsmorgaTextStyle.button:
         return Theme.of(context).textTheme.labelLarge!.copyWith(
           fontWeight: FontWeight.bold,
