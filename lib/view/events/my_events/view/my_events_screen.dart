@@ -3,7 +3,7 @@ import 'package:esmorga_flutter/domain/event/model/event.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_loader.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
-import 'package:esmorga_flutter/view/events/event_create/view/create_event_screen.dart';
+
 import 'package:esmorga_flutter/view/events/my_events/cubit/my_events_cubit.dart';
 import 'package:esmorga_flutter/view/home/logged_out_view.dart';
 import 'package:esmorga_flutter/view/home_tab/model/home_tab_ui_model.dart';
@@ -15,17 +15,19 @@ import 'package:lottie/lottie.dart';
 class MyEventsScreen extends StatelessWidget {
   final Future<bool?> Function(Event) onDetailsClicked;
   final void Function() onSignInClicked;
+  final void Function() onCreateEventClicked;
 
   const MyEventsScreen(
       {super.key,
       required this.onDetailsClicked,
-      required this.onSignInClicked});
+      required this.onSignInClicked,
+      required this.onCreateEventClicked});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => getIt<MyEventsCubit>(),
-      child: _MyEventsForm(onDetailsClicked, onSignInClicked),
+      child: _MyEventsForm(onDetailsClicked, onSignInClicked, onCreateEventClicked),
     );
   }
 }
@@ -33,8 +35,9 @@ class MyEventsScreen extends StatelessWidget {
 class _MyEventsForm extends StatefulWidget {
   final Future<bool?> Function(Event) onDetailsClicked;
   final void Function() onSignInClicked;
+  final void Function() onCreateEventClicked;
 
-  const _MyEventsForm(this.onDetailsClicked, this.onSignInClicked);
+  const _MyEventsForm(this.onDetailsClicked, this.onSignInClicked, this.onCreateEventClicked);
 
   @override
   State<_MyEventsForm> createState() => _MyEventsFormState();
@@ -82,13 +85,7 @@ class _MyEventsFormState extends State<_MyEventsForm> {
                 child: FloatingActionButton(
                   backgroundColor: const Color(0xFF5D2531),
                   shape: CircleBorder(), //circle shape
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const CreateEventScreen(),
-                      ),
-                    );
-                  },
+                  onPressed: widget.onCreateEventClicked,
                   child: const Icon(
                     Icons.add,
                     color: Colors.white,

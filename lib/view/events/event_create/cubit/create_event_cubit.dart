@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:esmorga_flutter/view/events/event_create/model/event_type.dart';
 
 part 'create_event_state.dart';
 
@@ -12,6 +13,13 @@ class CreateEventEffectNavigateToNextStep extends CreateEventEffect {
   final String eventName;
   final String description;
   CreateEventEffectNavigateToNextStep(this.eventName, this.description);
+}
+
+class CreateEventEffectNavigateToTypeStep extends CreateEventEffect {
+  final String eventName;
+  final String description;
+  final EventType eventType;
+  CreateEventEffectNavigateToTypeStep(this.eventName, this.description, this.eventType);
 }
 
 class CreateEventCubit extends Cubit<CreateEventState> {
@@ -50,11 +58,27 @@ class CreateEventCubit extends Cubit<CreateEventState> {
     ));
   }
 
+  void updateEventType(EventType type) {
+    emit(state.copyWith(eventType: type));
+  }
+
+  bool canProceedFromScreen1() {
+    return state.eventName.isNotEmpty &&
+        state.eventNameError == null &&
+        state.description.isNotEmpty &&
+        state.descriptionError == null;
+  }
+
+  bool canProceedFromScreen2() {
+    return state.eventType != null;
+  }
+
   bool get isFormValid =>
       state.eventName.isNotEmpty &&
       state.eventNameError == null &&
       state.description.isNotEmpty &&
-      state.descriptionError == null;
+      state.descriptionError == null &&
+      state.eventType != null;
 
   void submit() {
     _effectController.add(CreateEventEffectNavigateToNextStep(state.eventName, state.description));

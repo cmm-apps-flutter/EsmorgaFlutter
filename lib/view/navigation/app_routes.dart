@@ -21,8 +21,11 @@ import 'package:esmorga_flutter/view/registration/view/registration_confirmation
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:esmorga_flutter/view/splash/view/splash_screen.dart';
+import 'package:esmorga_flutter/view/events/event_create/view/create_event_screen.dart';
+import 'package:esmorga_flutter/view/events/event_create/view/create_eventType_screen.dart';
+import 'package:esmorga_flutter/view/events/event_create/cubit/create_event_cubit.dart';
 import 'package:esmorga_flutter/view/splash/cubit/splash_cubit.dart';
+import 'package:esmorga_flutter/view/splash/view/splash_screen.dart';
 
 class AppRoutes {
   static const String splash = '/splash';
@@ -39,6 +42,8 @@ class AppRoutes {
   static const String pollDetail = '/poll';
   static const String verifyAccount = '/verify-account';
   static const String eventAttendees = '/event_attendees/:eventId';
+  static const String createEvent = '/create-event';
+  static const String createEventType = '/create-event-type';
 
   static GoRouter createRouter() {
     return GoRouter(
@@ -147,6 +152,32 @@ class AppRoutes {
             );
           },
         ),
+        GoRoute(
+          path: createEvent,
+          builder: (context, state) => CreateEventScreen(
+            onNavigateToNextStep: (eventName, description) {
+              context.push(
+                '$createEventType?eventName=${Uri.encodeComponent(eventName)}&description=${Uri.encodeComponent(description)}',
+              );
+            },
+            onBackClicked: () {
+              context.pop();
+            },
+          ),
+        ),
+        GoRoute(
+          path: createEventType,
+          builder: (context, state) {
+            final eventName = state.uri.queryParameters['eventName'] ?? '';
+            final description = state.uri.queryParameters['description'] ?? '';
+            return BlocProvider(
+              create: (_) => getIt<CreateEventCubit>()
+                ..updateEventName(eventName)
+                ..updateDescription(description),
+              child: const CreateEventTypeScreen(),
+            );
+          },
+        ),
         ShellRoute(
           builder: (context, state, child) => HomeScreen(child: child),
           routes: [
@@ -178,6 +209,9 @@ class AppRoutes {
                   },
                   onSignInClicked: () {
                     context.push(login);
+                  },
+                  onCreateEventClicked: () {
+                    context.push(createEvent);
                   },
                 ),
                 transitionsBuilder: (context, animation, secondaryAnimation, child) {
