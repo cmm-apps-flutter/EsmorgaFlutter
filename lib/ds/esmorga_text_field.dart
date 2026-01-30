@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'esmorga_text.dart';
 
 class EsmorgaTextField extends StatefulWidget {
   final TextEditingController? controller;
@@ -15,6 +16,7 @@ class EsmorgaTextField extends StatefulWidget {
   final ValueChanged<String>? onSubmitted;
   final int? maxLines;
   final List<TextInputFormatter>? inputFormatters;
+  final int? maxChars;
 
   final bool? obscureText; 
 
@@ -35,6 +37,7 @@ class EsmorgaTextField extends StatefulWidget {
     this.onSubmitted,
     this.maxLines = 1,
     this.inputFormatters,
+    this.maxChars,
     this.obscureText,
     this.onSuffixIconClick,
   });
@@ -45,11 +48,13 @@ class EsmorgaTextField extends StatefulWidget {
 
 class _EsmorgaTextFieldState extends State<EsmorgaTextField> {
   late bool _internalObscureText;
+  late TextEditingController _internalController;
 
   @override
   void initState() {
     super.initState();
     _internalObscureText = widget.isPasswordField;
+    _internalController = widget.controller ?? TextEditingController();
   }
 
   @override
@@ -74,8 +79,12 @@ class _EsmorgaTextFieldState extends State<EsmorgaTextField> {
           keyboardType: widget.keyboardType,
           textInputAction: widget.textInputAction,
           maxLines: widget.maxLines,
+          maxLength: widget.maxChars,
           inputFormatters: widget.inputFormatters,
-          onChanged: widget.onChanged,
+          onChanged: (value) {
+            setState(() {});
+            widget.onChanged?.call(value);
+          },
           onSubmitted: widget.onSubmitted,
           decoration: InputDecoration(
             hintText: widget.placeholder,
@@ -144,8 +153,20 @@ class _EsmorgaTextFieldState extends State<EsmorgaTextField> {
               horizontal: 16.0,
               vertical: 12.0,
             ),
+            counterText: '', // Hides the default character counter
           ),
         ),
+        if (widget.maxChars != null) ...[
+          const SizedBox(height: 4.0),
+          Align(
+            alignment: Alignment.centerRight,
+            child: EsmorgaText(
+              text: "${_internalController.text.length}/${widget.maxChars}",
+              style: EsmorgaTextStyle.body1Accent,
+              textAlign: TextAlign.right,
+            ),
+          ),
+        ],
       ],
     );
   }
