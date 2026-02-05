@@ -9,6 +9,7 @@ import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'screenshot_helper.dart';
 
@@ -43,13 +44,16 @@ void main() {
   );
 
   Widget buildScreen() {
-    return const CreateEventScreen();
+    return CreateEventScreen(
+      onNavigateToNextStep: (_, __) {},
+      onBackClicked: () {},
+    );
   }
 
   Widget buildEventTypeScreen() {
-    return CreateEventTypeScreen(
-      eventName: 'Amazing event',
-      description: 'This is amazing Event in Prague',
+    return BlocProvider<CreateEventCubit>(
+      create: (_) => cubit,
+      child: const CreateEventTypeScreen(),
     );
   }
 
