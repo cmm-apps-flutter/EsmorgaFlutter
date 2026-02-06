@@ -9,19 +9,42 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CreateEventScreen extends StatelessWidget {
-  const CreateEventScreen({super.key});
+  
+  final void Function(String eventName, String description) onNavigateToNextStep;
+
+  
+  final VoidCallback onBackClicked;
+
+  const CreateEventScreen({
+    super.key,
+    required this.onNavigateToNextStep,
+    required this.onBackClicked,
+  });
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => getIt<CreateEventCubit>(),
-      child: const _CreateEventForm(),
+      child: _CreateEventForm(
+        onNavigateToNextStep: onNavigateToNextStep,
+        onBackClicked: onBackClicked,
+      ),
     );
   }
 }
 
+
 class _CreateEventForm extends StatefulWidget {
-  const _CreateEventForm();
+
+  final void Function(String eventName, String description) onNavigateToNextStep;
+
+
+  final VoidCallback onBackClicked;
+
+  const _CreateEventForm({
+    required this.onNavigateToNextStep,
+    required this.onBackClicked,
+  });
 
   @override
   State<_CreateEventForm> createState() => _CreateEventFormState();
@@ -37,8 +60,12 @@ class _CreateEventFormState extends State<_CreateEventForm> {
     super.initState();
     _cubit = context.read<CreateEventCubit>();
     _cubit.effects.listen((effect) {
+      if (!mounted) return;
       if (effect is CreateEventEffectNavigateToNextStep) {
-        // TODO: Navigate to next step
+        widget.onNavigateToNextStep(
+          effect.eventName,
+          effect.description,
+        );
       }
     });
     _descriptionController.addListener(_onDescriptionChanged);
@@ -64,7 +91,7 @@ class _CreateEventFormState extends State<_CreateEventForm> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: widget.onBackClicked,
         ),
       ),
       body: SafeArea(
@@ -115,7 +142,7 @@ class _CreateEventFormState extends State<_CreateEventForm> {
                     const SizedBox(height: 48.0),
                     EsmorgaButton(
                       text: localizations.stepContinueButton,
-                      isEnabled: _cubit.isFormValid,
+                      isEnabled: _cubit.canProceedFromScreen1(),
                       onClick: _cubit.submit,
                     ),
                     const SizedBox(height: 32.0),

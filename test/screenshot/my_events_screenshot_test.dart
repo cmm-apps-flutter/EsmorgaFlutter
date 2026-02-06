@@ -45,6 +45,7 @@ void main() {
     return MyEventsScreen(
       onDetailsClicked: (_) async => false,
       onSignInClicked: () {},
+      onCreateEventClicked: () {},
     );
   }
 

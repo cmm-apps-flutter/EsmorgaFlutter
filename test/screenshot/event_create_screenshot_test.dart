@@ -3,11 +3,13 @@ import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/ds/esmorga_theme.dart';
 import 'package:esmorga_flutter/view/l10n/app_localizations_en.dart';
 import 'package:esmorga_flutter/view/events/event_create/cubit/create_event_cubit.dart';
+import 'package:esmorga_flutter/view/events/event_create/view/create_eventType_screen.dart';
 import 'package:esmorga_flutter/view/events/event_create/view/create_event_screen.dart';
 import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'screenshot_helper.dart';
 
@@ -27,6 +29,7 @@ void main() {
     when(() => localizationService.current).thenReturn(AppLocalizationsEn());
     when(() => cubit.state).thenReturn(const CreateEventState());
     when(() => cubit.isFormValid).thenReturn(false);
+    when(() => cubit.canProceedFromScreen1()).thenReturn(false);
     when(() => cubit.effects).thenAnswer((_) => const Stream.empty());
     cubit.emit(const CreateEventState());
   });
@@ -41,7 +44,17 @@ void main() {
   );
 
   Widget buildScreen() {
-    return const CreateEventScreen();
+    return CreateEventScreen(
+      onNavigateToNextStep: (_, __) {},
+      onBackClicked: () {},
+    );
+  }
+
+  Widget buildEventTypeScreen() {
+    return BlocProvider<CreateEventCubit>(
+      create: (_) => cubit,
+      child: const CreateEventTypeScreen(),
+    );
   }
 
   screenshotGolden(
@@ -62,5 +75,12 @@ void main() {
       await tester.enterText(find.byType(TextField).at(1), 'This is amazing Event in Prague');
       await tester.pumpAndSettle();
     },
+  );
+
+  screenshotGolden(
+    'step2_initial',
+    theme: lightTheme,
+    screenshotPath: 'event_create',
+    buildHome: () => buildEventTypeScreen(),
   );
 }
