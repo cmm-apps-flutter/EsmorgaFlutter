@@ -31,7 +31,7 @@ class EsmorgaRadiobutton extends StatelessWidget {
               child: Radio<bool>(
                 value: true,
                 side: BorderSide(
-                  color: isSelected ? claret : pink,
+                  color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.secondary,
                 ),
               ),
             ),

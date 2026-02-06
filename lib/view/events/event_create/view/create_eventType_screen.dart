@@ -46,14 +46,6 @@ class _CreateEventTypeFormState extends State<_CreateEventTypeForm> {
 
   @override
   Widget build(BuildContext context) {
-    // Event types list using cached localization strings
-    final eventTypes = [
-      (EventType.text_party, _l10n.step2OptionParty),
-      (EventType.text_sport, _l10n.step2OptionSport),
-      (EventType.text_food, _l10n.step2OptionFood),
-      (EventType.text_charity, _l10n.step2OptionCharity),
-      (EventType.text_games, _l10n.step2OptionGames),
-    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -84,11 +76,11 @@ class _CreateEventTypeFormState extends State<_CreateEventTypeForm> {
                     const SizedBox(height: 32.0),
                     Column(
                       children: [
-                        for (final eventType in eventTypes)
+                        for (final eventType in EventType.values)
                           EsmorgaRadiobutton(
-                            text: eventType.$2,
-                            isSelected: state.eventType == eventType.$1,
-                            onTap: () => _cubit.updateEventType(eventType.$1),
+                            text: eventType.localizedName(_l10n),
+                            isSelected: state.eventType == eventType,
+                            onTap: () => _cubit.updateEventType(eventType),
                           ),
                       ],
                     ),
