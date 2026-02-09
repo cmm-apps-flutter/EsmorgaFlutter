@@ -23,7 +23,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:esmorga_flutter/view/events/event_create/view/create_event_screen.dart';
 import 'package:esmorga_flutter/view/events/event_create/view/create_eventType_screen.dart';
+import 'package:esmorga_flutter/view/events/event_create/view/create_event_date_screen.dart';
 import 'package:esmorga_flutter/view/events/event_create/cubit/create_event_cubit.dart';
+import 'package:esmorga_flutter/view/events/event_create/model/event_type.dart';
 import 'package:esmorga_flutter/view/splash/cubit/splash_cubit.dart';
 import 'package:esmorga_flutter/view/splash/view/splash_screen.dart';
 
@@ -44,6 +46,7 @@ class AppRoutes {
   static const String eventAttendees = '/event_attendees/:eventId';
   static const String createEvent = '/create-event';
   static const String createEventType = '/create-event-type';
+  static const String createEventDate = '/create-event-date';
 
   static GoRouter createRouter() {
     return GoRouter(
@@ -157,7 +160,11 @@ class AppRoutes {
           builder: (context, state) => CreateEventScreen(
             onNavigateToNextStep: (eventName, description) {
               context.push(
-                '$createEventType?eventName=${Uri.encodeComponent(eventName)}&description=${Uri.encodeComponent(description)}',
+                createEventType,
+                extra: EventCreationData(
+                  eventName: eventName,
+                  description: description,
+                ),
               );
             },
             onBackClicked: () {
@@ -168,13 +175,44 @@ class AppRoutes {
         GoRoute(
           path: createEventType,
           builder: (context, state) {
-            final eventName = state.uri.queryParameters['eventName'] ?? '';
-            final description = state.uri.queryParameters['description'] ?? '';
+            final eventData = state.extra as EventCreationData;
             return BlocProvider(
               create: (_) => getIt<CreateEventCubit>()
-                ..updateEventName(eventName)
-                ..updateDescription(description),
-              child: const CreateEventTypeScreen(),
+                ..updateEventName(eventData.eventName)
+                ..updateDescription(eventData.description),
+              child: CreateEventTypeScreen(
+                onNavigateToNextStep: (eventName, description, eventType) {
+                  context.push(
+                    createEventDate,
+                    extra: EventCreationData(
+                      eventName: eventName,
+                      description: description,
+                      eventTypeName: eventType.name,
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        ),
+        GoRoute(
+          path: createEventDate,
+          builder: (context, state) {
+            final eventData = state.extra as EventCreationData;
+            final eventType = EventType.values.firstWhere(
+              (e) => e.name == eventData.eventTypeName,
+              orElse: () => EventType.text_party,
+            );
+            return BlocProvider(
+              create: (_) => getIt<CreateEventCubit>()
+                ..updateEventName(eventData.eventName)
+                ..updateDescription(eventData.description)
+                ..updateEventType(eventType),
+              child: CreateEventDateScreen(
+                onNavigateToNextStep: (eventName, description, eventType, eventDate) {
+                },
+                onBackClicked: () => context.pop(),
+              ),
             );
           },
         ),

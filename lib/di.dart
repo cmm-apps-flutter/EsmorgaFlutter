@@ -208,7 +208,7 @@ Future<void> setupDi(Locale locale) async {
   // -----------------------------
   getIt.registerFactory(() => SplashCubit());
   getIt.registerFactory(() => MyEventsCubit(eventRepository: getIt(), userRepository: getIt()));
-  getIt.registerFactory(() => CreateEventCubit(l10n: getIt()));
+  getIt.registerFactory(() => CreateEventCubit(l10n: getIt(), dateTimeFormatter: getIt()));
   getIt.registerFactory(() => HomeTabCubit(
         eventRepository: getIt(),
         getPollsUseCase: getIt(),

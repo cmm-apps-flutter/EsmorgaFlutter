@@ -61,10 +61,10 @@ class _CreateEventFormState extends State<_CreateEventForm> {
     _cubit = context.read<CreateEventCubit>();
     _cubit.effects.listen((effect) {
       if (!mounted) return;
-      if (effect is CreateEventEffectNavigateToNextStep) {
+      if (effect is CreateEventNavigateToEventTypeEffect) {
         widget.onNavigateToNextStep(
-          effect.eventName,
-          effect.description,
+          effect.eventData.eventName,
+          effect.eventData.description,
         );
       }
     });
@@ -91,6 +91,7 @@ class _CreateEventFormState extends State<_CreateEventForm> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
+          tooltip: localizations.tooltipBackIcon,
           onPressed: widget.onBackClicked,
         ),
       ),

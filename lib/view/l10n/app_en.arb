@@ -8,6 +8,7 @@
   "buttonRegister": "Register",
   "buttonRetry": "Retry",
   "contentDescriptionBackIcon": "Back icon",
+  "tooltipBackIcon": "Go back",
   "contentDescriptionForwardIcon": "Forward icon",
   "contentDescriptionEventImage": "Event {eventName} image",
   "@contentDescriptionEventImage": {
@@ -129,7 +130,7 @@
     }
   },
   "inlineErrorInvalidLengthName": "The text must be between 3 and 100 characters",
-  "inlineErrorInvalidLengthDescription": "The text must be between 4 and 5000 characters",
+  "inlineErrorInvalidLengthDescription": "The text must be between 20 and 5000 characters",
   "step2OptionParty": "Party",
   "step2OptionSport": "Sport",
   "step2OptionFood": "Food",
@@ -139,6 +140,7 @@
   "placeholderEventDescription": "Enter a description of the event",
   "step3ScreenTitle": "Event date",
   "step3ScreenRowTime": "Event time",
+  "step3ScreenSelectTimeHelpText": "Select time",
   "confirmButtonDialog": "Confirm",
   "cancelButtonDialog": "Cancel",
   "labelCapacity": "{current}/{total} attendees",
