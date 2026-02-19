@@ -5,6 +5,7 @@ import 'package:esmorga_flutter/view/events/event_create/cubit/create_event_cubi
 import 'package:esmorga_flutter/view/events/event_create/model/event_type.dart';
 import 'package:esmorga_flutter/view/l10n/app_localizations_en.dart';
 import 'package:esmorga_flutter/view/l10n/localization_service.dart';
+import 'package:esmorga_flutter/view/util/esmorga_clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -13,18 +14,23 @@ class _MockLocalizationService extends Mock implements LocalizationService {}
 
 class _MockDateTimeFormatter extends Mock implements EsmorgaDateTimeFormatter {}
 
+class _MockClock extends Mock implements EsmorgaClock {}
+
 void main() {
   late CreateEventCubit cubit;
   late _MockLocalizationService mockL10nService;
   late _MockDateTimeFormatter mockFormatter;
+  late _MockClock mockClock;
   final l10n = AppLocalizationsEn();
 
   setUp(() {
     mockL10nService = _MockLocalizationService();
     mockFormatter = _MockDateTimeFormatter();
+    mockClock = _MockClock();
     getIt.registerSingleton<LocalizationService>(mockL10nService);
     when(() => mockL10nService.current).thenReturn(l10n);
-    cubit = CreateEventCubit(l10n: l10n, dateTimeFormatter: mockFormatter);
+    when(() => mockClock.now()).thenReturn(DateTime(2026, 2, 19));
+    cubit = CreateEventCubit(l10n: l10n, dateTimeFormatter: mockFormatter, clock: mockClock);
   });
 
   tearDown(() {
@@ -138,7 +144,7 @@ void main() {
         emits(isA<CreateEventDateConfirmedEffect>()
             .having((e) => e.eventData.eventName, 'eventName', 'Test Event')
             .having((e) => e.eventData.description, 'description', 'A valid test description text')
-            .having((e) => e.eventData.eventTypeName, 'eventTypeName', 'text_party')
+            .having((e) => e.eventData.eventType, 'eventType', EventType.text_party)
             .having((e) => e.eventData.formattedEventDate, 'formattedEventDate', '2030-06-15T18:30:00.000Z')),
       );
 

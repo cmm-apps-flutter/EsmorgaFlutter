@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:esmorga_flutter/view/dateformatting/esmorga_date_time_formatter.dart';
 import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
+import 'package:esmorga_flutter/view/util/esmorga_clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:esmorga_flutter/view/events/event_create/model/event_type.dart';
@@ -19,27 +20,25 @@ const minimumEventNameLength = 3;
 class EventCreationData {
   final String eventName;
   final String description;
-  final String? eventTypeName;
+  final EventType? eventType;
   final String? formattedEventDate;
 
   const EventCreationData({
     required this.eventName,
     required this.description,
-    this.eventTypeName,
+    this.eventType,
     this.formattedEventDate,
   });
 
-  EventCreationData copyWith({
-    String? eventName,
-    String? description,
-    String? eventTypeName,
+  factory EventCreationData.fromState(
+    CreateEventState state, {
     String? formattedEventDate,
   }) {
     return EventCreationData(
-      eventName: eventName ?? this.eventName,
-      description: description ?? this.description,
-      eventTypeName: eventTypeName ?? this.eventTypeName,
-      formattedEventDate: formattedEventDate ?? this.formattedEventDate,
+      eventName: state.eventName,
+      description: state.description,
+      eventType: state.eventType,
+      formattedEventDate: formattedEventDate,
     );
   }
 }
@@ -63,6 +62,7 @@ class CreateEventDateConfirmedEffect extends CreateEventEffect {
 class CreateEventCubit extends Cubit<CreateEventState> {
   final AppLocalizations l10n;
   final EsmorgaDateTimeFormatter dateTimeFormatter;
+  final EsmorgaClock clock;
 
   final _effectController = StreamController<CreateEventEffect>.broadcast();
   Stream<CreateEventEffect> get effects => _effectController.stream;
@@ -70,6 +70,7 @@ class CreateEventCubit extends Cubit<CreateEventState> {
   CreateEventCubit({
     required this.l10n,
     required this.dateTimeFormatter,
+    required this.clock,
   }) : super(const CreateEventState());
 
   void updateEventName(String name) {
@@ -105,7 +106,7 @@ class CreateEventCubit extends Cubit<CreateEventState> {
   }
 
   void updateEventDate(DateTime date) {
-    final today = DateTime.now();
+    final today = clock.now();
     final startOfToday = DateTime(today.year, today.month, today.day);
     if (date.isBefore(startOfToday)) {
       emit(state.copyWith(
@@ -171,10 +172,7 @@ class CreateEventCubit extends Cubit<CreateEventState> {
 
   void submit() {
     _effectController.add(CreateEventNavigateToEventTypeEffect(
-      eventData: EventCreationData(
-        eventName: state.eventName,
-        description: state.description,
-      ),
+      eventData: EventCreationData.fromState(state),
     ));
   }
 
@@ -182,10 +180,8 @@ class CreateEventCubit extends Cubit<CreateEventState> {
     final formattedDate = getFormattedEventDate();
     if (formattedDate == null) return;
     _effectController.add(CreateEventDateConfirmedEffect(
-      eventData: EventCreationData(
-        eventName: state.eventName,
-        description: state.description,
-        eventTypeName: state.eventType!.name,
+      eventData: EventCreationData.fromState(
+        state,
         formattedEventDate: formattedDate,
       ),
     ));

@@ -27,3 +27,7 @@ You are a specialized agent designed to implement features using the EsmorgaFlut
 -   Do not handle raw data or mix implementation details into the Domain, but use DTOs for all data mapping and implement Repositories specifically using Dio or Hive.
 -   Simplicity: Do not construct intermediate objects (e.g., DateTime, DateFormat) for trivial formatting tasks, but strictly use simple string operations such as `padLeft`, `toString`, and string interpolation when they achieve the same result.
 -   Navigation Data: Do not serialize object fields into query parameters for route navigation, but strictly use GoRouter's `extra` parameter to pass data objects between routes.
+-   Type Safety: Do not convert enums to strings for transport between routes or layers, but strictly pass the original enum type to preserve compile-time type safety.
+-   Single Source of Truth: Do not manually copy fields from state into transport objects, but strictly use factory constructors (e.g., `fromState`) to derive transport objects from the authoritative state.
+-   Testability: Do not call `DateTime.now()` or other system-dependent methods directly in Cubits, but strictly inject abstractions (e.g., `EsmorgaClock`) via the constructor to enable deterministic testing.
+-   Stream Lifecycle: Do not discard the return value of `stream.listen()`, but strictly store every `StreamSubscription` and cancel it in `dispose()` to prevent memory leaks.

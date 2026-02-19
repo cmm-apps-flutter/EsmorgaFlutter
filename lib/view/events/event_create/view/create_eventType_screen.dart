@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
@@ -36,18 +38,25 @@ class _CreateEventTypeForm extends StatefulWidget {
 class _CreateEventTypeFormState extends State<_CreateEventTypeForm> {
   late CreateEventCubit _cubit;
   late AppLocalizations _l10n;
+  StreamSubscription<CreateEventEffect>? _effectSubscription;
 
   @override
   void initState() {
     super.initState();
     _cubit = context.read<CreateEventCubit>();
     _l10n = getIt<LocalizationService>().current;
-    _cubit.effects.listen((effect) {
+    _effectSubscription = _cubit.effects.listen((effect) {
       if (!mounted) return;
       if (effect is CreateEventNavigateToEventTypeEffect) {
         context.pop();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _effectSubscription?.cancel();
+    super.dispose();
   }
 
   void _onContinuePressed() {

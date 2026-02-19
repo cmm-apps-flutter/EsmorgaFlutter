@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_datepicker.dart';
@@ -27,6 +29,7 @@ class CreateEventDateScreen extends StatefulWidget {
 
 class _CreateEventDateScreenState extends State<CreateEventDateScreen> {
   late CreateEventCubit _cubit;
+  StreamSubscription<CreateEventEffect>? _effectSubscription;
 
   @override
   void initState() {
@@ -34,17 +37,23 @@ class _CreateEventDateScreenState extends State<CreateEventDateScreen> {
     _cubit = context.read<CreateEventCubit>();
     final now = widget.mockCurrentDate ?? DateTime.now();
     _cubit.updateEventDate(DateTime(now.year, now.month, now.day));
-    _cubit.effects.listen((effect) {
+    _effectSubscription = _cubit.effects.listen((effect) {
       if (!mounted) return;
       if (effect is CreateEventDateConfirmedEffect) {
         widget.onNavigateToNextStep(
           effect.eventData.eventName,
           effect.eventData.description,
-          effect.eventData.eventTypeName!,
+          effect.eventData.eventType!.name,
           effect.eventData.formattedEventDate!,
         );
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _effectSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _showTimePicker() async {

@@ -25,7 +25,6 @@ import 'package:esmorga_flutter/view/events/event_create/view/create_event_scree
 import 'package:esmorga_flutter/view/events/event_create/view/create_eventType_screen.dart';
 import 'package:esmorga_flutter/view/events/event_create/view/create_event_date_screen.dart';
 import 'package:esmorga_flutter/view/events/event_create/cubit/create_event_cubit.dart';
-import 'package:esmorga_flutter/view/events/event_create/model/event_type.dart';
 import 'package:esmorga_flutter/view/splash/cubit/splash_cubit.dart';
 import 'package:esmorga_flutter/view/splash/view/splash_screen.dart';
 
@@ -187,7 +186,7 @@ class AppRoutes {
                     extra: EventCreationData(
                       eventName: eventName,
                       description: description,
-                      eventTypeName: eventType.name,
+                      eventType: eventType,
                     ),
                   );
                 },
@@ -199,15 +198,11 @@ class AppRoutes {
           path: createEventDate,
           builder: (context, state) {
             final eventData = state.extra as EventCreationData;
-            final eventType = EventType.values.firstWhere(
-              (e) => e.name == eventData.eventTypeName,
-              orElse: () => EventType.text_party,
-            );
             return BlocProvider(
               create: (_) => getIt<CreateEventCubit>()
                 ..updateEventName(eventData.eventName)
                 ..updateDescription(eventData.description)
-                ..updateEventType(eventType),
+                ..updateEventType(eventData.eventType!),
               child: CreateEventDateScreen(
                 onNavigateToNextStep: (eventName, description, eventType, eventDate) {
                 },
