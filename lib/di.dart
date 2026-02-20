@@ -51,6 +51,7 @@ import 'package:esmorga_flutter/view/registration/cubit/registration_confirmatio
 import 'package:esmorga_flutter/view/registration/verify_account/cubit/verify_account_cubit.dart';
 import 'package:esmorga_flutter/view/splash/cubit/splash_cubit.dart';
 import 'package:esmorga_flutter/view/validation/form_validator.dart';
+import 'package:esmorga_flutter/view/util/esmorga_clock.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
@@ -125,6 +126,7 @@ Future<void> setupDi(Locale locale) async {
     instanceName: 'base',
   );
 
+  getIt.registerSingleton<EsmorgaClock>(const SystemClock());
   getIt.registerSingleton<EsmorgaDateTimeFormatter>(DateFormatterImpl());
 
   getIt.registerSingleton<EsmorgaAuthApi>(
@@ -208,7 +210,7 @@ Future<void> setupDi(Locale locale) async {
   // -----------------------------
   getIt.registerFactory(() => SplashCubit());
   getIt.registerFactory(() => MyEventsCubit(eventRepository: getIt(), userRepository: getIt()));
-  getIt.registerFactory(() => CreateEventCubit(l10n: getIt()));
+  getIt.registerFactory(() => CreateEventCubit(l10n: getIt(), dateTimeFormatter: getIt(), clock: getIt()));
   getIt.registerFactory(() => HomeTabCubit(
         eventRepository: getIt(),
         getPollsUseCase: getIt(),

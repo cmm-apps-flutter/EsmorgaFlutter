@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
@@ -54,17 +56,18 @@ class _CreateEventFormState extends State<_CreateEventForm> {
   late CreateEventCubit _cubit;
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  StreamSubscription<CreateEventEffect>? _effectSubscription;
 
   @override
   void initState() {
     super.initState();
     _cubit = context.read<CreateEventCubit>();
-    _cubit.effects.listen((effect) {
+    _effectSubscription = _cubit.effects.listen((effect) {
       if (!mounted) return;
-      if (effect is CreateEventEffectNavigateToNextStep) {
+      if (effect is CreateEventNavigateToEventTypeEffect) {
         widget.onNavigateToNextStep(
-          effect.eventName,
-          effect.description,
+          effect.eventData.eventName,
+          effect.eventData.description,
         );
       }
     });
@@ -73,6 +76,7 @@ class _CreateEventFormState extends State<_CreateEventForm> {
 
   @override
   void dispose() {
+    _effectSubscription?.cancel();
     _descriptionController.removeListener(_onDescriptionChanged);
     _nameController.dispose();
     _descriptionController.dispose();
@@ -91,6 +95,7 @@ class _CreateEventFormState extends State<_CreateEventForm> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
+          tooltip: localizations.tooltipBackIcon,
           onPressed: widget.onBackClicked,
         ),
       ),

@@ -1,7 +1,10 @@
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
+import 'package:esmorga_flutter/view/dateformatting/esmorga_date_time_formatter.dart';
 import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
+import 'package:esmorga_flutter/view/util/esmorga_clock.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:esmorga_flutter/view/events/event_create/model/event_type.dart';
 
@@ -9,32 +12,72 @@ part 'create_event_state.dart';
 
 sealed class CreateEventEffect {}
 
-class CreateEventEffectNavigateToNextStep extends CreateEventEffect {
+const minimumDescriptionLength = 20;
+const maximumDescriptionLength = 5000;
+const maximumEventNameLength = 100;
+const minimumEventNameLength = 3;
+
+class EventCreationData {
   final String eventName;
   final String description;
-  CreateEventEffectNavigateToNextStep(this.eventName, this.description);
+  final EventType? eventType;
+  final String? formattedEventDate;
+
+  const EventCreationData({
+    required this.eventName,
+    required this.description,
+    this.eventType,
+    this.formattedEventDate,
+  });
+
+  factory EventCreationData.fromState(
+    CreateEventState state, {
+    String? formattedEventDate,
+  }) {
+    return EventCreationData(
+      eventName: state.eventName,
+      description: state.description,
+      eventType: state.eventType,
+      formattedEventDate: formattedEventDate,
+    );
+  }
 }
 
-class CreateEventEffectNavigateToTypeStep extends CreateEventEffect {
-  final String eventName;
-  final String description;
-  final EventType eventType;
-  CreateEventEffectNavigateToTypeStep(this.eventName, this.description, this.eventType);
+class CreateEventNavigateToEventTypeEffect extends CreateEventEffect {
+  final EventCreationData eventData;
+
+  CreateEventNavigateToEventTypeEffect({
+    required this.eventData,
+  });
+}
+
+class CreateEventDateConfirmedEffect extends CreateEventEffect {
+  final EventCreationData eventData;
+
+  CreateEventDateConfirmedEffect({
+    required this.eventData,
+  });
 }
 
 class CreateEventCubit extends Cubit<CreateEventState> {
   final AppLocalizations l10n;
+  final EsmorgaDateTimeFormatter dateTimeFormatter;
+  final EsmorgaClock clock;
 
   final _effectController = StreamController<CreateEventEffect>.broadcast();
   Stream<CreateEventEffect> get effects => _effectController.stream;
 
-  CreateEventCubit({required this.l10n}) : super(const CreateEventState());
+  CreateEventCubit({
+    required this.l10n,
+    required this.dateTimeFormatter,
+    required this.clock,
+  }) : super(const CreateEventState());
 
   void updateEventName(String name) {
     String? error;
     if (name.isEmpty) {
       error = l10n.inlineErrorEmptyField;
-    } else if (name.length < 3 || name.length > 100) {
+    } else if (name.length < minimumEventNameLength || name.length > maximumEventNameLength) {
       error = l10n.inlineErrorInvalidLengthName;
     }
 
@@ -48,7 +91,7 @@ class CreateEventCubit extends Cubit<CreateEventState> {
     String? error;
     if (desc.isEmpty) {
       error = l10n.inlineErrorEmptyField;
-    } else if (desc.length < 4 || desc.length > 5000) {
+    } else if (desc.length < minimumDescriptionLength || desc.length > maximumDescriptionLength) {
       error = l10n.inlineErrorInvalidLengthDescription;
     }
 
@@ -62,6 +105,47 @@ class CreateEventCubit extends Cubit<CreateEventState> {
     emit(state.copyWith(eventType: type));
   }
 
+  void updateEventDate(DateTime date) {
+    final today = clock.now();
+    final startOfToday = DateTime(today.year, today.month, today.day);
+    if (date.isBefore(startOfToday)) {
+      emit(state.copyWith(
+        eventDate: date,
+        eventDateError: l10n.inlineErrorEmptyField,
+      ));
+      return;
+    }
+    emit(state.copyWith(
+      eventDate: date,
+      clearDateError: true,
+    ));
+  }
+
+  void updateEventTime(TimeOfDay time) {
+    emit(state.copyWith(eventTime: time));
+  }
+
+  void clearDateAndTime() {
+    emit(state.copyWith(clearDate: true, clearTime: true));
+  }
+
+  String? get formattedEventTime {
+    if (state.eventTime == null) return null;
+    final time = state.eventTime!;
+    final hourString = time.hour.toString().padLeft(2, '0');
+    final minuteString = time.minute.toString().padLeft(2, '0');
+    return '$hourString:$minuteString';
+  }
+
+  String? getFormattedEventDate() {
+    if (state.eventDate == null || state.eventTime == null) return null;
+    final time = dateTimeFormatter.formatTimeWithMillisUtcSuffix(
+      state.eventTime!.hour,
+      state.eventTime!.minute,
+    );
+    return dateTimeFormatter.formatIsoDateTime(state.eventDate!, time);
+  }
+
   bool canProceedFromScreen1() {
     return state.eventName.isNotEmpty &&
         state.eventNameError == null &&
@@ -73,6 +157,12 @@ class CreateEventCubit extends Cubit<CreateEventState> {
     return state.eventType != null;
   }
 
+  bool canProceedFromScreen3() {
+    return state.eventDate != null &&
+        state.eventTime != null &&
+        state.eventDateError == null;
+  }
+
   bool get isFormValid =>
       state.eventName.isNotEmpty &&
       state.eventNameError == null &&
@@ -81,7 +171,20 @@ class CreateEventCubit extends Cubit<CreateEventState> {
       state.eventType != null;
 
   void submit() {
-    _effectController.add(CreateEventEffectNavigateToNextStep(state.eventName, state.description));
+    _effectController.add(CreateEventNavigateToEventTypeEffect(
+      eventData: EventCreationData.fromState(state),
+    ));
+  }
+
+  void submitDateStep() {
+    final formattedDate = getFormattedEventDate();
+    if (formattedDate == null) return;
+    _effectController.add(CreateEventDateConfirmedEffect(
+      eventData: EventCreationData.fromState(
+        state,
+        formattedEventDate: formattedDate,
+      ),
+    ));
   }
 
   @override

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
@@ -11,17 +13,23 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class CreateEventTypeScreen extends StatelessWidget {
-  const CreateEventTypeScreen({super.key});
+  final void Function(String eventName, String description, EventType eventType) onNavigateToNextStep;
+
+  const CreateEventTypeScreen({
+    super.key,
+    required this.onNavigateToNextStep,
+  });
 
   @override
   Widget build(BuildContext context) {
-
-    return const _CreateEventTypeForm();
+    return _CreateEventTypeForm(onNavigateToNextStep: onNavigateToNextStep);
   }
 }
 
 class _CreateEventTypeForm extends StatefulWidget {
-  const _CreateEventTypeForm();
+  final void Function(String eventName, String description, EventType eventType) onNavigateToNextStep;
+
+  const _CreateEventTypeForm({required this.onNavigateToNextStep});
 
   @override
   State<_CreateEventTypeForm> createState() => _CreateEventTypeFormState();
@@ -30,18 +38,36 @@ class _CreateEventTypeForm extends StatefulWidget {
 class _CreateEventTypeFormState extends State<_CreateEventTypeForm> {
   late CreateEventCubit _cubit;
   late AppLocalizations _l10n;
+  StreamSubscription<CreateEventEffect>? _effectSubscription;
 
   @override
   void initState() {
     super.initState();
     _cubit = context.read<CreateEventCubit>();
     _l10n = getIt<LocalizationService>().current;
-    _cubit.effects.listen((effect) {
+    _effectSubscription = _cubit.effects.listen((effect) {
       if (!mounted) return;
-      if (effect is CreateEventEffectNavigateToTypeStep) {
+      if (effect is CreateEventNavigateToEventTypeEffect) {
         context.pop();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _effectSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _onContinuePressed() {
+    final state = _cubit.state;
+    if (state.eventType != null) {
+      widget.onNavigateToNextStep(
+        state.eventName,
+        state.description,
+        state.eventType!,
+      );
+    }
   }
 
   @override
@@ -51,6 +77,7 @@ class _CreateEventTypeFormState extends State<_CreateEventTypeForm> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
+          tooltip: _l10n.tooltipBackIcon,
           onPressed: () => context.pop(),
         ),
       ),
@@ -87,9 +114,7 @@ class _CreateEventTypeFormState extends State<_CreateEventTypeForm> {
                     const SizedBox(height: 32.0),
                     EsmorgaButton(
                       text: _l10n.stepContinueButton,
-                      onClick: () {
-                        // TODO : Navigate to the third step
-                      },
+                      onClick: _onContinuePressed,
                       isEnabled: state.eventType != null,
                     ),
                     const SizedBox(height: 32.0),
