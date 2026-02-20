@@ -24,7 +24,7 @@ class EsmorgaDatePicker extends StatelessWidget {
         initialDate: baseDate,
         currentDate: effectiveNow,
         firstDate: startOfToday,
-        lastDate: DateTime(baseDate.year + 1, baseDate.month, baseDate.day),
+        lastDate: DateTime(baseDate.year + 100, 12, 31),
         onDateChanged: onDateChanged,
         selectableDayPredicate: (DateTime day) {
           return !day.isBefore(startOfToday);
