@@ -24,6 +24,7 @@ import 'package:go_router/go_router.dart';
 import 'package:esmorga_flutter/view/events/event_create/view/create_event_screen.dart';
 import 'package:esmorga_flutter/view/events/event_create/view/create_eventType_screen.dart';
 import 'package:esmorga_flutter/view/events/event_create/view/create_event_date_screen.dart';
+import 'package:esmorga_flutter/view/events/event_create/view/create_event_location_screen.dart';
 import 'package:esmorga_flutter/view/events/event_create/cubit/create_event_cubit.dart';
 import 'package:esmorga_flutter/view/splash/cubit/splash_cubit.dart';
 import 'package:esmorga_flutter/view/splash/view/splash_screen.dart';
@@ -46,6 +47,7 @@ class AppRoutes {
   static const String createEvent = '/create-event';
   static const String createEventType = '/create-event-type';
   static const String createEventDate = '/create-event-date';
+  static const String createEventLocation = '/create-event-location';
 
   static GoRouter createRouter() {
     return GoRouter(
@@ -205,7 +207,33 @@ class AppRoutes {
                 ..updateEventType(eventData.eventType!),
               child: CreateEventDateScreen(
                 onNavigateToNextStep: (eventName, description, eventType, eventDate) {
+                  context.push(
+                    createEventLocation,
+                    extra: EventCreationData(
+                      eventName: eventName,
+                      description: description,
+                      eventType: eventType,
+                      formattedEventDate: eventDate,
+                    ),
+                  );
                 },
+                onBackClicked: () => context.pop(),
+              ),
+            );
+          },
+        ),
+        GoRoute(
+          path: createEventLocation,
+          builder: (context, state) {
+            final eventData = state.extra as EventCreationData;
+            return BlocProvider(
+              create: (_) => getIt<CreateEventCubit>()
+                ..updateEventName(eventData.eventName)
+                ..updateDescription(eventData.description)
+                ..updateEventType(eventData.eventType!)
+                ..updateFormattedEventDate(eventData.formattedEventDate!),
+              child: CreateEventLocationScreen(
+                onNavigateToNextStep: () {}, //TODO with 5th step
                 onBackClicked: () => context.pop(),
               ),
             );

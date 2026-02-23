@@ -16,29 +16,42 @@ const minimumDescriptionLength = 20;
 const maximumDescriptionLength = 5000;
 const maximumEventNameLength = 100;
 const minimumEventNameLength = 3;
+const maximumLocationLength = 100;
+const minimumMaxCapacity = 1;
+const maximumMaxCapacity = 5000;
 
 class EventCreationData {
   final String eventName;
   final String description;
   final EventType? eventType;
   final String? formattedEventDate;
+  final String? location;
+  final String? coordinates;
+  final int? maxCapacity;
 
   const EventCreationData({
     required this.eventName,
     required this.description,
     this.eventType,
     this.formattedEventDate,
+    this.location,
+    this.coordinates,
+    this.maxCapacity,
   });
 
   factory EventCreationData.fromState(
     CreateEventState state, {
     String? formattedEventDate,
   }) {
+    final parsedMaxCapacity = int.tryParse(state.maxCapacity);
     return EventCreationData(
       eventName: state.eventName,
       description: state.description,
       eventType: state.eventType,
-      formattedEventDate: formattedEventDate,
+      formattedEventDate: formattedEventDate ?? state.formattedEventDate,
+      location: state.location.isEmpty ? null : state.location,
+      coordinates: state.coordinates.isEmpty ? null : state.coordinates,
+      maxCapacity: parsedMaxCapacity,
     );
   }
 }
@@ -55,6 +68,14 @@ class CreateEventDateConfirmedEffect extends CreateEventEffect {
   final EventCreationData eventData;
 
   CreateEventDateConfirmedEffect({
+    required this.eventData,
+  });
+}
+
+class CreateEventLocationConfirmedEffect extends CreateEventEffect {
+  final EventCreationData eventData;
+
+  CreateEventLocationConfirmedEffect({
     required this.eventData,
   });
 }
@@ -163,12 +184,26 @@ class CreateEventCubit extends Cubit<CreateEventState> {
         state.eventDateError == null;
   }
 
+  bool canProceedFromScreen4() {
+    return state.location.isNotEmpty &&
+        state.locationError == null &&
+        state.coordinatesError == null &&
+        state.maxCapacityError == null;
+  }
+
   bool get isFormValid =>
       state.eventName.isNotEmpty &&
       state.eventNameError == null &&
       state.description.isNotEmpty &&
       state.descriptionError == null &&
-      state.eventType != null;
+      state.eventType != null &&
+      state.eventDate != null &&
+      state.eventTime != null &&
+      state.eventDateError == null &&
+      state.location.isNotEmpty &&
+      state.locationError == null &&
+      state.coordinatesError == null &&
+      state.maxCapacityError == null;
 
   void submit() {
     _effectController.add(CreateEventNavigateToEventTypeEffect(
@@ -179,7 +214,78 @@ class CreateEventCubit extends Cubit<CreateEventState> {
   void submitDateStep() {
     final formattedDate = getFormattedEventDate();
     if (formattedDate == null) return;
+    emit(state.copyWith(formattedEventDate: formattedDate));
     _effectController.add(CreateEventDateConfirmedEffect(
+      eventData: EventCreationData.fromState(
+        state,
+        formattedEventDate: formattedDate,
+      ),
+    ));
+  }
+
+  static final _coordinatesRegExp = RegExp(r'^\s*-?\d+\.?\d*\s*,\s*-?\d+\.?\d*\s*$');
+  static final _locationCharsRegExp = RegExp(r"^[\p{L}\p{N}\s.,\-'\/#ºª°]+$", unicode: true);
+
+  void updateLocation(String value) {
+    String? error;
+    if (value.isEmpty) {
+      error = l10n.inlineErrorLocationRequired;
+    } else if (!_locationCharsRegExp.hasMatch(value)) {
+      error = l10n.inlineErrorLocationInvalidChars;
+    }
+    emit(state.copyWith(
+      location: value,
+      locationError: error,
+      clearLocationError: error == null,
+    ));
+  }
+
+  void updateCoordinates(String value) {
+    String? error;
+    if (value.isNotEmpty) {
+      if (!_coordinatesRegExp.hasMatch(value)) {
+        error = l10n.inlineErrorCoordinatesInvalid;
+      } else {
+        final parts = value.split(',');
+        final latitude = double.tryParse(parts[0].trim());
+        final longitude = double.tryParse(parts[1].trim());
+        if (latitude == null || longitude == null ||
+            latitude < -90 || latitude > 90 ||
+            longitude < -180 || longitude > 180) {
+          error = l10n.inlineErrorCoordinatesOutOfBounds;
+        }
+      }
+    }
+    emit(state.copyWith(
+      coordinates: value,
+      coordinatesError: error,
+      clearCoordinatesError: error == null,
+    ));
+  }
+
+  void updateMaxCapacity(String value) {
+    String? error;
+    if (value.isNotEmpty) {
+      final parsed = int.tryParse(value);
+      if (parsed == null || parsed < minimumMaxCapacity || parsed > maximumMaxCapacity) {
+        error = l10n.inlineErrorMaxCapacityInvalid;
+      }
+    }
+    emit(state.copyWith(
+      maxCapacity: value,
+      maxCapacityError: error,
+      clearMaxCapacityError: error == null,
+    ));
+  }
+
+  void updateFormattedEventDate(String date) {
+    emit(state.copyWith(formattedEventDate: date));
+  }
+
+  void submitLocationStep() {
+    final formattedDate = state.formattedEventDate ?? getFormattedEventDate();
+    if (formattedDate == null) return;
+    _effectController.add(CreateEventLocationConfirmedEffect(
       eventData: EventCreationData.fromState(
         state,
         formattedEventDate: formattedDate,

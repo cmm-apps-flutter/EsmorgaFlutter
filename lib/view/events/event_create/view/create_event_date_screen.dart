@@ -7,12 +7,13 @@ import 'package:esmorga_flutter/ds/esmorga_row.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
 import 'package:esmorga_flutter/ds/esmorga_timepicker.dart';
 import 'package:esmorga_flutter/view/events/event_create/cubit/create_event_cubit.dart';
+import 'package:esmorga_flutter/view/events/event_create/model/event_type.dart';
 import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CreateEventDateScreen extends StatefulWidget {
-  final void Function(String eventName, String description, String eventType, String eventDate) onNavigateToNextStep;
+  final void Function(String eventName, String description, EventType eventType, String eventDate) onNavigateToNextStep;
   final VoidCallback onBackClicked;
   final DateTime? mockCurrentDate;
 
@@ -43,7 +44,7 @@ class _CreateEventDateScreenState extends State<CreateEventDateScreen> {
         widget.onNavigateToNextStep(
           effect.eventData.eventName,
           effect.eventData.description,
-          effect.eventData.eventType!.name,
+          effect.eventData.eventType!,
           effect.eventData.formattedEventDate!,
         );
       }

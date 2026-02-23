@@ -197,5 +197,287 @@ void main() {
             .having((s) => s.eventTime, 'eventTime', isNull),
       ],
     );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'updateLocation with empty string sets locationError',
+      build: () => cubit,
+      act: (cubit) => cubit.updateLocation(''),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.location, 'location', '')
+            .having((s) => s.locationError, 'locationError', isNotNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'updateLocation with valid string clears locationError',
+      build: () => cubit,
+      act: (cubit) => cubit.updateLocation('Barcelona'),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.location, 'location', 'Barcelona')
+            .having((s) => s.locationError, 'locationError', isNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'updateLocation with emoji sets error',
+      build: () => cubit,
+      act: (cubit) => cubit.updateLocation('Barcelona 🎉'),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.location, 'location', 'Barcelona 🎉')
+            .having((s) => s.locationError, 'locationError', isNotNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'updateLocation with special symbols sets error',
+      build: () => cubit,
+      act: (cubit) => cubit.updateLocation('Loc@tion!'),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.location, 'location', 'Loc@tion!')
+            .having((s) => s.locationError, 'locationError', isNotNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'updateLocation with allowed special chars succeeds',
+      build: () => cubit,
+      act: (cubit) => cubit.updateLocation("Calle d'en Robador, 1ª/2º"),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.location, 'location', "Calle d'en Robador, 1ª/2º")
+            .having((s) => s.locationError, 'locationError', isNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'updateCoordinates with empty string clears error',
+      build: () => cubit,
+      act: (cubit) => cubit.updateCoordinates(''),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.coordinates, 'coordinates', '')
+            .having((s) => s.coordinatesError, 'coordinatesError', isNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'updateCoordinates with valid pair clears error',
+      build: () => cubit,
+      act: (cubit) => cubit.updateCoordinates('41.3879, 2.16992'),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.coordinates, 'coordinates', '41.3879, 2.16992')
+            .having((s) => s.coordinatesError, 'coordinatesError', isNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'updateCoordinates with invalid string sets error',
+      build: () => cubit,
+      act: (cubit) => cubit.updateCoordinates('invalid'),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.coordinates, 'coordinates', 'invalid')
+            .having((s) => s.coordinatesError, 'coordinatesError', isNotNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'updateCoordinates with latitude out of bounds sets error',
+      build: () => cubit,
+      act: (cubit) => cubit.updateCoordinates('95.0, 2.16992'),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.coordinates, 'coordinates', '95.0, 2.16992')
+            .having((s) => s.coordinatesError, 'coordinatesError', isNotNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'updateCoordinates with longitude out of bounds sets error',
+      build: () => cubit,
+      act: (cubit) => cubit.updateCoordinates('41.3879, -190.0'),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.coordinates, 'coordinates', '41.3879, -190.0')
+            .having((s) => s.coordinatesError, 'coordinatesError', isNotNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'updateCoordinates with exact max boundary values succeeds',
+      build: () => cubit,
+      act: (cubit) => cubit.updateCoordinates('90, 180'),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.coordinates, 'coordinates', '90, 180')
+            .having((s) => s.coordinatesError, 'coordinatesError', isNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'updateCoordinates with exact min boundary values succeeds',
+      build: () => cubit,
+      act: (cubit) => cubit.updateCoordinates('-90, -180'),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.coordinates, 'coordinates', '-90, -180')
+            .having((s) => s.coordinatesError, 'coordinatesError', isNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'updateCoordinates with just over latitude boundary sets error',
+      build: () => cubit,
+      act: (cubit) => cubit.updateCoordinates('90.0001, 0'),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.coordinatesError, 'coordinatesError', isNotNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'updateCoordinates with just over longitude boundary sets error',
+      build: () => cubit,
+      act: (cubit) => cubit.updateCoordinates('0, 180.0001'),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.coordinatesError, 'coordinatesError', isNotNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'updateMaxCapacity with empty string clears error',
+      build: () => cubit,
+      act: (cubit) => cubit.updateMaxCapacity(''),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.maxCapacity, 'maxCapacity', '')
+            .having((s) => s.maxCapacityError, 'maxCapacityError', isNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'updateMaxCapacity with valid value clears error',
+      build: () => cubit,
+      act: (cubit) => cubit.updateMaxCapacity('100'),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.maxCapacity, 'maxCapacity', '100')
+            .having((s) => s.maxCapacityError, 'maxCapacityError', isNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'updateMaxCapacity with 0 sets error',
+      build: () => cubit,
+      act: (cubit) => cubit.updateMaxCapacity('0'),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.maxCapacity, 'maxCapacity', '0')
+            .having((s) => s.maxCapacityError, 'maxCapacityError', isNotNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'updateMaxCapacity with 5001 sets error',
+      build: () => cubit,
+      act: (cubit) => cubit.updateMaxCapacity('5001'),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.maxCapacity, 'maxCapacity', '5001')
+            .having((s) => s.maxCapacityError, 'maxCapacityError', isNotNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'updateMaxCapacity with minimum value 1 clears error',
+      build: () => cubit,
+      act: (cubit) => cubit.updateMaxCapacity('1'),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.maxCapacity, 'maxCapacity', '1')
+            .having((s) => s.maxCapacityError, 'maxCapacityError', isNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'updateMaxCapacity with maximum value 5000 clears error',
+      build: () => cubit,
+      act: (cubit) => cubit.updateMaxCapacity('5000'),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.maxCapacity, 'maxCapacity', '5000')
+            .having((s) => s.maxCapacityError, 'maxCapacityError', isNull),
+      ],
+    );
+
+    test('canProceedFromScreen4 requires non-empty location and no errors', () {
+      expect(cubit.canProceedFromScreen4(), isFalse);
+
+      cubit.updateLocation('Barcelona');
+      expect(cubit.canProceedFromScreen4(), isTrue);
+
+      cubit.updateCoordinates('invalid');
+      expect(cubit.canProceedFromScreen4(), isFalse);
+
+      cubit.updateCoordinates('41.3879, 2.16992');
+      expect(cubit.canProceedFromScreen4(), isTrue);
+
+      cubit.updateMaxCapacity('0');
+      expect(cubit.canProceedFromScreen4(), isFalse);
+
+      cubit.updateMaxCapacity('100');
+      expect(cubit.canProceedFromScreen4(), isTrue);
+    });
+
+    test('submitLocationStep emits CreateEventLocationConfirmedEffect', () async {
+      when(() => mockFormatter.formatTimeWithMillisUtcSuffix(18, 30))
+          .thenReturn('18:30:00.000Z');
+      when(() => mockFormatter.formatIsoDateTime(any(), any()))
+          .thenReturn('2030-06-15T18:30:00.000Z');
+
+      cubit.updateEventName('Test Event');
+      cubit.updateDescription('A valid test description text');
+      cubit.updateEventType(EventType.text_party);
+      cubit.updateEventDate(DateTime(2030, 6, 15));
+      cubit.updateEventTime(const TimeOfDay(hour: 18, minute: 30));
+      cubit.updateLocation('Barcelona');
+      cubit.updateCoordinates('41.3879, 2.16992');
+      cubit.updateMaxCapacity('200');
+
+      final effectFuture = expectLater(
+        cubit.effects,
+        emits(isA<CreateEventLocationConfirmedEffect>()
+            .having((e) => e.eventData.eventName, 'eventName', 'Test Event')
+            .having((e) => e.eventData.formattedEventDate, 'formattedEventDate', '2030-06-15T18:30:00.000Z')
+            .having((e) => e.eventData.location, 'location', 'Barcelona')
+            .having((e) => e.eventData.coordinates, 'coordinates', '41.3879, 2.16992')
+            .having((e) => e.eventData.maxCapacity, 'maxCapacity', 200)),
+      );
+
+      cubit.submitLocationStep();
+      await effectFuture;
+    });
+
+    test('submitLocationStep does nothing when date is incomplete', () async {
+      cubit.updateEventName('Test Event');
+      cubit.updateDescription('A valid test description text');
+      cubit.updateEventType(EventType.text_party);
+      cubit.updateLocation('Barcelona');
+
+      final emittedEffects = <CreateEventEffect>[];
+      final subscription = cubit.effects.listen(emittedEffects.add);
+
+      cubit.submitLocationStep();
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(emittedEffects, isEmpty);
+      await subscription.cancel();
+    });
   });
 }
