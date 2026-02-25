@@ -15,13 +15,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class CreateEventDateScreen extends StatefulWidget {
   final void Function(String eventName, String description, EventType eventType, String eventDate) onNavigateToNextStep;
   final VoidCallback onBackClicked;
-  final DateTime? mockCurrentDate;
 
   const CreateEventDateScreen({
     super.key,
     required this.onNavigateToNextStep,
     required this.onBackClicked,
-    this.mockCurrentDate,
   });
 
   @override
@@ -36,8 +34,7 @@ class _CreateEventDateScreenState extends State<CreateEventDateScreen> {
   void initState() {
     super.initState();
     _cubit = context.read<CreateEventCubit>();
-    final now = widget.mockCurrentDate ?? DateTime.now();
-    _cubit.updateEventDate(DateTime(now.year, now.month, now.day));
+    _cubit.initializeEventDate();
     _effectSubscription = _cubit.effects.listen((effect) {
       if (!mounted) return;
       if (effect is CreateEventDateConfirmedEffect) {
@@ -104,7 +101,7 @@ class _CreateEventDateScreenState extends State<CreateEventDateScreen> {
                       width: double.infinity,
                       child: EsmorgaDatePicker(
                         initialDate: state.eventDate,
-                        currentDate: widget.mockCurrentDate,
+                        currentDate: _cubit.currentDate,
                         onDateChanged: _cubit.updateEventDate,
                       ),
                     ),

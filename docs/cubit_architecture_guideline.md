@@ -329,6 +329,8 @@ blocTest<RegisterCubit, RegisterState>(
 | Navigation inside Cubit methods | Hard to test, side‑effect in logic | Emit state; UI reacts |
 | Multiple unrelated concerns in one Cubit | Low cohesion | Split by feature or responsibility |
 | Silent catch (swallow errors) | Debugging nightmare | Always emit a failure state |
+| Cascading `..update*()` to hydrate state at route creation | Triggers multiple intermediate emissions and runs validation logic meant for user input, not initialization | Provide a single `initFromEventData(DataObject)` method that sets all fields in one `emit` without side effects |
+| Restoring `TextEditingController` from default state in `initState` | Dead code when the Cubit is created fresh per route (fields are already at defaults, matching the empty controllers) | Only restore controllers when the state may contain previously entered data (e.g. shared Cubit across back-navigation) |
 
 ---
 ## 12. Checklist for a New Cubit (PR Review Aid)

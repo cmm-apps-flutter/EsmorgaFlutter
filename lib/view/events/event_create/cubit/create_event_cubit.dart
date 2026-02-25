@@ -94,6 +94,22 @@ class CreateEventCubit extends Cubit<CreateEventState> {
     required this.clock,
   }) : super(const CreateEventState());
 
+  void initFromEventData(EventCreationData eventData) {
+    emit(state.copyWith(
+      eventName: eventData.eventName,
+      description: eventData.description,
+      eventType: eventData.eventType,
+      formattedEventDate: eventData.formattedEventDate,
+    ));
+  }
+
+  DateTime get currentDate => clock.now();
+
+  void initializeEventDate() {
+    final today = currentDate;
+    updateEventDate(DateTime(today.year, today.month, today.day));
+  }
+
   void updateEventName(String name) {
     String? error;
     if (name.isEmpty) {

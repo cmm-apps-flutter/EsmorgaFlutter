@@ -49,6 +49,37 @@ void main() {
     });
 
     blocTest<CreateEventCubit, CreateEventState>(
+      'initFromEventData hydrates state in a single emission',
+      build: () => cubit,
+      act: (cubit) => cubit.initFromEventData(const EventCreationData(
+        eventName: 'My Event',
+        description: 'A long enough description',
+        eventType: EventType.text_party,
+        formattedEventDate: '2030-06-15T18:30:00.000Z',
+      )),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.eventName, 'eventName', 'My Event')
+            .having((s) => s.description, 'description', 'A long enough description')
+            .having((s) => s.eventType, 'eventType', EventType.text_party)
+            .having((s) => s.formattedEventDate, 'formattedEventDate', '2030-06-15T18:30:00.000Z')
+            .having((s) => s.eventNameError, 'eventNameError', isNull)
+            .having((s) => s.descriptionError, 'descriptionError', isNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'initializeEventDate sets today date from EsmorgaClock',
+      build: () => cubit,
+      act: (cubit) => cubit.initializeEventDate(),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.eventDate, 'eventDate', DateTime(2026, 2, 19))
+            .having((s) => s.eventDateError, 'eventDateError', isNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
       'updateEventDate with future date sets date without error',
       build: () => cubit,
       act: (cubit) => cubit.updateEventDate(DateTime(2030, 6, 15)),

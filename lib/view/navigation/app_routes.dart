@@ -179,8 +179,7 @@ class AppRoutes {
             final eventData = state.extra as EventCreationData;
             return BlocProvider(
               create: (_) => getIt<CreateEventCubit>()
-                ..updateEventName(eventData.eventName)
-                ..updateDescription(eventData.description),
+                ..initFromEventData(eventData),
               child: CreateEventTypeScreen(
                 onNavigateToNextStep: (eventName, description, eventType) {
                   context.push(
@@ -202,9 +201,7 @@ class AppRoutes {
             final eventData = state.extra as EventCreationData;
             return BlocProvider(
               create: (_) => getIt<CreateEventCubit>()
-                ..updateEventName(eventData.eventName)
-                ..updateDescription(eventData.description)
-                ..updateEventType(eventData.eventType!),
+                ..initFromEventData(eventData),
               child: CreateEventDateScreen(
                 onNavigateToNextStep: (eventName, description, eventType, eventDate) {
                   context.push(
@@ -228,10 +225,7 @@ class AppRoutes {
             final eventData = state.extra as EventCreationData;
             return BlocProvider(
               create: (_) => getIt<CreateEventCubit>()
-                ..updateEventName(eventData.eventName)
-                ..updateDescription(eventData.description)
-                ..updateEventType(eventData.eventType!)
-                ..updateFormattedEventDate(eventData.formattedEventDate!),
+                ..initFromEventData(eventData),
               child: CreateEventLocationScreen(
                 onNavigateToNextStep: () {}, //TODO with 5th step
                 onBackClicked: () => context.pop(),

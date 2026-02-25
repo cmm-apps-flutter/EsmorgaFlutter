@@ -43,6 +43,8 @@ void main() {
     when(() => cubit.canProceedFromScreen4()).thenReturn(false);
     when(() => cubit.formattedEventTime).thenReturn(null);
     when(() => cubit.effects).thenAnswer((_) => const Stream.empty());
+    when(() => cubit.initializeEventDate()).thenReturn(null);
+    when(() => cubit.currentDate).thenReturn(DateTime(2026, 2, 16));
     cubit.emit(const CreateEventState());
   });
 
@@ -69,11 +71,10 @@ void main() {
     );
   }
 
-  Widget buildEventDateScreen({DateTime? mockCurrentDate}) {
+  Widget buildEventDateScreen() {
     return BlocProvider<CreateEventCubit>(
       create: (_) => cubit,
       child: CreateEventDateScreen(
-        mockCurrentDate: mockCurrentDate,
         onNavigateToNextStep: (_, __, ___, ____) {},
         onBackClicked: () {},
       ),
@@ -121,18 +122,14 @@ void main() {
     'step3_initial',
     theme: lightTheme,
     screenshotPath: 'event_create',
-    buildHome: () => buildEventDateScreen(
-      mockCurrentDate: DateTime(2026, 2, 16),
-    ),
+    buildHome: () => buildEventDateScreen(),
   );
 
   screenshotGolden(
     'step3_date_selected',
     theme: lightTheme,
     screenshotPath: 'event_create',
-    buildHome: () => buildEventDateScreen(
-      mockCurrentDate: DateTime(2026, 2, 10),
-    ),
+    buildHome: () => buildEventDateScreen(),
     beforeScreenshot: (tester) async {
       when(() => cubit.state).thenReturn(CreateEventState(
         eventName: 'Test Event',
@@ -148,9 +145,7 @@ void main() {
     'step3_complete',
     theme: lightTheme,
     screenshotPath: 'event_create',
-    buildHome: () => buildEventDateScreen(
-      mockCurrentDate: DateTime(2026, 2, 10),
-    ),
+    buildHome: () => buildEventDateScreen(),
     beforeScreenshot: (tester) async {
       when(() => cubit.state).thenReturn(CreateEventState(
         eventName: 'Test Event',
