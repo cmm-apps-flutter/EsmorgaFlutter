@@ -139,5 +139,16 @@
   "buttonViewAttendees": "Ver asistentes",
   "titleEventAttendees": "Listado de Asistentes",
   "titleName": "Nombre",
-  "titlePaymentStatus": "Pago"
+  "titlePaymentStatus": "Pago",
+  "fieldTitleEventLocation": "Localización del evento",
+  "placeholderEventLocation": "Introduce la localización",
+  "fieldTitleEventCoordinates": "Coordenadas del evento (opcional)",
+  "placeholderEventCoordinates": "Introduce las coordenadas (lat,lng)",
+  "fieldTitleEventMaxCapacity": "Aforo máximo (opcional)",
+  "placeholderEventMaxCapacity": "Introduce el aforo máximo permitido",
+  "inlineErrorLocationRequired": "La ubicación es obligatoria",
+  "inlineErrorLocationInvalidChars": "Solo letras, números, espacios y . , - ' / # º ª ° están permitidos",
+  "inlineErrorCoordinatesInvalid": "Introduce dos decimales separados por coma",
+  "inlineErrorCoordinatesOutOfBounds": "Lat: -90 a 90, Lon: -180 a 180",
+  "inlineErrorMaxCapacityInvalid": "Introduce un número entre 1 y 5000"
 }

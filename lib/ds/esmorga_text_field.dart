@@ -17,6 +17,7 @@ class EsmorgaTextField extends StatefulWidget {
   final int? maxLines;
   final List<TextInputFormatter>? inputFormatters;
   final int? maxChars;
+  final int errorMaxLines;
 
   final bool? obscureText; 
 
@@ -40,6 +41,7 @@ class EsmorgaTextField extends StatefulWidget {
     this.maxChars,
     this.obscureText,
     this.onSuffixIconClick,
+    this.errorMaxLines = 1,
   });
 
   @override
@@ -89,6 +91,7 @@ class _EsmorgaTextFieldState extends State<EsmorgaTextField> {
           decoration: InputDecoration(
             hintText: widget.placeholder,
             errorText: widget.errorText,
+            errorMaxLines: widget.errorMaxLines,
             suffixIcon: widget.isPasswordField
                 ? IconButton(
                     icon: Icon(

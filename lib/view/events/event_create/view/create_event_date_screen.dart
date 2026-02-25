@@ -7,20 +7,19 @@ import 'package:esmorga_flutter/ds/esmorga_row.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
 import 'package:esmorga_flutter/ds/esmorga_timepicker.dart';
 import 'package:esmorga_flutter/view/events/event_create/cubit/create_event_cubit.dart';
+import 'package:esmorga_flutter/view/events/event_create/model/event_type.dart';
 import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CreateEventDateScreen extends StatefulWidget {
-  final void Function(String eventName, String description, String eventType, String eventDate) onNavigateToNextStep;
+  final void Function(String eventName, String description, EventType eventType, String eventDate) onNavigateToNextStep;
   final VoidCallback onBackClicked;
-  final DateTime? mockCurrentDate;
 
   const CreateEventDateScreen({
     super.key,
     required this.onNavigateToNextStep,
     required this.onBackClicked,
-    this.mockCurrentDate,
   });
 
   @override
@@ -35,15 +34,14 @@ class _CreateEventDateScreenState extends State<CreateEventDateScreen> {
   void initState() {
     super.initState();
     _cubit = context.read<CreateEventCubit>();
-    final now = widget.mockCurrentDate ?? DateTime.now();
-    _cubit.updateEventDate(DateTime(now.year, now.month, now.day));
+    _cubit.initializeEventDate();
     _effectSubscription = _cubit.effects.listen((effect) {
       if (!mounted) return;
       if (effect is CreateEventDateConfirmedEffect) {
         widget.onNavigateToNextStep(
           effect.eventData.eventName,
           effect.eventData.description,
-          effect.eventData.eventType!.name,
+          effect.eventData.eventType!,
           effect.eventData.formattedEventDate!,
         );
       }
@@ -103,7 +101,7 @@ class _CreateEventDateScreenState extends State<CreateEventDateScreen> {
                       width: double.infinity,
                       child: EsmorgaDatePicker(
                         initialDate: state.eventDate,
-                        currentDate: widget.mockCurrentDate,
+                        currentDate: _cubit.currentDate,
                         onDateChanged: _cubit.updateEventDate,
                       ),
                     ),

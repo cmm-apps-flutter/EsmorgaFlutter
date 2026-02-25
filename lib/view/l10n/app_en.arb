@@ -153,5 +153,16 @@
   "buttonViewAttendees": "See attendees",
   "titleEventAttendees": "List of Attendees",
   "titleName": "Name",
-  "titlePaymentStatus": "Payment"
+  "titlePaymentStatus": "Payment",
+  "fieldTitleEventLocation": "Event Location",
+  "placeholderEventLocation": "Enter the event location",
+  "fieldTitleEventCoordinates": "Event coordinates (optional)",
+  "placeholderEventCoordinates": "Enter the coordinates (lat,lng)",
+  "fieldTitleEventMaxCapacity": "Maximum capacity (optional)",
+  "placeholderEventMaxCapacity": "Enter the maximum permitted capacity",
+  "inlineErrorLocationRequired": "Location is required",
+  "inlineErrorLocationInvalidChars": "Only letters, numbers, spaces and . , - ' / # º ª ° are allowed",
+  "inlineErrorCoordinatesInvalid": "Enter two decimals separated by a comma",
+  "inlineErrorCoordinatesOutOfBounds": "Lat: -90 to 90, Lon: -180 to 180",
+  "inlineErrorMaxCapacityInvalid": "Enter a number between 1 and 5000"
 }

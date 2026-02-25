@@ -7,6 +7,7 @@ import 'package:esmorga_flutter/view/events/event_create/cubit/create_event_cubi
 import 'package:esmorga_flutter/view/events/event_create/view/create_eventType_screen.dart';
 import 'package:esmorga_flutter/view/events/event_create/view/create_event_screen.dart';
 import 'package:esmorga_flutter/view/events/event_create/view/create_event_date_screen.dart';
+import 'package:esmorga_flutter/view/events/event_create/view/create_event_location_screen.dart';
 import 'package:esmorga_flutter/view/events/event_create/model/event_type.dart';
 import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:flutter/material.dart';
@@ -39,8 +40,11 @@ void main() {
     when(() => cubit.isFormValid).thenReturn(false);
     when(() => cubit.canProceedFromScreen1()).thenReturn(false);
     when(() => cubit.canProceedFromScreen3()).thenReturn(false);
+    when(() => cubit.canProceedFromScreen4()).thenReturn(false);
     when(() => cubit.formattedEventTime).thenReturn(null);
     when(() => cubit.effects).thenAnswer((_) => const Stream.empty());
+    when(() => cubit.initializeEventDate()).thenReturn(null);
+    when(() => cubit.currentDate).thenReturn(DateTime(2026, 2, 16));
     cubit.emit(const CreateEventState());
   });
 
@@ -67,12 +71,21 @@ void main() {
     );
   }
 
-  Widget buildEventDateScreen({DateTime? mockCurrentDate}) {
+  Widget buildEventDateScreen() {
     return BlocProvider<CreateEventCubit>(
       create: (_) => cubit,
       child: CreateEventDateScreen(
-        mockCurrentDate: mockCurrentDate,
         onNavigateToNextStep: (_, __, ___, ____) {},
+        onBackClicked: () {},
+      ),
+    );
+  }
+
+  Widget buildEventLocationScreen() {
+    return BlocProvider<CreateEventCubit>(
+      create: (_) => cubit,
+      child: CreateEventLocationScreen(
+        onNavigateToNextStep: () {},
         onBackClicked: () {},
       ),
     );
@@ -109,18 +122,14 @@ void main() {
     'step3_initial',
     theme: lightTheme,
     screenshotPath: 'event_create',
-    buildHome: () => buildEventDateScreen(
-      mockCurrentDate: DateTime(2026, 2, 16),
-    ),
+    buildHome: () => buildEventDateScreen(),
   );
 
   screenshotGolden(
     'step3_date_selected',
     theme: lightTheme,
     screenshotPath: 'event_create',
-    buildHome: () => buildEventDateScreen(
-      mockCurrentDate: DateTime(2026, 2, 10),
-    ),
+    buildHome: () => buildEventDateScreen(),
     beforeScreenshot: (tester) async {
       when(() => cubit.state).thenReturn(CreateEventState(
         eventName: 'Test Event',
@@ -136,9 +145,7 @@ void main() {
     'step3_complete',
     theme: lightTheme,
     screenshotPath: 'event_create',
-    buildHome: () => buildEventDateScreen(
-      mockCurrentDate: DateTime(2026, 2, 10),
-    ),
+    buildHome: () => buildEventDateScreen(),
     beforeScreenshot: (tester) async {
       when(() => cubit.state).thenReturn(CreateEventState(
         eventName: 'Test Event',
@@ -149,6 +156,47 @@ void main() {
       ));
       when(() => cubit.canProceedFromScreen3()).thenReturn(true);
       when(() => cubit.formattedEventTime).thenReturn('18:30');
+    },
+  );
+
+  screenshotGolden(
+    'step4_initial',
+    theme: lightTheme,
+    screenshotPath: 'event_create',
+    buildHome: () => buildEventLocationScreen(),
+  );
+
+  screenshotGolden(
+    'step4_filled',
+    theme: lightTheme,
+    screenshotPath: 'event_create',
+    buildHome: () => buildEventLocationScreen(),
+    beforeScreenshot: (tester) async {
+      when(() => cubit.state).thenReturn(const CreateEventState(
+        location: 'Plaça de Catalunya, Barcelona',
+        coordinates: '41.3879, 2.16992',
+        maxCapacity: '200',
+      ));
+      when(() => cubit.canProceedFromScreen4()).thenReturn(true);
+    },
+  );
+
+  screenshotGolden(
+    'step4_validation_errors',
+    theme: lightTheme,
+    screenshotPath: 'event_create',
+    buildHome: () => buildEventLocationScreen(),
+    beforeScreenshot: (tester) async {
+      final l10n = AppLocalizationsEn();
+      when(() => cubit.state).thenReturn(CreateEventState(
+        location: '',
+        coordinates: 'invalid',
+        maxCapacity: '0',
+        locationError: l10n.inlineErrorLocationRequired,
+        coordinatesError: l10n.inlineErrorCoordinatesInvalid,
+        maxCapacityError: l10n.inlineErrorMaxCapacityInvalid,
+      ));
+      when(() => cubit.canProceedFromScreen4()).thenReturn(false);
     },
   );
 }
