@@ -285,6 +285,23 @@ void main() {
     );
 
     blocTest<CreateEventCubit, CreateEventState>(
+      'updateLocation with whitespace-only string sets locationError',
+      build: () => cubit,
+      act: (cubit) => cubit.updateLocation(' '),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.location, 'location', '')
+            .having((s) => s.locationError, 'locationError', l10n.inlineErrorLocationRequired),
+      ],
+    );
+
+    test('canProceedFromScreen4 returns false for whitespace-only location', () {
+      cubit.updateLocation('   ');
+      expect(cubit.state.location, '');
+      expect(cubit.canProceedFromScreen4(), isFalse);
+    });
+
+    blocTest<CreateEventCubit, CreateEventState>(
       'updateCoordinates with empty string clears error',
       build: () => cubit,
       act: (cubit) => cubit.updateCoordinates(''),
