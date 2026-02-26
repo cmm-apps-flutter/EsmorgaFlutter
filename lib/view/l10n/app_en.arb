@@ -160,9 +160,9 @@
   "placeholderEventCoordinates": "Enter the coordinates (lat,lng)",
   "fieldTitleEventMaxCapacity": "Maximum capacity (optional)",
   "placeholderEventMaxCapacity": "Enter the maximum permitted capacity",
-  "inlineErrorLocationRequired": "Location is required",
+  "inlineErrorLocationRequired": "You must enter a location (max 100 letters)",
   "inlineErrorLocationInvalidChars": "Only letters, numbers, spaces and . , - ' / # º ª ° are allowed",
-  "inlineErrorCoordinatesInvalid": "Enter two decimals separated by a comma",
+  "inlineErrorCoordinatesInvalid": "The coordinates must be in lat,long format",
   "inlineErrorCoordinatesOutOfBounds": "Lat: -90 to 90, Lon: -180 to 180",
-  "inlineErrorMaxCapacityInvalid": "Enter a number between 1 and 5000"
+  "inlineErrorMaxCapacityInvalid": "The capacity must be between 1 and 5000"
 }

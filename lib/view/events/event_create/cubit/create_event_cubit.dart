@@ -243,14 +243,15 @@ class CreateEventCubit extends Cubit<CreateEventState> {
   static final _locationCharsRegExp = RegExp(r"^[\p{L}\p{N}\s.,\-'\/#ºª°]+$", unicode: true);
 
   void updateLocation(String value) {
+    final trimmedValue = value.trim();
     String? error;
-    if (value.isEmpty) {
+    if (trimmedValue.isEmpty) {
       error = l10n.inlineErrorLocationRequired;
-    } else if (!_locationCharsRegExp.hasMatch(value)) {
+    } else if (!_locationCharsRegExp.hasMatch(trimmedValue)) {
       error = l10n.inlineErrorLocationInvalidChars;
     }
     emit(state.copyWith(
-      location: value,
+      location: trimmedValue,
       locationError: error,
       clearLocationError: error == null,
     ));

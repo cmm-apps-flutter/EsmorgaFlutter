@@ -146,9 +146,9 @@
   "placeholderEventCoordinates": "Introduce las coordenadas (lat,lng)",
   "fieldTitleEventMaxCapacity": "Aforo máximo (opcional)",
   "placeholderEventMaxCapacity": "Introduce el aforo máximo permitido",
-  "inlineErrorLocationRequired": "La ubicación es obligatoria",
+  "inlineErrorLocationRequired": "Debes introducir una localización (max 100 letras)",
   "inlineErrorLocationInvalidChars": "Solo letras, números, espacios y . , - ' / # º ª ° están permitidos",
-  "inlineErrorCoordinatesInvalid": "Introduce dos decimales separados por coma",
+  "inlineErrorCoordinatesInvalid": "Las coordenadas deben estar en formato lat,long",
   "inlineErrorCoordinatesOutOfBounds": "Lat: -90 a 90, Lon: -180 a 180",
-  "inlineErrorMaxCapacityInvalid": "Introduce un número entre 1 y 5000"
+  "inlineErrorMaxCapacityInvalid": "La capacidad tiene que ser entre 1 y 5000"
 }
