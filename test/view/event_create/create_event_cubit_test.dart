@@ -30,7 +30,12 @@ void main() {
     getIt.registerSingleton<LocalizationService>(mockL10nService);
     when(() => mockL10nService.current).thenReturn(l10n);
     when(() => mockClock.now()).thenReturn(DateTime(2026, 2, 19));
-    cubit = CreateEventCubit(l10n: l10n, dateTimeFormatter: mockFormatter, clock: mockClock);
+    cubit = CreateEventCubit(
+      l10n: l10n,
+      dateTimeFormatter: mockFormatter,
+      clock: mockClock,
+      imageLoader: (_) async => false,
+    );
   });
 
   tearDown(() {
@@ -526,6 +531,182 @@ void main() {
 
       expect(emittedEffects, isEmpty);
       await subscription.cancel();
+    });
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'validateAndPreviewImageUrl with empty string sets imageUrlError',
+      build: () => cubit,
+      act: (cubit) async => cubit.validateAndPreviewImageUrl(''),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.eventImageUrl, 'eventImageUrl', '')
+            .having((s) => s.eventImageUrlError, 'eventImageUrlError', l10n.inlineErrorImageUrlRequired),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'validateAndPreviewImageUrl with whitespace-only string sets imageUrlError',
+      build: () => cubit,
+      act: (cubit) async => cubit.validateAndPreviewImageUrl('   '),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.eventImageUrl, 'eventImageUrl', '')
+            .having((s) => s.eventImageUrlError, 'eventImageUrlError', l10n.inlineErrorImageUrlRequired),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'validateAndPreviewImageUrl with URL missing valid extension sets imageUrlError',
+      build: () => cubit,
+      act: (cubit) async =>
+          cubit.validateAndPreviewImageUrl('https://example.com/image.gif'),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.eventImageUrl, 'eventImageUrl', '')
+            .having((s) => s.eventImageUrlError, 'eventImageUrlError', l10n.inlineErrorImageUrlRequired),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'validateAndPreviewImageUrl with query parameters passes regex and checks network',
+      build: () => CreateEventCubit(
+        l10n: l10n,
+        dateTimeFormatter: mockFormatter,
+        clock: mockClock,
+        imageLoader: (_) async => true,
+      ),
+      act: (cubit) async =>
+          cubit.validateAndPreviewImageUrl('https://example.com/photo.jpg?w=400&h=300'),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.eventImageUrl, 'eventImageUrl', 'https://example.com/photo.jpg?w=400&h=300')
+            .having((s) => s.eventImageUrlError, 'eventImageUrlError', isNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'validateAndPreviewImageUrl when imageLoader throws sets imageUrlError',
+      build: () => CreateEventCubit(
+        l10n: l10n,
+        dateTimeFormatter: mockFormatter,
+        clock: mockClock,
+        imageLoader: (_) async => throw Exception('Network failure'),
+      ),
+      act: (cubit) async =>
+          cubit.validateAndPreviewImageUrl('https://example.com/photo.png'),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.eventImageUrl, 'eventImageUrl', '')
+            .having((s) => s.eventImageUrlError, 'eventImageUrlError', l10n.inlineErrorImageUrlRequired),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'validateAndPreviewImageUrl with no extension sets imageUrlError',
+      build: () => cubit,
+      act: (cubit) async =>
+          cubit.validateAndPreviewImageUrl('https://example.com/image'),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.eventImageUrlError, 'eventImageUrlError', l10n.inlineErrorImageUrlRequired),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'validateAndPreviewImageUrl with http:// scheme (not https) sets imageUrlError',
+      build: () => cubit,
+      act: (cubit) async =>
+          cubit.validateAndPreviewImageUrl('http://example.com/image.jpg'),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.eventImageUrlError, 'eventImageUrlError', l10n.inlineErrorImageUrlRequired),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'validateAndPreviewImageUrl when image fails to load sets imageUrlError',
+      build: () => CreateEventCubit(
+        l10n: l10n,
+        dateTimeFormatter: mockFormatter,
+        clock: mockClock,
+        imageLoader: (_) async => false,
+      ),
+      act: (cubit) async =>
+          cubit.validateAndPreviewImageUrl('https://example.com/image.jpg'),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.eventImageUrl, 'eventImageUrl', '')
+            .having((s) => s.eventImageUrlError, 'eventImageUrlError', l10n.inlineErrorImageUrlRequired),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'validateAndPreviewImageUrl when image loads successfully sets eventImageUrl',
+      build: () => CreateEventCubit(
+        l10n: l10n,
+        dateTimeFormatter: mockFormatter,
+        clock: mockClock,
+        imageLoader: (_) async => true,
+      ),
+      act: (cubit) async =>
+          cubit.validateAndPreviewImageUrl('  https://example.com/photo.png  '),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.eventImageUrl, 'eventImageUrl', 'https://example.com/photo.png')
+            .having((s) => s.eventImageUrlError, 'eventImageUrlError', isNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'clearEventImageUrl resets URL and clears error',
+      build: () => cubit,
+      seed: () => const CreateEventState(
+        eventImageUrl: 'https://example.com/image.jpg',
+        eventImageUrlError: 'some error',
+      ),
+      act: (cubit) => cubit.clearEventImageUrl(),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.eventImageUrl, 'eventImageUrl', '')
+            .having((s) => s.eventImageUrlError, 'eventImageUrlError', isNull),
+      ],
+    );
+
+    test('submitImageStep emits CreateEventImageConfirmedEffect', () async {
+      cubit.updateEventName('Test Event');
+      cubit.updateDescription('A valid test description text');
+      cubit.updateEventType(EventType.text_party);
+
+      final effectFuture = expectLater(
+        cubit.effects,
+        emits(isA<CreateEventImageConfirmedEffect>()
+            .having((e) => e.eventData.eventName, 'eventName', 'Test Event')
+            .having((e) => e.eventData.description, 'description', 'A valid test description text')),
+      );
+
+      cubit.submitImageStep();
+      await effectFuture;
+    });
+
+    test('EventCreationData.fromState includes eventImageUrl when non-empty', () {
+      final data = EventCreationData.fromState(
+        const CreateEventState(
+          eventName: 'My Event',
+          description: 'A valid test description text',
+          eventImageUrl: 'https://example.com/photo.png',
+        ),
+      );
+      expect(data.eventImageUrl, 'https://example.com/photo.png');
+    });
+
+    test('EventCreationData.fromState maps empty eventImageUrl to null', () {
+      final data = EventCreationData.fromState(
+        const CreateEventState(
+          eventName: 'My Event',
+          description: 'A valid test description text',
+        ),
+      );
+      expect(data.eventImageUrl, isNull);
     });
   });
 }

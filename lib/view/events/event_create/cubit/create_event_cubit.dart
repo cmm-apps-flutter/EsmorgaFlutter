@@ -28,6 +28,7 @@ class EventCreationData {
   final String? location;
   final String? coordinates;
   final int? maxCapacity;
+  final String? eventImageUrl;
 
   const EventCreationData({
     required this.eventName,
@@ -37,6 +38,7 @@ class EventCreationData {
     this.location,
     this.coordinates,
     this.maxCapacity,
+    this.eventImageUrl,
   });
 
   factory EventCreationData.fromState(
@@ -52,6 +54,7 @@ class EventCreationData {
       location: state.location.isEmpty ? null : state.location,
       coordinates: state.coordinates.isEmpty ? null : state.coordinates,
       maxCapacity: parsedMaxCapacity,
+      eventImageUrl: state.eventImageUrl.isEmpty ? null : state.eventImageUrl,
     );
   }
 }
@@ -80,10 +83,19 @@ class CreateEventLocationConfirmedEffect extends CreateEventEffect {
   });
 }
 
+class CreateEventImageConfirmedEffect extends CreateEventEffect {
+  final EventCreationData eventData;
+
+  CreateEventImageConfirmedEffect({
+    required this.eventData,
+  });
+}
+
 class CreateEventCubit extends Cubit<CreateEventState> {
   final AppLocalizations l10n;
   final EsmorgaDateTimeFormatter dateTimeFormatter;
   final EsmorgaClock clock;
+  final Future<bool> Function(String url) imageLoader;
 
   final _effectController = StreamController<CreateEventEffect>.broadcast();
   Stream<CreateEventEffect> get effects => _effectController.stream;
@@ -92,6 +104,7 @@ class CreateEventCubit extends Cubit<CreateEventState> {
     required this.l10n,
     required this.dateTimeFormatter,
     required this.clock,
+    required this.imageLoader,
   }) : super(const CreateEventState());
 
   void initFromEventData(EventCreationData eventData) {
@@ -307,6 +320,53 @@ class CreateEventCubit extends Cubit<CreateEventState> {
         state,
         formattedEventDate: formattedDate,
       ),
+    ));
+  }
+
+  static final _imageUrlRegExp = RegExp(
+    r'^https://.+\.(jpg|jpeg|png|webp)(\?.*)?$',
+    caseSensitive: false,
+  );
+
+  Future<void> validateAndPreviewImageUrl(String url) async {
+    final trimmedUrl = url.trim();
+    if (trimmedUrl.isEmpty) {
+      emit(state.copyWith(eventImageUrlError: l10n.inlineErrorImageUrlRequired));
+      return;
+    }
+    if (!_imageUrlRegExp.hasMatch(trimmedUrl)) {
+      emit(state.copyWith(eventImageUrlError: l10n.inlineErrorImageUrlRequired));
+      return;
+    }
+    final bool imageLoaded;
+    try {
+      imageLoaded = await imageLoader(trimmedUrl);
+    } catch (_) {
+      if (isClosed) return;
+      emit(state.copyWith(eventImageUrlError: l10n.inlineErrorImageUrlRequired));
+      return;
+    }
+    if (isClosed) return;
+    if (!imageLoaded) {
+      emit(state.copyWith(eventImageUrlError: l10n.inlineErrorImageUrlRequired));
+      return;
+    }
+    emit(state.copyWith(
+      eventImageUrl: trimmedUrl,
+      clearEventImageUrlError: true,
+    ));
+  }
+
+  void clearEventImageUrl() {
+    emit(state.copyWith(
+      eventImageUrl: '',
+      clearEventImageUrlError: true,
+    ));
+  }
+
+  void submitImageStep() {
+    _effectController.add(CreateEventImageConfirmedEffect(
+      eventData: EventCreationData.fromState(state),
     ));
   }
 

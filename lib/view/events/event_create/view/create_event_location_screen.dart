@@ -11,7 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CreateEventLocationScreen extends StatefulWidget {
-  final VoidCallback onNavigateToNextStep;
+  final void Function(EventCreationData eventData) onNavigateToNextStep;
   final VoidCallback onBackClicked;
 
   const CreateEventLocationScreen({
@@ -38,7 +38,7 @@ class _CreateEventLocationScreenState extends State<CreateEventLocationScreen> {
     _effectSubscription = _cubit.effects.listen((effect) {
       if (!mounted) return;
       if (effect is CreateEventLocationConfirmedEffect) {
-        widget.onNavigateToNextStep();
+        widget.onNavigateToNextStep(effect.eventData);
       }
     });
   }

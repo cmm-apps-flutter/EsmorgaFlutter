@@ -164,5 +164,11 @@
   "inlineErrorLocationInvalidChars": "Only letters, numbers, spaces and . , - ' / # º ª ° are allowed",
   "inlineErrorCoordinatesInvalid": "The coordinates must be in lat,long format",
   "inlineErrorCoordinatesOutOfBounds": "Lat: -90 to 90, Lon: -180 to 180",
-  "inlineErrorMaxCapacityInvalid": "The capacity must be between 1 and 5000"
+  "inlineErrorMaxCapacityInvalid": "The capacity must be between 1 and 5000",
+  "fieldTitleEventImage": "Event image (optional)",
+  "placeholderEventImage": "Enter the image URL",
+  "buttonPreview": "Preview",
+  "buttonDelete": "Delete",
+  "buttonCreateEvent": "Create event",
+  "inlineErrorImageUrlRequired": "Please enter a valid URL"
 }
