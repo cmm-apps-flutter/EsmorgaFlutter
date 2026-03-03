@@ -25,6 +25,7 @@ import 'package:esmorga_flutter/view/events/event_create/view/create_event_scree
 import 'package:esmorga_flutter/view/events/event_create/view/create_eventType_screen.dart';
 import 'package:esmorga_flutter/view/events/event_create/view/create_event_date_screen.dart';
 import 'package:esmorga_flutter/view/events/event_create/view/create_event_location_screen.dart';
+import 'package:esmorga_flutter/view/events/event_create/view/create_event_image_screen.dart';
 import 'package:esmorga_flutter/view/events/event_create/cubit/create_event_cubit.dart';
 import 'package:esmorga_flutter/view/splash/cubit/splash_cubit.dart';
 import 'package:esmorga_flutter/view/splash/view/splash_screen.dart';
@@ -48,6 +49,7 @@ class AppRoutes {
   static const String createEventType = '/create-event-type';
   static const String createEventDate = '/create-event-date';
   static const String createEventLocation = '/create-event-location';
+  static const String createEventImage = '/create-event-image';
 
   static GoRouter createRouter() {
     return GoRouter(
@@ -227,7 +229,28 @@ class AppRoutes {
               create: (_) => getIt<CreateEventCubit>()
                 ..initFromEventData(eventData),
               child: CreateEventLocationScreen(
-                onNavigateToNextStep: () {}, //TODO with 5th step
+                onNavigateToNextStep: (eventData) {
+                  context.push(
+                    createEventImage,
+                    extra: eventData,
+                  );
+                },
+                onBackClicked: () => context.pop(),
+              ),
+            );
+          },
+        ),
+        GoRoute(
+          path: createEventImage,
+          builder: (context, state) {
+            final eventData = state.extra as EventCreationData;
+            return BlocProvider(
+              create: (_) => getIt<CreateEventCubit>()
+                ..initFromEventData(eventData),
+              child: CreateEventImageScreen(
+                onSubmitSuccess: () {
+                  // TODO
+                },
                 onBackClicked: () => context.pop(),
               ),
             );

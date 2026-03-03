@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_screenshot/golden_screenshot.dart';
@@ -11,6 +13,7 @@ void screenshotGolden(
   Future<void> Function(WidgetTester tester)? afterBuild,
   String? screenshotPath,
   double allowedDiffPercent = 0.00,
+  Uint8List? imageBytes,
 }) {
   final devices = [GoldenScreenshotDevices.androidPhone.device, GoldenScreenshotDevices.iphone.device];
   testGoldens(description, (tester) async {
@@ -32,7 +35,7 @@ void screenshotGolden(
             : '${description}_${device.platform.name}';
 
         await tester.expectScreenshot(device, path);
-      });
+      }, imageBytes: imageBytes);
     }
   }, allowedDiffPercent: allowedDiffPercent);
 }

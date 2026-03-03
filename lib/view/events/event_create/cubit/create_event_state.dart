@@ -16,6 +16,8 @@ class CreateEventState extends Equatable {
   final String? locationError;
   final String? coordinatesError;
   final String? maxCapacityError;
+  final String eventImageUrl;
+  final String? eventImageUrlError;
 
   const CreateEventState({
     this.eventName = '',
@@ -33,6 +35,8 @@ class CreateEventState extends Equatable {
     this.locationError,
     this.coordinatesError,
     this.maxCapacityError,
+    this.eventImageUrl = '',
+    this.eventImageUrlError,
   });
 
   CreateEventState copyWith({
@@ -51,12 +55,15 @@ class CreateEventState extends Equatable {
     String? locationError,
     String? coordinatesError,
     String? maxCapacityError,
+    String? eventImageUrl,
+    String? eventImageUrlError,
     bool clearDate = false,
     bool clearTime = false,
     bool clearDateError = false,
     bool clearLocationError = false,
     bool clearCoordinatesError = false,
     bool clearMaxCapacityError = false,
+    bool clearEventImageUrlError = false,
   }) {
     return CreateEventState(
       eventName: eventName ?? this.eventName,
@@ -74,9 +81,11 @@ class CreateEventState extends Equatable {
       locationError: clearLocationError ? null : (locationError ?? this.locationError),
       coordinatesError: clearCoordinatesError ? null : (coordinatesError ?? this.coordinatesError),
       maxCapacityError: clearMaxCapacityError ? null : (maxCapacityError ?? this.maxCapacityError),
+      eventImageUrl: eventImageUrl ?? this.eventImageUrl,
+      eventImageUrlError: clearEventImageUrlError ? null : (eventImageUrlError ?? this.eventImageUrlError),
     );
   }
 
   @override
-  List<Object?> get props => [eventName, description, eventType, eventNameError, descriptionError, eventDate, eventTime, eventDateError, formattedEventDate, location, coordinates, maxCapacity, locationError, coordinatesError, maxCapacityError];
+  List<Object?> get props => [eventName, description, eventType, eventNameError, descriptionError, eventDate, eventTime, eventDateError, formattedEventDate, location, coordinates, maxCapacity, locationError, coordinatesError, maxCapacityError, eventImageUrl, eventImageUrlError];
 }

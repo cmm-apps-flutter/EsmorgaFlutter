@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/ds/esmorga_theme.dart';
@@ -8,6 +11,7 @@ import 'package:esmorga_flutter/view/events/event_create/view/create_eventType_s
 import 'package:esmorga_flutter/view/events/event_create/view/create_event_screen.dart';
 import 'package:esmorga_flutter/view/events/event_create/view/create_event_date_screen.dart';
 import 'package:esmorga_flutter/view/events/event_create/view/create_event_location_screen.dart';
+import 'package:esmorga_flutter/view/events/event_create/view/create_event_image_screen.dart';
 import 'package:esmorga_flutter/view/events/event_create/model/event_type.dart';
 import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +26,11 @@ class MockCreateEventCubit extends MockCubit<CreateEventState> implements Create
 class MockLocalizationService extends Mock implements LocalizationService {}
 
 class MockDateTimeFormatter extends Mock implements EsmorgaDateTimeFormatter {}
+
+// Event preview image loaded from disk for golden image preview rendering.
+final Uint8List _testPngBytes =
+    File('test/assets/event_preview_test.png').readAsBytesSync();
+
 
 void main() {
   late MockCreateEventCubit cubit;
@@ -45,6 +54,9 @@ void main() {
     when(() => cubit.effects).thenAnswer((_) => const Stream.empty());
     when(() => cubit.initializeEventDate()).thenReturn(null);
     when(() => cubit.currentDate).thenReturn(DateTime(2026, 2, 16));
+    when(() => cubit.validateAndPreviewImageUrl(any())).thenAnswer((_) async {});
+    when(() => cubit.clearEventImageUrl()).thenReturn(null);
+    when(() => cubit.submitImageStep()).thenReturn(null);
     cubit.emit(const CreateEventState());
   });
 
@@ -85,21 +97,31 @@ void main() {
     return BlocProvider<CreateEventCubit>(
       create: (_) => cubit,
       child: CreateEventLocationScreen(
-        onNavigateToNextStep: () {},
+        onNavigateToNextStep: (_) {},
+        onBackClicked: () {},
+      ),
+    );
+  }
+
+  Widget buildEventImageScreen() {
+    return BlocProvider<CreateEventCubit>(
+      create: (_) => cubit,
+      child: CreateEventImageScreen(
+        onSubmitSuccess: () {},
         onBackClicked: () {},
       ),
     );
   }
 
   screenshotGolden(
-    'step1_initial',
+    'create_event_details_initial',
     theme: lightTheme,
     screenshotPath: 'event_create',
     buildHome: () => buildScreen(),
   );
 
   screenshotGolden(
-    'step1_filled',
+    'create_event_details_filled',
     theme: lightTheme,
     screenshotPath: 'event_create',
     buildHome: () => buildScreen(),
@@ -112,21 +134,21 @@ void main() {
   );
 
   screenshotGolden(
-    'step2_initial',
+    'create_event_type_initial',
     theme: lightTheme,
     screenshotPath: 'event_create',
     buildHome: () => buildEventTypeScreen(),
   );
 
   screenshotGolden(
-    'step3_initial',
+    'create_event_date_initial',
     theme: lightTheme,
     screenshotPath: 'event_create',
     buildHome: () => buildEventDateScreen(),
   );
 
   screenshotGolden(
-    'step3_date_selected',
+    'create_event_date_selected',
     theme: lightTheme,
     screenshotPath: 'event_create',
     buildHome: () => buildEventDateScreen(),
@@ -142,7 +164,7 @@ void main() {
   );
 
   screenshotGolden(
-    'step3_complete',
+    'create_event_date_complete',
     theme: lightTheme,
     screenshotPath: 'event_create',
     buildHome: () => buildEventDateScreen(),
@@ -160,14 +182,14 @@ void main() {
   );
 
   screenshotGolden(
-    'step4_initial',
+    'create_event_location_initial',
     theme: lightTheme,
     screenshotPath: 'event_create',
     buildHome: () => buildEventLocationScreen(),
   );
 
   screenshotGolden(
-    'step4_filled',
+    'create_event_location_filled',
     theme: lightTheme,
     screenshotPath: 'event_create',
     buildHome: () => buildEventLocationScreen(),
@@ -182,7 +204,7 @@ void main() {
   );
 
   screenshotGolden(
-    'step4_validation_errors',
+    'create_event_location_validation_errors',
     theme: lightTheme,
     screenshotPath: 'event_create',
     buildHome: () => buildEventLocationScreen(),
@@ -197,6 +219,39 @@ void main() {
         maxCapacityError: l10n.inlineErrorMaxCapacityInvalid,
       ));
       when(() => cubit.canProceedFromScreen4()).thenReturn(false);
+    },
+  );
+
+  screenshotGolden(
+    'create_event_image_initial',
+    theme: lightTheme,
+    screenshotPath: 'event_create',
+    buildHome: () => buildEventImageScreen(),
+  );
+
+  screenshotGolden(
+    'create_event_image_preview',
+    theme: lightTheme,
+    screenshotPath: 'event_create',
+    imageBytes: _testPngBytes,
+    buildHome: () => buildEventImageScreen(),
+    beforeScreenshot: (tester) async {
+      when(() => cubit.state).thenReturn(const CreateEventState(
+        eventImageUrl: 'https://example.com/image.jpg',
+      ));
+    },
+  );
+
+  screenshotGolden(
+    'create_event_image_url_error',
+    theme: lightTheme,
+    screenshotPath: 'event_create',
+    buildHome: () => buildEventImageScreen(),
+    beforeScreenshot: (tester) async {
+      final l10n = AppLocalizationsEn();
+      when(() => cubit.state).thenReturn(CreateEventState(
+        eventImageUrlError: l10n.inlineErrorImageUrlRequired,
+      ));
     },
   );
 }
