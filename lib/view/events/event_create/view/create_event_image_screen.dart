@@ -110,13 +110,20 @@ class _CreateEventImageScreenState extends State<CreateEventImageScreen> {
                     if (state.eventImageUrl.isNotEmpty) ...[
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8.0),
-                        child: Image.network(
-                          key: const Key('create_event_image_preview'),
-                          state.eventImageUrl,
-                          width: double.infinity,
-                          height: 200.0,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                        child: AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: Image.network(
+                            key: const Key('create_event_image_preview'),
+                            state.eventImageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, _, __) => ColoredBox(
+                              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                              child: Icon(
+                                Icons.broken_image_outlined,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 16.0),

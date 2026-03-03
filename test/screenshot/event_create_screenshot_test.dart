@@ -114,14 +114,14 @@ void main() {
   }
 
   screenshotGolden(
-    'step1_initial',
+    'create_event_details_initial',
     theme: lightTheme,
     screenshotPath: 'event_create',
     buildHome: () => buildScreen(),
   );
 
   screenshotGolden(
-    'step1_filled',
+    'create_event_details_filled',
     theme: lightTheme,
     screenshotPath: 'event_create',
     buildHome: () => buildScreen(),
@@ -134,21 +134,21 @@ void main() {
   );
 
   screenshotGolden(
-    'step2_initial',
+    'create_event_type_initial',
     theme: lightTheme,
     screenshotPath: 'event_create',
     buildHome: () => buildEventTypeScreen(),
   );
 
   screenshotGolden(
-    'step3_initial',
+    'create_event_date_initial',
     theme: lightTheme,
     screenshotPath: 'event_create',
     buildHome: () => buildEventDateScreen(),
   );
 
   screenshotGolden(
-    'step3_date_selected',
+    'create_event_date_selected',
     theme: lightTheme,
     screenshotPath: 'event_create',
     buildHome: () => buildEventDateScreen(),
@@ -164,7 +164,7 @@ void main() {
   );
 
   screenshotGolden(
-    'step3_complete',
+    'create_event_date_complete',
     theme: lightTheme,
     screenshotPath: 'event_create',
     buildHome: () => buildEventDateScreen(),
@@ -182,14 +182,14 @@ void main() {
   );
 
   screenshotGolden(
-    'step4_initial',
+    'create_event_location_initial',
     theme: lightTheme,
     screenshotPath: 'event_create',
     buildHome: () => buildEventLocationScreen(),
   );
 
   screenshotGolden(
-    'step4_filled',
+    'create_event_location_filled',
     theme: lightTheme,
     screenshotPath: 'event_create',
     buildHome: () => buildEventLocationScreen(),
@@ -204,7 +204,7 @@ void main() {
   );
 
   screenshotGolden(
-    'step4_validation_errors',
+    'create_event_location_validation_errors',
     theme: lightTheme,
     screenshotPath: 'event_create',
     buildHome: () => buildEventLocationScreen(),
@@ -223,14 +223,14 @@ void main() {
   );
 
   screenshotGolden(
-    'step5_initial',
+    'create_event_image_initial',
     theme: lightTheme,
     screenshotPath: 'event_create',
     buildHome: () => buildEventImageScreen(),
   );
 
   screenshotGolden(
-    'step5_preview',
+    'create_event_image_preview',
     theme: lightTheme,
     screenshotPath: 'event_create',
     imageBytes: _testPngBytes,
@@ -243,7 +243,7 @@ void main() {
   );
 
   screenshotGolden(
-    'step5_error',
+    'create_event_image_url_error',
     theme: lightTheme,
     screenshotPath: 'event_create',
     buildHome: () => buildEventImageScreen(),
