@@ -1,4 +1,5 @@
 import 'package:esmorga_flutter/di.dart';
+import 'package:esmorga_flutter/ds/esmorga_snackbar.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
 import 'package:esmorga_flutter/ds/esmorga_text_field.dart';
@@ -86,7 +87,7 @@ class _ChangePasswordFormState extends State<_ChangePasswordForm> {
                   if (snapshot.hasData && snapshot.data is ShowSnackbarEffect) {
                     final effect = snapshot.data as ShowSnackbarEffect;
                     WidgetsBinding.instance.addPostFrameCallback((_) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(effect.message)));
+                      ScaffoldMessenger.of(context).showSnackBar(EsmorgaSnackbar(effect.message));
                       if (effect.success) context.go(AppRoutes.login);
                     });
                   }

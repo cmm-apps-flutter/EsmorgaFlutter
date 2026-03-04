@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:esmorga_flutter/di.dart';
+import 'package:esmorga_flutter/ds/esmorga_snackbar.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
 import 'package:esmorga_flutter/ds/esmorga_text_field.dart';
@@ -67,12 +68,12 @@ class _RecoverPasswordFormState extends State<_RecoverPasswordForm> {
       listener: (context, state) {
         if (state.isSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l.forgotPasswordSnackbarSuccess)),
+            EsmorgaSnackbar(l.forgotPasswordSnackbarSuccess),
           );
           context.go('/login');
         } else if (state.status == RecoverPasswordStatus.failure) {
           final msg = state.networkFailure ? l.snackbarNoInternet : l.defaultErrorTitle;
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+          ScaffoldMessenger.of(context).showSnackBar(EsmorgaSnackbar(msg));
         }
       },
       builder: (context, state) {

@@ -1,6 +1,7 @@
 // filepath: /Users/p.martinez.grela/AndroidStudioProjects/EsmorgaFlutter/lib/view/registration/view/register_screen_v2.dart
 
 import 'package:esmorga_flutter/di.dart';
+import 'package:esmorga_flutter/ds/esmorga_snackbar.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
 import 'package:esmorga_flutter/ds/esmorga_text_field.dart';
@@ -94,7 +95,7 @@ class _RegisterFormState extends State<_RegisterForm> {
         if (state.isSuccess && state.successEmail != null) {
           context.go('${AppRoutes.registrationConfirmation}?email=${Uri.encodeComponent(state.successEmail!)}');
         } else if (state.isFailure && state.failureMessage != null) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.failureMessage!)));
+          ScaffoldMessenger.of(context).showSnackBar(EsmorgaSnackbar(state.failureMessage!));
         }
 
         if (state.attemptedSubmit) {
