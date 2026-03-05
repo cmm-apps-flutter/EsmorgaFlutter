@@ -1,4 +1,5 @@
 import 'package:esmorga_flutter/di.dart';
+import 'package:esmorga_flutter/ds/esmorga_snackbar.dart';
 import 'package:esmorga_flutter/domain/poll/model/poll.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_checkbox_row.dart';
@@ -40,13 +41,13 @@ class _PollDetailView extends StatelessWidget {
       listener: (context, state) {
         if (state.showSuccessMessage) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.snackbarVoteSuccessful)),
+            EsmorgaSnackbar(l10n.snackbarVoteSuccessful),
           );
           cubit.clearSuccessMessage();
         }
         if (state.error != null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.error!)),
+            EsmorgaSnackbar(state.error!),
           );
         }
       },

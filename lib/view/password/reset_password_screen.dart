@@ -1,4 +1,5 @@
 import 'package:esmorga_flutter/di.dart';
+import 'package:esmorga_flutter/ds/esmorga_snackbar.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
 import 'package:esmorga_flutter/ds/esmorga_text_field.dart';
@@ -75,7 +76,7 @@ class _ResetPasswordFormState extends State<_ResetPasswordForm> {
           context.go('/login?message=$encoded');
         } else if (state.status == ResetPasswordStatus.failure) {
           final msg = state.networkFailure ? l10n.snackbarNoInternet : l10n.defaultErrorTitle;
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+          ScaffoldMessenger.of(context).showSnackBar(EsmorgaSnackbar(msg));
         }
       },
       builder: (context, state) {

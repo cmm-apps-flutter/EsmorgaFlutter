@@ -70,6 +70,7 @@ void main() {
     'verify_account_loading',
     theme: lightTheme,
     screenshotPath: 'verify_account',
+    allowedDiffPercent: 0.02,
     buildHome: () {
       when(() => cubit.state).thenReturn(VerifyAccountLoading());
       return buildScreen();

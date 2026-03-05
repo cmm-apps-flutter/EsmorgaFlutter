@@ -1,4 +1,5 @@
 import 'package:esmorga_flutter/di.dart';
+import 'package:esmorga_flutter/ds/esmorga_snackbar.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
 import 'package:esmorga_flutter/view/l10n/localization_service.dart';
@@ -44,7 +45,7 @@ class _RegistrationConfirmationFormState extends State<_RegistrationConfirmation
       await launchUrl(emailLaunchUri);
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open email app')),
+        EsmorgaSnackbar(getIt<LocalizationService>().current.snackbarCouldNotOpenEmailApp),
       );
     }
   }
@@ -59,11 +60,11 @@ class _RegistrationConfirmationFormState extends State<_RegistrationConfirmation
           _openEmailApp();
         } else if (state is RegistrationConfirmationResendSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.registerResendCodeSuccess)),
+            EsmorgaSnackbar(l10n.registerResendCodeSuccess),
           );
         } else if (state is RegistrationConfirmationResendFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.registerResendCodeError)),
+            EsmorgaSnackbar(l10n.registerResendCodeError),
           );
         }
       },

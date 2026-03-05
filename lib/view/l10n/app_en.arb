@@ -170,5 +170,7 @@
   "buttonPreview": "Preview",
   "buttonDelete": "Delete",
   "buttonCreateEvent": "Create event",
-  "inlineErrorImageUrlRequired": "Please enter a valid URL"
+  "inlineErrorImageUrlRequired": "Please enter a valid URL",
+  "snackbarCouldNotOpenEmailApp": "Could not open email app",
+  "snackbarCouldNotOpenMaps": "Could not open maps"
 }

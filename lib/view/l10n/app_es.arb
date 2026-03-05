@@ -156,5 +156,7 @@
   "buttonPreview": "Previsualizar",
   "buttonDelete": "Borrar",
   "buttonCreateEvent": "Crear evento",
-  "inlineErrorImageUrlRequired": "Introduzca una URL válida"
+  "inlineErrorImageUrlRequired": "Introduzca una URL válida",
+  "snackbarCouldNotOpenEmailApp": "No se pudo abrir la app de correo",
+  "snackbarCouldNotOpenMaps": "No se pudo abrir el mapa"
 }

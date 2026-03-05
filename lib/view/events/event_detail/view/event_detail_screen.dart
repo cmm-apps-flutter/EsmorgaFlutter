@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:esmorga_flutter/di.dart';
+import 'package:esmorga_flutter/ds/esmorga_snackbar.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
 import 'package:esmorga_flutter/view/events/event_detail/cubit/event_detail_cubit.dart';
@@ -230,7 +231,7 @@ class _EventDetailFormState extends State<_EventDetailForm> {
 
   void _showSnack(String msg) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    ScaffoldMessenger.of(context).showSnackBar(EsmorgaSnackbar(msg));
   }
 
   void _openMaps(double lat, double lng, String name) async {
@@ -240,7 +241,7 @@ class _EventDetailFormState extends State<_EventDetailForm> {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open maps')),
+        EsmorgaSnackbar(getIt<LocalizationService>().current.snackbarCouldNotOpenMaps),
       );
     }
   }

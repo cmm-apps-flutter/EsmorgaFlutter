@@ -50,7 +50,7 @@ class EsmorgaText extends StatelessWidget {
           letterSpacing: -0.27,
         );
       case EsmorgaTextStyle.body1:
-        return Theme.of(context).textTheme.bodyMedium!..copyWith(
+        return Theme.of(context).textTheme.bodyMedium!.copyWith(
           fontWeight: FontWeight.w500,
           fontSize: 16,
           height: 24 / 16, 

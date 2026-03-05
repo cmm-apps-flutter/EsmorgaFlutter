@@ -1,4 +1,5 @@
 import 'package:esmorga_flutter/di.dart';
+import 'package:esmorga_flutter/ds/esmorga_snackbar.dart';
 import 'package:esmorga_flutter/domain/event/model/event.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_loader.dart';
@@ -54,9 +55,8 @@ class _MyEventsFormState extends State<_MyEventsForm> {
     _cubit.effects.listen((effect) async {
       if (effect is MyEventsEffectShowNoNetworkPrompt) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  getIt<LocalizationService>().current.snackbarNoInternet)),
+          EsmorgaSnackbar(
+              getIt<LocalizationService>().current.snackbarNoInternet),
         );
       } else if (effect is MyEventsEffectNavigateToEventDetail) {
         final didChange = await widget.onDetailsClicked(effect.event);

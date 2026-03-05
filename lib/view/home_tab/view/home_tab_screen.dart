@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:esmorga_flutter/di.dart';
+import 'package:esmorga_flutter/ds/esmorga_snackbar.dart';
 import 'package:esmorga_flutter/domain/event/model/event.dart';
 import 'package:esmorga_flutter/domain/poll/model/poll.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
@@ -86,7 +87,7 @@ class _HomeTabFormState extends State<_HomeTabForm> {
           listenWhen: (previous, current) =>
               previous.showNoNetworkPrompt == false && current.showNoNetworkPrompt == true,
           listener: (context, state) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.snackbarNoInternet)));
+            ScaffoldMessenger.of(context).showSnackBar(EsmorgaSnackbar(l10n.snackbarNoInternet));
             _cubit.clearNoNetworkPrompt();
           },
           child: BlocBuilder<HomeTabCubit, HomeTabState>(

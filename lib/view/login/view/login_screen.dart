@@ -1,4 +1,5 @@
 import 'package:esmorga_flutter/di.dart';
+import 'package:esmorga_flutter/ds/esmorga_snackbar.dart';
 import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
 import 'package:esmorga_flutter/ds/esmorga_text_field.dart';
@@ -105,7 +106,7 @@ class _LoginFormState extends State<_LoginForm> {
       listener: (context, state) {
         if (state.initMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.initMessage!)),
+            EsmorgaSnackbar(state.initMessage!),
           );
           _cubit.consumeInitMessage();
         }
@@ -114,7 +115,7 @@ class _LoginFormState extends State<_LoginForm> {
         } else if (state.isFailure && state.failureMessage != null) {
           widget.onLoginError();
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.failureMessage!)),
+            EsmorgaSnackbar(state.failureMessage!),
           );
         }
         if (state.attemptedSubmit && !state.isFormValid) {
