@@ -1,12 +1,15 @@
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
+import 'package:esmorga_flutter/domain/error/exceptions.dart';
+import 'package:esmorga_flutter/domain/event/model/create_event_params.dart';
+import 'package:esmorga_flutter/domain/event/model/event_type.dart';
+import 'package:esmorga_flutter/domain/event/usecase/create_event_use_case.dart';
 import 'package:esmorga_flutter/view/dateformatting/esmorga_date_time_formatter.dart';
 import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
 import 'package:esmorga_flutter/view/util/esmorga_clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:esmorga_flutter/view/events/event_create/model/event_type.dart';
 
 part 'create_event_state.dart';
 
@@ -83,19 +86,18 @@ class CreateEventLocationConfirmedEffect extends CreateEventEffect {
   });
 }
 
-class CreateEventImageConfirmedEffect extends CreateEventEffect {
-  final EventCreationData eventData;
+class CreateEventSuccessEffect extends CreateEventEffect {}
 
-  CreateEventImageConfirmedEffect({
-    required this.eventData,
-  });
-}
+class CreateEventGenericErrorEffect extends CreateEventEffect {}
+
+class CreateEventNoInternetEffect extends CreateEventEffect {}
 
 class CreateEventCubit extends Cubit<CreateEventState> {
   final AppLocalizations l10n;
   final EsmorgaDateTimeFormatter dateTimeFormatter;
   final EsmorgaClock clock;
   final Future<bool> Function(String url) imageLoader;
+  final CreateEventUseCase createEventUseCase;
 
   final _effectController = StreamController<CreateEventEffect>.broadcast();
   Stream<CreateEventEffect> get effects => _effectController.stream;
@@ -105,6 +107,7 @@ class CreateEventCubit extends Cubit<CreateEventState> {
     required this.dateTimeFormatter,
     required this.clock,
     required this.imageLoader,
+    required this.createEventUseCase,
   }) : super(const CreateEventState());
 
   void initFromEventData(EventCreationData eventData) {
@@ -113,6 +116,10 @@ class CreateEventCubit extends Cubit<CreateEventState> {
       description: eventData.description,
       eventType: eventData.eventType,
       formattedEventDate: eventData.formattedEventDate,
+      location: eventData.location ?? '',
+      coordinates: eventData.coordinates ?? '',
+      maxCapacity: eventData.maxCapacity?.toString() ?? '',
+      eventImageUrl: eventData.eventImageUrl ?? '',
     ));
   }
 
@@ -134,6 +141,7 @@ class CreateEventCubit extends Cubit<CreateEventState> {
     emit(state.copyWith(
       eventName: name,
       eventNameError: error,
+      clearNameError: error == null,
     ));
   }
 
@@ -148,6 +156,7 @@ class CreateEventCubit extends Cubit<CreateEventState> {
     emit(state.copyWith(
       description: desc,
       descriptionError: error,
+      clearDescriptionError: error == null,
     ));
   }
 
@@ -156,23 +165,40 @@ class CreateEventCubit extends Cubit<CreateEventState> {
   }
 
   void updateEventDate(DateTime date) {
-    final today = clock.now();
-    final startOfToday = DateTime(today.year, today.month, today.day);
-    if (date.isBefore(startOfToday)) {
-      emit(state.copyWith(
-        eventDate: date,
-        eventDateError: l10n.inlineErrorEmptyField,
-      ));
-      return;
-    }
+    final dateTimeError = _validateDateTimeInPast(date, state.eventTime);
     emit(state.copyWith(
       eventDate: date,
-      clearDateError: true,
+      eventDateError: dateTimeError,
+      clearDateError: dateTimeError == null,
     ));
   }
 
   void updateEventTime(TimeOfDay time) {
-    emit(state.copyWith(eventTime: time));
+    final timeError = _validateDateTimeInPast(state.eventDate, time);
+    emit(state.copyWith(
+      eventTime: time,
+      eventDateError: timeError,
+      clearDateError: timeError == null,
+    ));
+  }
+
+  String? _validateDateTimeInPast(DateTime? date, TimeOfDay? time) {
+    if (date == null) return null;
+    final now = clock.now();
+    final startOfToday = DateTime(now.year, now.month, now.day);
+    if (date.isBefore(startOfToday)) {
+      return l10n.inlineErrorEventDatePast;
+    }
+    if (time == null) return null;
+    final isToday = date.year == startOfToday.year &&
+        date.month == startOfToday.month &&
+        date.day == startOfToday.day;
+    if (!isToday) return null;
+    final selectedDateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    if (selectedDateTime.isBefore(now)) {
+      return l10n.inlineErrorEventTimePast;
+    }
+    return null;
   }
 
   void clearDateAndTime() {
@@ -276,12 +302,8 @@ class CreateEventCubit extends Cubit<CreateEventState> {
       if (!_coordinatesRegExp.hasMatch(value)) {
         error = l10n.inlineErrorCoordinatesInvalid;
       } else {
-        final parts = value.split(',');
-        final latitude = double.tryParse(parts[0].trim());
-        final longitude = double.tryParse(parts[1].trim());
-        if (latitude == null || longitude == null ||
-            latitude < -90 || latitude > 90 ||
-            longitude < -180 || longitude > 180) {
+        final parsed = _parseCoordinates(value);
+        if (parsed == null) {
           error = l10n.inlineErrorCoordinatesOutOfBounds;
         }
       }
@@ -364,10 +386,59 @@ class CreateEventCubit extends Cubit<CreateEventState> {
     ));
   }
 
-  void submitImageStep() {
-    _effectController.add(CreateEventImageConfirmedEffect(
-      eventData: EventCreationData.fromState(state),
-    ));
+  ({double lat, double lng})? _parseCoordinates(String raw) {
+    if (raw.isEmpty) return null;
+    if (!_coordinatesRegExp.hasMatch(raw)) return null;
+    final parts = raw.split(',');
+    if (parts.length < 2) return null;
+    final lat = double.tryParse(parts[0].trim());
+    final lng = double.tryParse(parts[1].trim());
+    if (lat == null || lng == null) return null;
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+    return (lat: lat, lng: lng);
+  }
+
+  Future<void> submitImageStep() async {
+    if (state.submitting) return;
+
+    final eventDate = state.formattedEventDate;
+    if (eventDate == null) return;
+
+    if (state.eventType == null) return;
+
+    emit(state.copyWith(submitting: true));
+
+    final parsedCoordinates = _parseCoordinates(state.coordinates);
+    final eventParams = CreateEventParams(
+      eventName: state.eventName.trim(),
+      eventDate: eventDate,
+      description: state.description.trim(),
+      eventType: state.eventType!,
+      imageUrl: state.eventImageUrl.isNotEmpty ? state.eventImageUrl : null,
+      locationName: state.location.trim(),
+      locationLat: parsedCoordinates?.lat,
+      locationLong: parsedCoordinates?.lng,
+      maxCapacity: int.tryParse(state.maxCapacity),
+    );
+
+    try {
+      await createEventUseCase.execute(eventParams);
+      if (isClosed) return;
+      emit(state.copyWith(submitting: false));
+      _effectController.add(CreateEventSuccessEffect());
+    } on NetworkException {
+      if (isClosed) return;
+      emit(state.copyWith(submitting: false));
+      _effectController.add(CreateEventNoInternetEffect());
+    } on EsmorgaException {
+      if (isClosed) return;
+      emit(state.copyWith(submitting: false));
+      _effectController.add(CreateEventGenericErrorEffect());
+    } catch (_) {
+      if (isClosed) return;
+      emit(state.copyWith(submitting: false));
+      _effectController.add(CreateEventGenericErrorEffect());
+    }
   }
 
   @override

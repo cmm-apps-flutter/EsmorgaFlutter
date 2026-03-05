@@ -12,7 +12,7 @@ import 'package:esmorga_flutter/view/events/event_create/view/create_event_scree
 import 'package:esmorga_flutter/view/events/event_create/view/create_event_date_screen.dart';
 import 'package:esmorga_flutter/view/events/event_create/view/create_event_location_screen.dart';
 import 'package:esmorga_flutter/view/events/event_create/view/create_event_image_screen.dart';
-import 'package:esmorga_flutter/view/events/event_create/model/event_type.dart';
+import 'package:esmorga_flutter/view/events/event_create/model/event_type_extensions.dart';
 import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -56,7 +56,7 @@ void main() {
     when(() => cubit.currentDate).thenReturn(DateTime(2026, 2, 16));
     when(() => cubit.validateAndPreviewImageUrl(any())).thenAnswer((_) async {});
     when(() => cubit.clearEventImageUrl()).thenReturn(null);
-    when(() => cubit.submitImageStep()).thenReturn(null);
+    when(() => cubit.submitImageStep()).thenAnswer((_) async {});
     cubit.emit(const CreateEventState());
   });
 
@@ -156,7 +156,7 @@ void main() {
       when(() => cubit.state).thenReturn(CreateEventState(
         eventName: 'Test Event',
         description: 'Test Description',
-        eventType: EventType.text_party,
+        eventType: EventType.party,
         eventDate: DateTime(2030, 3, 15),
       ));
       when(() => cubit.canProceedFromScreen3()).thenReturn(false);
@@ -172,7 +172,7 @@ void main() {
       when(() => cubit.state).thenReturn(CreateEventState(
         eventName: 'Test Event',
         description: 'Test Description',
-        eventType: EventType.text_party,
+        eventType: EventType.party,
         eventDate: DateTime(2030, 3, 15),
         eventTime: const TimeOfDay(hour: 18, minute: 30),
       ));

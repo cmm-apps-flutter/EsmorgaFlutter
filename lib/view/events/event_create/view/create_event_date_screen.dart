@@ -7,7 +7,7 @@ import 'package:esmorga_flutter/ds/esmorga_row.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
 import 'package:esmorga_flutter/ds/esmorga_timepicker.dart';
 import 'package:esmorga_flutter/view/events/event_create/cubit/create_event_cubit.dart';
-import 'package:esmorga_flutter/view/events/event_create/model/event_type.dart';
+import 'package:esmorga_flutter/view/events/event_create/model/event_type_extensions.dart';
 import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -118,6 +118,15 @@ class _CreateEventDateScreenState extends State<CreateEventDateScreen> {
                         ),
                       ),
                     ),
+                    if (state.eventDateError != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: EsmorgaText(
+                          key: const Key('create_event_date_error'),
+                          text: state.eventDateError!,
+                          style: EsmorgaTextStyle.captionError,
+                        ),
+                      ),
                     const SizedBox(height: 32.0),
                     EsmorgaButton(
                       key: const Key('create_event_date_continue_button'),

@@ -1,4 +1,5 @@
 import 'package:esmorga_flutter/data/event/event_datasource.dart';
+import 'package:esmorga_flutter/datasource_remote/event/create_event_remote_model.dart';
 import 'package:esmorga_flutter/data/event/model/event_attendees_data_model.dart';
 import 'package:esmorga_flutter/data/event/model/event_data_model.dart';
 import 'package:esmorga_flutter/datasource_local/event/event_local_model.dart';
@@ -122,5 +123,10 @@ class EventLocalDatasourceImpl implements EventDatasource {
       }
     }
     return paidStatusMap;
+  }
+
+  @override
+  Future<void> createEvent(CreateEventRemoteModel eventData) async {
+    throw UnimplementedError('createEvent is not supported by local datasource');
   }
 }

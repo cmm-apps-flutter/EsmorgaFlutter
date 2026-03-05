@@ -12,6 +12,7 @@ import 'package:esmorga_flutter/view/home_tab/cubit/home_tab_effect.dart';
 import 'package:esmorga_flutter/view/home_tab/cubit/home_tab_state.dart';
 import 'package:esmorga_flutter/view/home_tab/model/home_tab_ui_model.dart';
 import 'package:esmorga_flutter/view/l10n/localization_service.dart';
+import 'package:esmorga_flutter/view/navigation/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -20,11 +21,13 @@ import 'package:esmorga_flutter/view/home_tab/model/poll_ui_model.dart';
 class HomeTabScreen extends StatelessWidget {
   final Future<void> Function(Event) onDetailsClicked;
   final Future<void> Function(Poll) onPollClicked;
+  final HomeTabMessage? homeTabMessage;
 
   const HomeTabScreen({
     super.key,
     required this.onDetailsClicked,
     required this.onPollClicked,
+    this.homeTabMessage,
   });
 
   @override
@@ -34,6 +37,7 @@ class HomeTabScreen extends StatelessWidget {
       child: _HomeTabForm(
         onDetailsClicked: onDetailsClicked,
         onPollClicked: onPollClicked,
+        homeTabMessage: homeTabMessage,
       ),
     );
   }
@@ -42,10 +46,12 @@ class HomeTabScreen extends StatelessWidget {
 class _HomeTabForm extends StatefulWidget {
   final Future<void> Function(Event) onDetailsClicked;
   final Future<void> Function(Poll) onPollClicked;
+  final HomeTabMessage? homeTabMessage;
 
   const _HomeTabForm({
     required this.onDetailsClicked,
     required this.onPollClicked,
+    this.homeTabMessage,
   });
 
   @override
@@ -60,7 +66,8 @@ class _HomeTabFormState extends State<_HomeTabForm> {
   void initState() {
     super.initState();
     _cubit = context.read<HomeTabCubit>();
-    _cubit.loadEvents();
+    final shouldForceRefresh = widget.homeTabMessage == HomeTabMessage.eventCreated;
+    _cubit.loadEvents(forceRefresh: shouldForceRefresh);
     _effectSubscription = _cubit.effects.listen((effect) async {
       if (effect is NavigateToEventDetailsEffect) {
         await widget.onDetailsClicked(effect.event);
@@ -69,6 +76,22 @@ class _HomeTabFormState extends State<_HomeTabForm> {
         await widget.onPollClicked(effect.poll);
         _cubit.loadEvents();
       }
+    });
+    _showSnackbarIfNeeded();
+  }
+
+  void _showSnackbarIfNeeded() {
+    final message = widget.homeTabMessage;
+    if (message == null) return;
+    final l10n = getIt<LocalizationService>().current;
+    final displayText = switch (message) {
+      HomeTabMessage.eventCreated => l10n.snackbarEventCreated,
+    };
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        EsmorgaSnackbar(displayText),
+      );
     });
   }
 

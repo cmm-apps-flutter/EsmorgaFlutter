@@ -172,5 +172,8 @@
   "buttonCreateEvent": "Create event",
   "inlineErrorImageUrlRequired": "Please enter a valid URL",
   "snackbarCouldNotOpenEmailApp": "Could not open email app",
-  "snackbarCouldNotOpenMaps": "Could not open maps"
+  "snackbarCouldNotOpenMaps": "Could not open maps",
+  "snackbarEventCreated": "Event created successfully!",
+  "inlineErrorEventDatePast": "The selected date is in the past",
+  "inlineErrorEventTimePast": "The selected time is in the past"
 }

@@ -11,3 +11,7 @@ class EsmorgaException implements Exception {
 class EventFullException extends EsmorgaException {
   EventFullException() : super(code: 422, message: 'Event is full');
 }
+
+class NetworkException extends EsmorgaException {
+  NetworkException() : super(code: 0, message: 'Network unavailable');
+}

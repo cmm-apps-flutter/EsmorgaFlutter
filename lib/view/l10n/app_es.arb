@@ -158,5 +158,8 @@
   "buttonCreateEvent": "Crear evento",
   "inlineErrorImageUrlRequired": "Introduzca una URL válida",
   "snackbarCouldNotOpenEmailApp": "No se pudo abrir la app de correo",
-  "snackbarCouldNotOpenMaps": "No se pudo abrir el mapa"
+  "snackbarCouldNotOpenMaps": "No se pudo abrir el mapa",
+  "snackbarEventCreated": "Evento creado correctamente",
+  "inlineErrorEventDatePast": "La fecha seleccionada ya ha pasado",
+  "inlineErrorEventTimePast": "La hora seleccionada ya ha pasado"
 }

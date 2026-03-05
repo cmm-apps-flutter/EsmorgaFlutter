@@ -18,11 +18,12 @@ class CreateEventState extends Equatable {
   final String? maxCapacityError;
   final String eventImageUrl;
   final String? eventImageUrlError;
+  final bool submitting;
 
   const CreateEventState({
     this.eventName = '',
     this.description = '',
-    this.eventType = EventType.text_party,
+    this.eventType = EventType.party,
     this.eventNameError,
     this.descriptionError,
     this.eventDate,
@@ -37,6 +38,7 @@ class CreateEventState extends Equatable {
     this.maxCapacityError,
     this.eventImageUrl = '',
     this.eventImageUrlError,
+    this.submitting = false,
   });
 
   CreateEventState copyWith({
@@ -57,8 +59,11 @@ class CreateEventState extends Equatable {
     String? maxCapacityError,
     String? eventImageUrl,
     String? eventImageUrlError,
+    bool? submitting,
     bool clearDate = false,
     bool clearTime = false,
+    bool clearNameError = false,
+    bool clearDescriptionError = false,
     bool clearDateError = false,
     bool clearLocationError = false,
     bool clearCoordinatesError = false,
@@ -69,8 +74,8 @@ class CreateEventState extends Equatable {
       eventName: eventName ?? this.eventName,
       description: description ?? this.description,
       eventType: eventType ?? this.eventType,
-      eventNameError: eventNameError,
-      descriptionError: descriptionError,
+      eventNameError: clearNameError ? null : (eventNameError ?? this.eventNameError),
+      descriptionError: clearDescriptionError ? null : (descriptionError ?? this.descriptionError),
       eventDate: clearDate ? null : (eventDate ?? this.eventDate),
       eventTime: clearTime ? null : (eventTime ?? this.eventTime),
       eventDateError: clearDateError ? null : (eventDateError ?? this.eventDateError),
@@ -83,9 +88,10 @@ class CreateEventState extends Equatable {
       maxCapacityError: clearMaxCapacityError ? null : (maxCapacityError ?? this.maxCapacityError),
       eventImageUrl: eventImageUrl ?? this.eventImageUrl,
       eventImageUrlError: clearEventImageUrlError ? null : (eventImageUrlError ?? this.eventImageUrlError),
+      submitting: submitting ?? this.submitting,
     );
   }
 
   @override
-  List<Object?> get props => [eventName, description, eventType, eventNameError, descriptionError, eventDate, eventTime, eventDateError, formattedEventDate, location, coordinates, maxCapacity, locationError, coordinatesError, maxCapacityError, eventImageUrl, eventImageUrlError];
+  List<Object?> get props => [eventName, description, eventType, eventNameError, descriptionError, eventDate, eventTime, eventDateError, formattedEventDate, location, coordinates, maxCapacity, locationError, coordinatesError, maxCapacityError, eventImageUrl, eventImageUrlError, submitting];
 }

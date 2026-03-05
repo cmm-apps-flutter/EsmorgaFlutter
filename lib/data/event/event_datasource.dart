@@ -1,3 +1,4 @@
+import 'package:esmorga_flutter/datasource_remote/event/create_event_remote_model.dart';
 import 'package:esmorga_flutter/data/event/model/event_attendees_data_model.dart';
 import 'package:esmorga_flutter/data/event/model/event_data_model.dart';
 import 'package:esmorga_flutter/datasource_local/event/event_local_model.dart';
@@ -25,4 +26,6 @@ abstract class EventDatasource {
   Future<EventAttendeesDataModel> getEventAttendees(String eventId) async {
     throw UnimplementedError('getEventAttendees is not supported by this datasource');
   }
+
+  Future<void> createEvent(CreateEventRemoteModel eventData);
 }
