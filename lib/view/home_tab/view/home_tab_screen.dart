@@ -11,6 +11,7 @@ import 'package:esmorga_flutter/view/home_tab/cubit/home_tab_cubit.dart';
 import 'package:esmorga_flutter/view/home_tab/cubit/home_tab_effect.dart';
 import 'package:esmorga_flutter/view/home_tab/cubit/home_tab_state.dart';
 import 'package:esmorga_flutter/view/home_tab/model/home_tab_ui_model.dart';
+import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
 import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:esmorga_flutter/view/navigation/app_routes.dart';
 import 'package:flutter/material.dart';
@@ -60,12 +61,14 @@ class _HomeTabForm extends StatefulWidget {
 
 class _HomeTabFormState extends State<_HomeTabForm> {
   late final HomeTabCubit _cubit;
+  late final AppLocalizations _l10n;
   StreamSubscription<HomeTabEffect>? _effectSubscription;
 
   @override
   void initState() {
     super.initState();
     _cubit = context.read<HomeTabCubit>();
+    _l10n = getIt<LocalizationService>().current;
     final shouldForceRefresh = widget.homeTabMessage == HomeTabMessage.eventCreated;
     _cubit.loadEvents(forceRefresh: shouldForceRefresh);
     _effectSubscription = _cubit.effects.listen((effect) async {
@@ -83,16 +86,14 @@ class _HomeTabFormState extends State<_HomeTabForm> {
   void _showSnackbarIfNeeded() {
     final message = widget.homeTabMessage;
     if (message == null) return;
-    final l10n = getIt<LocalizationService>().current;
-    final displayText = switch (message) {
-      HomeTabMessage.eventCreated => l10n.snackbarEventCreated,
-    };
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        EsmorgaSnackbar(displayText),
-      );
-    });
+    if (message == HomeTabMessage.eventCreated) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          EsmorgaSnackbar(_l10n.snackbarEventCreated),
+        );
+      });
+    }
   }
 
   @override
@@ -103,26 +104,25 @@ class _HomeTabFormState extends State<_HomeTabForm> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = getIt<LocalizationService>().current;
     return Scaffold(
       body: SafeArea(
         child: BlocListener<HomeTabCubit, HomeTabState>(
           listenWhen: (previous, current) =>
               previous.showNoNetworkPrompt == false && current.showNoNetworkPrompt == true,
           listener: (context, state) {
-            ScaffoldMessenger.of(context).showSnackBar(EsmorgaSnackbar(l10n.snackbarNoInternet));
+            ScaffoldMessenger.of(context).showSnackBar(EsmorgaSnackbar(_l10n.snackbarNoInternet));
             _cubit.clearNoNetworkPrompt();
           },
           child: BlocBuilder<HomeTabCubit, HomeTabState>(
             builder: (context, state) {
               Widget body;
               if (state.loading) {
-                body = HomeTabLoadingWidget(title: l10n.screenEventListLoading);
+                body = HomeTabLoadingWidget(title: _l10n.screenEventListLoading);
               } else if (state.error != null) {
                 body = HomeTabErrorWidget(
-                  title: l10n.defaultErrorTitle,
-                  message: l10n.defaultErrorBody,
-                  retryText: l10n.buttonRetry,
+                  title: _l10n.defaultErrorTitle,
+                  message: _l10n.defaultErrorBody,
+                  retryText: _l10n.buttonRetry,
                   onRetry: () => _cubit.loadEvents(),
                 );
               } else {
@@ -139,7 +139,7 @@ class _HomeTabFormState extends State<_HomeTabForm> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
                     child: EsmorgaText(
-                      text: l10n.titleExplore,
+                      text: _l10n.titleExplore,
                       style: EsmorgaTextStyle.heading1,
                       key: const Key('event_list_screen_title'),
                     ),

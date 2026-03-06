@@ -97,7 +97,7 @@ class _CreateEventTypeFormState extends State<_CreateEventTypeForm> {
                     ),
                     const SizedBox(height: 16.0),
                     EsmorgaText(
-                      text: _l10n.step2ScreenTitle,
+                      text: _l10n.createEventTypeScreenTitle,
                       style: EsmorgaTextStyle.body1,
                     ),
                     const SizedBox(height: 32.0),

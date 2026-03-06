@@ -111,13 +111,17 @@ class CreateEventCubit extends Cubit<CreateEventState> {
   }) : super(const CreateEventState());
 
   void initFromEventData(EventCreationData eventData) {
+    final rawCoordinates = eventData.coordinates ?? '';
+    final parsed = rawCoordinates.isNotEmpty ? _parseCoordinates(rawCoordinates) : null;
     emit(state.copyWith(
       eventName: eventData.eventName,
       description: eventData.description,
       eventType: eventData.eventType,
       formattedEventDate: eventData.formattedEventDate,
       location: eventData.location ?? '',
-      coordinates: eventData.coordinates ?? '',
+      coordinates: rawCoordinates,
+      parsedLatitude: parsed?.lat,
+      parsedLongitude: parsed?.lng,
       maxCapacity: eventData.maxCapacity?.toString() ?? '',
       eventImageUrl: eventData.eventImageUrl ?? '',
     ));
@@ -298,11 +302,12 @@ class CreateEventCubit extends Cubit<CreateEventState> {
 
   void updateCoordinates(String value) {
     String? error;
+    ({double lat, double lng})? parsed;
     if (value.isNotEmpty) {
       if (!_coordinatesRegExp.hasMatch(value)) {
         error = l10n.inlineErrorCoordinatesInvalid;
       } else {
-        final parsed = _parseCoordinates(value);
+        parsed = _parseCoordinates(value);
         if (parsed == null) {
           error = l10n.inlineErrorCoordinatesOutOfBounds;
         }
@@ -312,6 +317,9 @@ class CreateEventCubit extends Cubit<CreateEventState> {
       coordinates: value,
       coordinatesError: error,
       clearCoordinatesError: error == null,
+      parsedLatitude: parsed?.lat,
+      parsedLongitude: parsed?.lng,
+      clearParsedCoordinates: parsed == null,
     ));
   }
 
@@ -408,7 +416,6 @@ class CreateEventCubit extends Cubit<CreateEventState> {
 
     emit(state.copyWith(submitting: true));
 
-    final parsedCoordinates = _parseCoordinates(state.coordinates);
     final eventParams = CreateEventParams(
       eventName: state.eventName.trim(),
       eventDate: eventDate,
@@ -416,8 +423,8 @@ class CreateEventCubit extends Cubit<CreateEventState> {
       eventType: state.eventType!,
       imageUrl: state.eventImageUrl.isNotEmpty ? state.eventImageUrl : null,
       locationName: state.location.trim(),
-      locationLat: parsedCoordinates?.lat,
-      locationLong: parsedCoordinates?.lng,
+      locationLat: state.parsedLatitude,
+      locationLong: state.parsedLongitude,
       maxCapacity: int.tryParse(state.maxCapacity),
     );
 

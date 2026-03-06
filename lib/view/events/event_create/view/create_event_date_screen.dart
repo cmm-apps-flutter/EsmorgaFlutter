@@ -61,7 +61,7 @@ class _CreateEventDateScreenState extends State<CreateEventDateScreen> {
       initialTime: _cubit.state.eventTime ?? TimeOfDay.now(),
       confirmButtonText: localizations.confirmButtonDialog,
       dismissButtonText: localizations.cancelButtonDialog,
-      selectTimeHelpText: localizations.step3ScreenSelectTimeHelpText,
+      selectTimeHelpText: localizations.createEventDateSelectTimeHelpText,
       onTimeSelected: _cubit.updateEventTime,
     );
   }
@@ -94,7 +94,7 @@ class _CreateEventDateScreenState extends State<CreateEventDateScreen> {
                     ),
                     const SizedBox(height: 16.0),
                     EsmorgaText(
-                      text: localizations.step3ScreenTitle,
+                      text: localizations.createEventDateScreenTitle,
                       style: EsmorgaTextStyle.body1,
                     ),
                     SizedBox(
@@ -106,13 +106,13 @@ class _CreateEventDateScreenState extends State<CreateEventDateScreen> {
                       ),
                     ),
                     Semantics(
-                      label: localizations.step3ScreenRowTime,
+                      label: localizations.createEventDateRowTime,
                       hint: _cubit.formattedEventTime,
                       button: true,
                       child: Focus(
                         child: EsmorgaRow(
                           key: const Key('create_event_time_row'),
-                          title: localizations.step3ScreenRowTime,
+                          title: localizations.createEventDateRowTime,
                           caption: _cubit.formattedEventTime,
                           onClick: _showTimePicker,
                         ),

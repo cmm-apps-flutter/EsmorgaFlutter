@@ -15,6 +15,8 @@ class CreateEventState extends Equatable {
   final String maxCapacity;
   final String? locationError;
   final String? coordinatesError;
+  final double? parsedLatitude;
+  final double? parsedLongitude;
   final String? maxCapacityError;
   final String eventImageUrl;
   final String? eventImageUrlError;
@@ -35,6 +37,8 @@ class CreateEventState extends Equatable {
     this.maxCapacity = '',
     this.locationError,
     this.coordinatesError,
+    this.parsedLatitude,
+    this.parsedLongitude,
     this.maxCapacityError,
     this.eventImageUrl = '',
     this.eventImageUrlError,
@@ -56,6 +60,8 @@ class CreateEventState extends Equatable {
     String? maxCapacity,
     String? locationError,
     String? coordinatesError,
+    double? parsedLatitude,
+    double? parsedLongitude,
     String? maxCapacityError,
     String? eventImageUrl,
     String? eventImageUrlError,
@@ -67,6 +73,7 @@ class CreateEventState extends Equatable {
     bool clearDateError = false,
     bool clearLocationError = false,
     bool clearCoordinatesError = false,
+    bool clearParsedCoordinates = false,
     bool clearMaxCapacityError = false,
     bool clearEventImageUrlError = false,
   }) {
@@ -85,6 +92,8 @@ class CreateEventState extends Equatable {
       maxCapacity: maxCapacity ?? this.maxCapacity,
       locationError: clearLocationError ? null : (locationError ?? this.locationError),
       coordinatesError: clearCoordinatesError ? null : (coordinatesError ?? this.coordinatesError),
+      parsedLatitude: clearParsedCoordinates ? null : (parsedLatitude ?? this.parsedLatitude),
+      parsedLongitude: clearParsedCoordinates ? null : (parsedLongitude ?? this.parsedLongitude),
       maxCapacityError: clearMaxCapacityError ? null : (maxCapacityError ?? this.maxCapacityError),
       eventImageUrl: eventImageUrl ?? this.eventImageUrl,
       eventImageUrlError: clearEventImageUrlError ? null : (eventImageUrlError ?? this.eventImageUrlError),
@@ -93,5 +102,5 @@ class CreateEventState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [eventName, description, eventType, eventNameError, descriptionError, eventDate, eventTime, eventDateError, formattedEventDate, location, coordinates, maxCapacity, locationError, coordinatesError, maxCapacityError, eventImageUrl, eventImageUrlError, submitting];
+  List<Object?> get props => [eventName, description, eventType, eventNameError, descriptionError, eventDate, eventTime, eventDateError, formattedEventDate, location, coordinates, maxCapacity, locationError, coordinatesError, parsedLatitude, parsedLongitude, maxCapacityError, eventImageUrl, eventImageUrlError, submitting];
 }

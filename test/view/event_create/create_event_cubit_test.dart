@@ -92,6 +92,25 @@ void main() {
     );
 
     blocTest<CreateEventCubit, CreateEventState>(
+      'initFromEventData parses coordinates into parsedLatitude and parsedLongitude',
+      build: () => cubit,
+      act: (cubit) => cubit.initFromEventData(const EventCreationData(
+        eventName: 'My Event',
+        description: 'A long enough description',
+        eventType: EventType.party,
+        formattedEventDate: '2030-06-15T18:30:00.000Z',
+        location: 'Barcelona',
+        coordinates: '41.3879, 2.16992',
+      )),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.coordinates, 'coordinates', '41.3879, 2.16992')
+            .having((s) => s.parsedLatitude, 'parsedLatitude', 41.3879)
+            .having((s) => s.parsedLongitude, 'parsedLongitude', 2.16992),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
       'initializeEventDate sets today date from EsmorgaClock',
       build: () => cubit,
       act: (cubit) => cubit.initializeEventDate(),
@@ -338,7 +357,9 @@ void main() {
       expect: () => [
         isA<CreateEventState>()
             .having((s) => s.coordinates, 'coordinates', '')
-            .having((s) => s.coordinatesError, 'coordinatesError', isNull),
+            .having((s) => s.coordinatesError, 'coordinatesError', isNull)
+            .having((s) => s.parsedLatitude, 'parsedLatitude', isNull)
+            .having((s) => s.parsedLongitude, 'parsedLongitude', isNull),
       ],
     );
 
@@ -349,7 +370,9 @@ void main() {
       expect: () => [
         isA<CreateEventState>()
             .having((s) => s.coordinates, 'coordinates', '41.3879, 2.16992')
-            .having((s) => s.coordinatesError, 'coordinatesError', isNull),
+            .having((s) => s.coordinatesError, 'coordinatesError', isNull)
+            .having((s) => s.parsedLatitude, 'parsedLatitude', 41.3879)
+            .having((s) => s.parsedLongitude, 'parsedLongitude', 2.16992),
       ],
     );
 
@@ -360,7 +383,9 @@ void main() {
       expect: () => [
         isA<CreateEventState>()
             .having((s) => s.coordinates, 'coordinates', 'invalid')
-            .having((s) => s.coordinatesError, 'coordinatesError', isNotNull),
+            .having((s) => s.coordinatesError, 'coordinatesError', isNotNull)
+            .having((s) => s.parsedLatitude, 'parsedLatitude', isNull)
+            .having((s) => s.parsedLongitude, 'parsedLongitude', isNull),
       ],
     );
 
@@ -371,7 +396,9 @@ void main() {
       expect: () => [
         isA<CreateEventState>()
             .having((s) => s.coordinates, 'coordinates', '95.0, 2.16992')
-            .having((s) => s.coordinatesError, 'coordinatesError', isNotNull),
+            .having((s) => s.coordinatesError, 'coordinatesError', isNotNull)
+            .having((s) => s.parsedLatitude, 'parsedLatitude', isNull)
+            .having((s) => s.parsedLongitude, 'parsedLongitude', isNull),
       ],
     );
 
@@ -393,7 +420,9 @@ void main() {
       expect: () => [
         isA<CreateEventState>()
             .having((s) => s.coordinates, 'coordinates', '90, 180')
-            .having((s) => s.coordinatesError, 'coordinatesError', isNull),
+            .having((s) => s.coordinatesError, 'coordinatesError', isNull)
+            .having((s) => s.parsedLatitude, 'parsedLatitude', 90.0)
+            .having((s) => s.parsedLongitude, 'parsedLongitude', 180.0),
       ],
     );
 
@@ -404,7 +433,9 @@ void main() {
       expect: () => [
         isA<CreateEventState>()
             .having((s) => s.coordinates, 'coordinates', '-90, -180')
-            .having((s) => s.coordinatesError, 'coordinatesError', isNull),
+            .having((s) => s.coordinatesError, 'coordinatesError', isNull)
+            .having((s) => s.parsedLatitude, 'parsedLatitude', -90.0)
+            .having((s) => s.parsedLongitude, 'parsedLongitude', -180.0),
       ],
     );
 
