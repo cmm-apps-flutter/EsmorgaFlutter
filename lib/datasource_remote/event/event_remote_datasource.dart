@@ -1,4 +1,5 @@
 import 'package:esmorga_flutter/data/event/event_datasource.dart';
+import 'package:esmorga_flutter/datasource_remote/event/create_event_remote_model.dart';
 import 'package:esmorga_flutter/data/event/model/event_attendees_data_model.dart';
 import 'package:esmorga_flutter/data/event/model/event_data_model.dart';
 import 'package:esmorga_flutter/datasource_local/event/event_local_model.dart';
@@ -85,5 +86,10 @@ class EventRemoteDatasourceImpl implements EventDatasource {
   @override
   Future<Map<String, bool>> getPaidStatuses(String eventId) {
     throw UnimplementedError();
+  }
+
+  @override
+  Future<void> createEvent(CreateEventRemoteModel eventData) async {
+    await eventApi.createEvent(eventData);
   }
 }

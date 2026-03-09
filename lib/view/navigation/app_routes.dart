@@ -30,6 +30,8 @@ import 'package:esmorga_flutter/view/events/event_create/cubit/create_event_cubi
 import 'package:esmorga_flutter/view/splash/cubit/splash_cubit.dart';
 import 'package:esmorga_flutter/view/splash/view/splash_screen.dart';
 
+enum HomeTabMessage { eventCreated }
+
 class AppRoutes {
   static const String splash = '/splash';
   static const String login = '/login';
@@ -249,7 +251,7 @@ class AppRoutes {
                 ..initFromEventData(eventData),
               child: CreateEventImageScreen(
                 onSubmitSuccess: () {
-                  // TODO
+                  context.go(eventList, extra: HomeTabMessage.eventCreated);
                 },
                 onBackClicked: () => context.pop(),
               ),
@@ -261,20 +263,24 @@ class AppRoutes {
           routes: [
             GoRoute(
               path: eventList,
-              pageBuilder: (context, state) => CustomTransitionPage(
-                key: state.pageKey,
-                child: HomeTabScreen(
-                  onDetailsClicked: (event) async {
-                    await context.push(AppRoutes.eventDetail, extra: event);
+              pageBuilder: (context, state) {
+                final homeTabMessage = state.extra as HomeTabMessage?;
+                return CustomTransitionPage(
+                  key: state.pageKey,
+                  child: HomeTabScreen(
+                    homeTabMessage: homeTabMessage,
+                    onDetailsClicked: (event) async {
+                      await context.push(AppRoutes.eventDetail, extra: event);
+                    },
+                    onPollClicked: (poll) async {
+                      await context.push(AppRoutes.pollDetail, extra: poll);
+                    },
+                  ),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    return FadeTransition(opacity: animation, child: child);
                   },
-                  onPollClicked: (poll) async {
-                    await context.push(AppRoutes.pollDetail, extra: poll);
-                  },
-                ),
-                transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                  return FadeTransition(opacity: animation, child: child);
-                },
-              ),
+                );
+              },
             ),
             GoRoute(
               path: myEvents,

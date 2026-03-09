@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:esmorga_flutter/datasource_remote/event/create_event_remote_model.dart';
 import 'package:esmorga_flutter/domain/error/exceptions.dart';
 import 'package:esmorga_flutter/datasource_remote/config/environment_config.dart';
 import 'package:esmorga_flutter/datasource_remote/event/event_attendees_remote_model.dart';
@@ -116,6 +118,36 @@ class EsmorgaApi {
       throw Exception('Unauthorized');
     } else {
       throw Exception('Failed to vote');
+    }
+  }
+
+  Future<void> createEvent(CreateEventRemoteModel eventData) async {
+    final http.Response result;
+    try {
+      result = await authenticatedHttpClient.post(
+        Uri.parse('${baseUrl}events'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(eventData.toJson()),
+      );
+    } on SocketException {
+      throw NetworkException();
+    } on http.ClientException {
+      throw NetworkException();
+    }
+    if (result.statusCode == 201) {
+      return;
+    } else {
+      String errorMessage = 'Failed to create event';
+      try {
+        final body = json.decode(result.body) as Map<String, dynamic>;
+        if (body.containsKey('detail')) {
+          errorMessage = body['detail'] as String;
+        }
+      } catch (_) {}
+      throw EsmorgaException(
+        code: result.statusCode,
+        message: errorMessage,
+      );
     }
   }
 }

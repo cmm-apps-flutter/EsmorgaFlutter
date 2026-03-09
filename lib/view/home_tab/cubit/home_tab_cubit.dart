@@ -28,13 +28,13 @@ class HomeTabCubit extends Cubit<HomeTabState> {
     required this.userRepository,
   }) : super(const HomeTabState());
 
-  Future<void> loadEvents() async => _load();
+  Future<void> loadEvents({bool forceRefresh = false}) async => _load(forceRefresh: forceRefresh);
   Future<void> retry() async => _load();
 
-  Future<void> _load() async {
+  Future<void> _load({bool forceRefresh = false}) async {
     emit(state.copyWith(loading: true, error: null, showNoNetworkPrompt: false));
     try {
-      final eventsFuture = eventRepository.getEvents();
+      final eventsFuture = eventRepository.getEvents(forceRefresh: forceRefresh);
 
       bool isAuthenticated = false;
       try {

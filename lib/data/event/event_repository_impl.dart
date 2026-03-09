@@ -1,6 +1,8 @@
 import 'package:esmorga_flutter/data/cache_helper.dart';
 import 'package:esmorga_flutter/data/event/event_datasource.dart';
 import 'package:esmorga_flutter/data/event/mapper/event_mapper.dart';
+import 'package:esmorga_flutter/datasource_remote/event/create_event_remote_model.dart';
+import 'package:esmorga_flutter/domain/event/model/create_event_params.dart';
 import 'package:esmorga_flutter/data/user/datasource/user_datasource.dart';
 import 'package:esmorga_flutter/data/event/model/event_data_model.dart';
 import 'package:esmorga_flutter/datasource_local/event/event_local_model.dart';
@@ -56,7 +58,6 @@ class EventRepositoryImpl implements EventRepository {
   }
 
 
-
   Future<List<EventDataModel>> _getEventsFromRemote() async {
     final combinedList = <EventDataModel>[];
     final remoteEventList = await remoteEventDatasource.getEvents();
@@ -105,5 +106,11 @@ class EventRepositoryImpl implements EventRepository {
   @override
   Future<Map<String, bool>> getPaidStatus(String eventId) async {
     return await localEventDatasource.getPaidStatuses(eventId);
+  }
+
+  @override
+  Future<void> createEvent(CreateEventParams eventData) async {
+    final dataModel = CreateEventRemoteModel.fromParams(eventData);
+    await remoteEventDatasource.createEvent(dataModel);
   }
 }

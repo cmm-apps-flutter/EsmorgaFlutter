@@ -7,7 +7,7 @@ import 'package:esmorga_flutter/ds/esmorga_row.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
 import 'package:esmorga_flutter/ds/esmorga_timepicker.dart';
 import 'package:esmorga_flutter/view/events/event_create/cubit/create_event_cubit.dart';
-import 'package:esmorga_flutter/view/events/event_create/model/event_type.dart';
+import 'package:esmorga_flutter/view/events/event_create/model/event_type_extensions.dart';
 import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -61,7 +61,7 @@ class _CreateEventDateScreenState extends State<CreateEventDateScreen> {
       initialTime: _cubit.state.eventTime ?? TimeOfDay.now(),
       confirmButtonText: localizations.confirmButtonDialog,
       dismissButtonText: localizations.cancelButtonDialog,
-      selectTimeHelpText: localizations.step3ScreenSelectTimeHelpText,
+      selectTimeHelpText: localizations.createEventDateSelectTimeHelpText,
       onTimeSelected: _cubit.updateEventTime,
     );
   }
@@ -94,7 +94,7 @@ class _CreateEventDateScreenState extends State<CreateEventDateScreen> {
                     ),
                     const SizedBox(height: 16.0),
                     EsmorgaText(
-                      text: localizations.step3ScreenTitle,
+                      text: localizations.createEventDateScreenTitle,
                       style: EsmorgaTextStyle.body1,
                     ),
                     SizedBox(
@@ -106,18 +106,27 @@ class _CreateEventDateScreenState extends State<CreateEventDateScreen> {
                       ),
                     ),
                     Semantics(
-                      label: localizations.step3ScreenRowTime,
+                      label: localizations.createEventDateRowTime,
                       hint: _cubit.formattedEventTime,
                       button: true,
                       child: Focus(
                         child: EsmorgaRow(
                           key: const Key('create_event_time_row'),
-                          title: localizations.step3ScreenRowTime,
+                          title: localizations.createEventDateRowTime,
                           caption: _cubit.formattedEventTime,
                           onClick: _showTimePicker,
                         ),
                       ),
                     ),
+                    if (state.eventDateError != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: EsmorgaText(
+                          key: const Key('create_event_date_error'),
+                          text: state.eventDateError!,
+                          style: EsmorgaTextStyle.captionError,
+                        ),
+                      ),
                     const SizedBox(height: 32.0),
                     EsmorgaButton(
                       key: const Key('create_event_date_continue_button'),

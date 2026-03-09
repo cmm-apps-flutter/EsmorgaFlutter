@@ -1,8 +1,11 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:esmorga_flutter/di.dart';
+import 'package:esmorga_flutter/domain/error/exceptions.dart';
+import 'package:esmorga_flutter/domain/event/model/create_event_params.dart';
+import 'package:esmorga_flutter/domain/event/model/event_type.dart';
+import 'package:esmorga_flutter/domain/event/usecase/create_event_use_case.dart';
 import 'package:esmorga_flutter/view/dateformatting/esmorga_date_time_formatter.dart';
 import 'package:esmorga_flutter/view/events/event_create/cubit/create_event_cubit.dart';
-import 'package:esmorga_flutter/view/events/event_create/model/event_type.dart';
 import 'package:esmorga_flutter/view/l10n/app_localizations_en.dart';
 import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:esmorga_flutter/view/util/esmorga_clock.dart';
@@ -16,17 +19,31 @@ class _MockDateTimeFormatter extends Mock implements EsmorgaDateTimeFormatter {}
 
 class _MockClock extends Mock implements EsmorgaClock {}
 
+class _MockCreateEventUseCase extends Mock implements CreateEventUseCase {}
+
 void main() {
   late CreateEventCubit cubit;
   late _MockLocalizationService mockL10nService;
   late _MockDateTimeFormatter mockFormatter;
   late _MockClock mockClock;
+  late _MockCreateEventUseCase mockCreateEventUseCase;
   final l10n = AppLocalizationsEn();
+
+  setUpAll(() {
+    registerFallbackValue(CreateEventParams(
+      eventName: '',
+      eventDate: '',
+      description: '',
+      eventType: EventType.party,
+      locationName: '',
+    ));
+  });
 
   setUp(() {
     mockL10nService = _MockLocalizationService();
     mockFormatter = _MockDateTimeFormatter();
     mockClock = _MockClock();
+    mockCreateEventUseCase = _MockCreateEventUseCase();
     getIt.registerSingleton<LocalizationService>(mockL10nService);
     when(() => mockL10nService.current).thenReturn(l10n);
     when(() => mockClock.now()).thenReturn(DateTime(2026, 2, 19));
@@ -35,6 +52,7 @@ void main() {
       dateTimeFormatter: mockFormatter,
       clock: mockClock,
       imageLoader: (_) async => false,
+      createEventUseCase: mockCreateEventUseCase,
     );
   });
 
@@ -47,7 +65,7 @@ void main() {
     test('initial state has default values', () {
       expect(cubit.state.eventName, '');
       expect(cubit.state.description, '');
-      expect(cubit.state.eventType, EventType.text_party);
+      expect(cubit.state.eventType, EventType.party);
       expect(cubit.state.eventDate, isNull);
       expect(cubit.state.eventTime, isNull);
       expect(cubit.state.eventDateError, isNull);
@@ -59,17 +77,36 @@ void main() {
       act: (cubit) => cubit.initFromEventData(const EventCreationData(
         eventName: 'My Event',
         description: 'A long enough description',
-        eventType: EventType.text_party,
+        eventType: EventType.party,
         formattedEventDate: '2030-06-15T18:30:00.000Z',
       )),
       expect: () => [
         isA<CreateEventState>()
             .having((s) => s.eventName, 'eventName', 'My Event')
             .having((s) => s.description, 'description', 'A long enough description')
-            .having((s) => s.eventType, 'eventType', EventType.text_party)
+            .having((s) => s.eventType, 'eventType', EventType.party)
             .having((s) => s.formattedEventDate, 'formattedEventDate', '2030-06-15T18:30:00.000Z')
             .having((s) => s.eventNameError, 'eventNameError', isNull)
             .having((s) => s.descriptionError, 'descriptionError', isNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'initFromEventData parses coordinates into parsedLatitude and parsedLongitude',
+      build: () => cubit,
+      act: (cubit) => cubit.initFromEventData(const EventCreationData(
+        eventName: 'My Event',
+        description: 'A long enough description',
+        eventType: EventType.party,
+        formattedEventDate: '2030-06-15T18:30:00.000Z',
+        location: 'Barcelona',
+        coordinates: '41.3879, 2.16992',
+      )),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.coordinates, 'coordinates', '41.3879, 2.16992')
+            .having((s) => s.parsedLatitude, 'parsedLatitude', 41.3879)
+            .having((s) => s.parsedLongitude, 'parsedLongitude', 2.16992),
       ],
     );
 
@@ -105,6 +142,13 @@ void main() {
             .having((s) => s.eventDateError, 'eventDateError', isNotNull),
       ],
     );
+
+    test('updateEventTime with past time on today sets eventDateError', () {
+      when(() => mockClock.now()).thenReturn(DateTime(2026, 2, 19, 14, 0));
+      cubit.updateEventDate(DateTime(2026, 2, 19));
+      cubit.updateEventTime(const TimeOfDay(hour: 13, minute: 0));
+      expect(cubit.state.eventDateError, l10n.inlineErrorEventTimePast);
+    });
 
     blocTest<CreateEventCubit, CreateEventState>(
       'updateEventTime sets time correctly',
@@ -171,7 +215,7 @@ void main() {
 
       cubit.updateEventName('Test Event');
       cubit.updateDescription('A valid test description text');
-      cubit.updateEventType(EventType.text_party);
+      cubit.updateEventType(EventType.party);
       cubit.updateEventDate(DateTime(2030, 6, 15));
       cubit.updateEventTime(const TimeOfDay(hour: 18, minute: 30));
 
@@ -180,7 +224,7 @@ void main() {
         emits(isA<CreateEventDateConfirmedEffect>()
             .having((e) => e.eventData.eventName, 'eventName', 'Test Event')
             .having((e) => e.eventData.description, 'description', 'A valid test description text')
-            .having((e) => e.eventData.eventType, 'eventType', EventType.text_party)
+            .having((e) => e.eventData.eventType, 'eventType', EventType.party)
             .having((e) => e.eventData.formattedEventDate, 'formattedEventDate', '2030-06-15T18:30:00.000Z')),
       );
 
@@ -191,7 +235,7 @@ void main() {
     test('submitDateStep does nothing when date is incomplete', () async {
       cubit.updateEventName('Test Event');
       cubit.updateDescription('A valid test description text');
-      cubit.updateEventType(EventType.text_party);
+      cubit.updateEventType(EventType.party);
       cubit.updateEventDate(DateTime(2030, 6, 15));
 
       final emittedEffects = <CreateEventEffect>[];
@@ -313,7 +357,9 @@ void main() {
       expect: () => [
         isA<CreateEventState>()
             .having((s) => s.coordinates, 'coordinates', '')
-            .having((s) => s.coordinatesError, 'coordinatesError', isNull),
+            .having((s) => s.coordinatesError, 'coordinatesError', isNull)
+            .having((s) => s.parsedLatitude, 'parsedLatitude', isNull)
+            .having((s) => s.parsedLongitude, 'parsedLongitude', isNull),
       ],
     );
 
@@ -324,7 +370,9 @@ void main() {
       expect: () => [
         isA<CreateEventState>()
             .having((s) => s.coordinates, 'coordinates', '41.3879, 2.16992')
-            .having((s) => s.coordinatesError, 'coordinatesError', isNull),
+            .having((s) => s.coordinatesError, 'coordinatesError', isNull)
+            .having((s) => s.parsedLatitude, 'parsedLatitude', 41.3879)
+            .having((s) => s.parsedLongitude, 'parsedLongitude', 2.16992),
       ],
     );
 
@@ -335,7 +383,9 @@ void main() {
       expect: () => [
         isA<CreateEventState>()
             .having((s) => s.coordinates, 'coordinates', 'invalid')
-            .having((s) => s.coordinatesError, 'coordinatesError', isNotNull),
+            .having((s) => s.coordinatesError, 'coordinatesError', isNotNull)
+            .having((s) => s.parsedLatitude, 'parsedLatitude', isNull)
+            .having((s) => s.parsedLongitude, 'parsedLongitude', isNull),
       ],
     );
 
@@ -346,7 +396,9 @@ void main() {
       expect: () => [
         isA<CreateEventState>()
             .having((s) => s.coordinates, 'coordinates', '95.0, 2.16992')
-            .having((s) => s.coordinatesError, 'coordinatesError', isNotNull),
+            .having((s) => s.coordinatesError, 'coordinatesError', isNotNull)
+            .having((s) => s.parsedLatitude, 'parsedLatitude', isNull)
+            .having((s) => s.parsedLongitude, 'parsedLongitude', isNull),
       ],
     );
 
@@ -368,7 +420,9 @@ void main() {
       expect: () => [
         isA<CreateEventState>()
             .having((s) => s.coordinates, 'coordinates', '90, 180')
-            .having((s) => s.coordinatesError, 'coordinatesError', isNull),
+            .having((s) => s.coordinatesError, 'coordinatesError', isNull)
+            .having((s) => s.parsedLatitude, 'parsedLatitude', 90.0)
+            .having((s) => s.parsedLongitude, 'parsedLongitude', 180.0),
       ],
     );
 
@@ -379,7 +433,9 @@ void main() {
       expect: () => [
         isA<CreateEventState>()
             .having((s) => s.coordinates, 'coordinates', '-90, -180')
-            .having((s) => s.coordinatesError, 'coordinatesError', isNull),
+            .having((s) => s.coordinatesError, 'coordinatesError', isNull)
+            .having((s) => s.parsedLatitude, 'parsedLatitude', -90.0)
+            .having((s) => s.parsedLongitude, 'parsedLongitude', -180.0),
       ],
     );
 
@@ -496,7 +552,7 @@ void main() {
 
       cubit.updateEventName('Test Event');
       cubit.updateDescription('A valid test description text');
-      cubit.updateEventType(EventType.text_party);
+      cubit.updateEventType(EventType.party);
       cubit.updateEventDate(DateTime(2030, 6, 15));
       cubit.updateEventTime(const TimeOfDay(hour: 18, minute: 30));
       cubit.updateLocation('Barcelona');
@@ -520,7 +576,7 @@ void main() {
     test('submitLocationStep does nothing when date is incomplete', () async {
       cubit.updateEventName('Test Event');
       cubit.updateDescription('A valid test description text');
-      cubit.updateEventType(EventType.text_party);
+      cubit.updateEventType(EventType.party);
       cubit.updateLocation('Barcelona');
 
       final emittedEffects = <CreateEventEffect>[];
@@ -574,6 +630,7 @@ void main() {
         dateTimeFormatter: mockFormatter,
         clock: mockClock,
         imageLoader: (_) async => true,
+        createEventUseCase: mockCreateEventUseCase,
       ),
       act: (cubit) async =>
           cubit.validateAndPreviewImageUrl('https://example.com/photo.jpg?w=400&h=300'),
@@ -591,6 +648,7 @@ void main() {
         dateTimeFormatter: mockFormatter,
         clock: mockClock,
         imageLoader: (_) async => throw Exception('Network failure'),
+        createEventUseCase: mockCreateEventUseCase,
       ),
       act: (cubit) async =>
           cubit.validateAndPreviewImageUrl('https://example.com/photo.png'),
@@ -630,6 +688,7 @@ void main() {
         dateTimeFormatter: mockFormatter,
         clock: mockClock,
         imageLoader: (_) async => false,
+        createEventUseCase: mockCreateEventUseCase,
       ),
       act: (cubit) async =>
           cubit.validateAndPreviewImageUrl('https://example.com/image.jpg'),
@@ -647,6 +706,7 @@ void main() {
         dateTimeFormatter: mockFormatter,
         clock: mockClock,
         imageLoader: (_) async => true,
+        createEventUseCase: mockCreateEventUseCase,
       ),
       act: (cubit) async =>
           cubit.validateAndPreviewImageUrl('  https://example.com/photo.png  '),
@@ -672,20 +732,101 @@ void main() {
       ],
     );
 
-    test('submitImageStep emits CreateEventImageConfirmedEffect', () async {
+    Future<void> setupCubitForSubmission() async {
       cubit.updateEventName('Test Event');
       cubit.updateDescription('A valid test description text');
-      cubit.updateEventType(EventType.text_party);
+      cubit.updateEventType(EventType.party);
+      cubit.updateEventDate(DateTime(2030, 6, 15));
+      cubit.updateEventTime(const TimeOfDay(hour: 18, minute: 30));
+
+      when(() => mockFormatter.formatTimeWithMillisUtcSuffix(18, 30))
+          .thenReturn('18:30:00.000Z');
+      when(() => mockFormatter.formatIsoDateTime(any(), any()))
+          .thenReturn('2030-06-15T18:30:00.000Z');
+      cubit.submitDateStep();
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      cubit.updateLocation('Barcelona');
+    }
+
+    test('submitImageStep emits CreateEventSuccessEffect on success', () async {
+      when(() => mockCreateEventUseCase.execute(any())).thenAnswer((_) async {});
+
+      await setupCubitForSubmission();
 
       final effectFuture = expectLater(
         cubit.effects,
-        emits(isA<CreateEventImageConfirmedEffect>()
-            .having((e) => e.eventData.eventName, 'eventName', 'Test Event')
-            .having((e) => e.eventData.description, 'description', 'A valid test description text')),
+        emits(isA<CreateEventSuccessEffect>()),
       );
 
       cubit.submitImageStep();
       await effectFuture;
+
+      expect(cubit.state.submitting, isFalse);
+    });
+
+    test('submitImageStep emits CreateEventNoInternetEffect on NetworkException', () async {
+      when(() => mockCreateEventUseCase.execute(any())).thenThrow(NetworkException());
+
+      await setupCubitForSubmission();
+
+      final effectFuture = expectLater(
+        cubit.effects,
+        emits(isA<CreateEventNoInternetEffect>()),
+      );
+
+      cubit.submitImageStep();
+      await effectFuture;
+
+      expect(cubit.state.submitting, isFalse);
+    });
+
+    test('submitImageStep emits CreateEventGenericErrorEffect on unknown exception', () async {
+      when(() => mockCreateEventUseCase.execute(any())).thenThrow(Exception('Server error'));
+
+      await setupCubitForSubmission();
+
+      final effectFuture = expectLater(
+        cubit.effects,
+        emits(isA<CreateEventGenericErrorEffect>()),
+      );
+
+      cubit.submitImageStep();
+      await effectFuture;
+
+      expect(cubit.state.submitting, isFalse);
+    });
+
+    test('submitImageStep guards against double submit', () async {
+      when(() => mockCreateEventUseCase.execute(any()))
+          .thenAnswer((_) => Future.delayed(const Duration(seconds: 1)));
+
+      await setupCubitForSubmission();
+
+      cubit.submitImageStep();
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      cubit.submitImageStep();
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      verify(() => mockCreateEventUseCase.execute(any())).called(1);
+    });
+
+    test('submitImageStep does nothing when formattedEventDate is null', () async {
+      cubit.updateEventName('Test Event');
+      cubit.updateDescription('A valid test description text');
+      cubit.updateEventType(EventType.party);
+      cubit.updateLocation('Barcelona');
+
+      final emittedEffects = <CreateEventEffect>[];
+      final subscription = cubit.effects.listen(emittedEffects.add);
+
+      await cubit.submitImageStep();
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(emittedEffects, isEmpty);
+      expect(cubit.state.submitting, isFalse);
+      await subscription.cancel();
     });
 
     test('EventCreationData.fromState includes eventImageUrl when non-empty', () {

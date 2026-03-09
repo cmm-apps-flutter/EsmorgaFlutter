@@ -6,7 +6,7 @@ import 'package:esmorga_flutter/ds/esmorga_button.dart';
 import 'package:esmorga_flutter/ds/esmorga_text.dart';
 import 'package:esmorga_flutter/ds/esmorga_radiobutton.dart';
 import 'package:esmorga_flutter/view/events/event_create/cubit/create_event_cubit.dart';
-import 'package:esmorga_flutter/view/events/event_create/model/event_type.dart';
+import 'package:esmorga_flutter/view/events/event_create/model/event_type_extensions.dart';
 import 'package:esmorga_flutter/view/l10n/localization_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -97,7 +97,7 @@ class _CreateEventTypeFormState extends State<_CreateEventTypeForm> {
                     ),
                     const SizedBox(height: 16.0),
                     EsmorgaText(
-                      text: _l10n.step2ScreenTitle,
+                      text: _l10n.createEventTypeScreenTitle,
                       style: EsmorgaTextStyle.body1,
                     ),
                     const SizedBox(height: 32.0),

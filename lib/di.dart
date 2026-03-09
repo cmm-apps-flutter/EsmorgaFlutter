@@ -4,6 +4,7 @@ import 'package:esmorga_flutter/data/event/event_repository_impl.dart';
 import 'package:esmorga_flutter/data/poll/poll_repository_impl.dart';
 import 'package:esmorga_flutter/datasource_remote/config/environment_config.dart';
 import 'package:esmorga_flutter/domain/event/attendees/usecase/get_event_attendees_use_case.dart';
+import 'package:esmorga_flutter/domain/event/usecase/create_event_use_case.dart';
 import 'package:esmorga_flutter/view/events/event_attendees/cubbit/event_attendees_cubit.dart';
 import 'package:http/io_client.dart';
 import 'package:http_proxy/http_proxy.dart';
@@ -204,6 +205,7 @@ Future<void> setupDi(Locale locale) async {
     getIt<EventRepository>(),
     getIt<UserRepository>(),
   ));
+  getIt.registerSingleton<CreateEventUseCase>(CreateEventUseCase(getIt<EventRepository>()));
 
   // -----------------------------
   // CUBITS
@@ -214,6 +216,7 @@ Future<void> setupDi(Locale locale) async {
     l10n: getIt(),
     dateTimeFormatter: getIt(),
     clock: getIt(),
+    createEventUseCase: getIt(),
     imageLoader: (url) async {
       try {
         final response = await getIt<http.Client>(instanceName: 'base').head(Uri.parse(url));

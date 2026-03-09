@@ -11,7 +11,9 @@ import 'package:esmorga_flutter/view/home_tab/cubit/home_tab_cubit.dart';
 import 'package:esmorga_flutter/view/home_tab/cubit/home_tab_effect.dart';
 import 'package:esmorga_flutter/view/home_tab/cubit/home_tab_state.dart';
 import 'package:esmorga_flutter/view/home_tab/model/home_tab_ui_model.dart';
+import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
 import 'package:esmorga_flutter/view/l10n/localization_service.dart';
+import 'package:esmorga_flutter/view/navigation/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -20,11 +22,13 @@ import 'package:esmorga_flutter/view/home_tab/model/poll_ui_model.dart';
 class HomeTabScreen extends StatelessWidget {
   final Future<void> Function(Event) onDetailsClicked;
   final Future<void> Function(Poll) onPollClicked;
+  final HomeTabMessage? homeTabMessage;
 
   const HomeTabScreen({
     super.key,
     required this.onDetailsClicked,
     required this.onPollClicked,
+    this.homeTabMessage,
   });
 
   @override
@@ -34,6 +38,7 @@ class HomeTabScreen extends StatelessWidget {
       child: _HomeTabForm(
         onDetailsClicked: onDetailsClicked,
         onPollClicked: onPollClicked,
+        homeTabMessage: homeTabMessage,
       ),
     );
   }
@@ -42,10 +47,12 @@ class HomeTabScreen extends StatelessWidget {
 class _HomeTabForm extends StatefulWidget {
   final Future<void> Function(Event) onDetailsClicked;
   final Future<void> Function(Poll) onPollClicked;
+  final HomeTabMessage? homeTabMessage;
 
   const _HomeTabForm({
     required this.onDetailsClicked,
     required this.onPollClicked,
+    this.homeTabMessage,
   });
 
   @override
@@ -54,13 +61,16 @@ class _HomeTabForm extends StatefulWidget {
 
 class _HomeTabFormState extends State<_HomeTabForm> {
   late final HomeTabCubit _cubit;
+  late final AppLocalizations _l10n;
   StreamSubscription<HomeTabEffect>? _effectSubscription;
 
   @override
   void initState() {
     super.initState();
     _cubit = context.read<HomeTabCubit>();
-    _cubit.loadEvents();
+    _l10n = getIt<LocalizationService>().current;
+    final shouldForceRefresh = widget.homeTabMessage == HomeTabMessage.eventCreated;
+    _cubit.loadEvents(forceRefresh: shouldForceRefresh);
     _effectSubscription = _cubit.effects.listen((effect) async {
       if (effect is NavigateToEventDetailsEffect) {
         await widget.onDetailsClicked(effect.event);
@@ -70,6 +80,20 @@ class _HomeTabFormState extends State<_HomeTabForm> {
         _cubit.loadEvents();
       }
     });
+    _showSnackbarIfNeeded();
+  }
+
+  void _showSnackbarIfNeeded() {
+    final message = widget.homeTabMessage;
+    if (message == null) return;
+    if (message == HomeTabMessage.eventCreated) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          EsmorgaSnackbar(_l10n.snackbarEventCreated),
+        );
+      });
+    }
   }
 
   @override
@@ -80,26 +104,25 @@ class _HomeTabFormState extends State<_HomeTabForm> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = getIt<LocalizationService>().current;
     return Scaffold(
       body: SafeArea(
         child: BlocListener<HomeTabCubit, HomeTabState>(
           listenWhen: (previous, current) =>
               previous.showNoNetworkPrompt == false && current.showNoNetworkPrompt == true,
           listener: (context, state) {
-            ScaffoldMessenger.of(context).showSnackBar(EsmorgaSnackbar(l10n.snackbarNoInternet));
+            ScaffoldMessenger.of(context).showSnackBar(EsmorgaSnackbar(_l10n.snackbarNoInternet));
             _cubit.clearNoNetworkPrompt();
           },
           child: BlocBuilder<HomeTabCubit, HomeTabState>(
             builder: (context, state) {
               Widget body;
               if (state.loading) {
-                body = HomeTabLoadingWidget(title: l10n.screenEventListLoading);
+                body = HomeTabLoadingWidget(title: _l10n.screenEventListLoading);
               } else if (state.error != null) {
                 body = HomeTabErrorWidget(
-                  title: l10n.defaultErrorTitle,
-                  message: l10n.defaultErrorBody,
-                  retryText: l10n.buttonRetry,
+                  title: _l10n.defaultErrorTitle,
+                  message: _l10n.defaultErrorBody,
+                  retryText: _l10n.buttonRetry,
                   onRetry: () => _cubit.loadEvents(),
                 );
               } else {
@@ -116,7 +139,7 @@ class _HomeTabFormState extends State<_HomeTabForm> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
                     child: EsmorgaText(
-                      text: l10n.titleExplore,
+                      text: _l10n.titleExplore,
                       style: EsmorgaTextStyle.heading1,
                       key: const Key('event_list_screen_title'),
                     ),
