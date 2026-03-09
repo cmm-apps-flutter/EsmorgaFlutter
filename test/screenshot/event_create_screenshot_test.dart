@@ -51,6 +51,7 @@ void main() {
     when(() => cubit.canProceedFromScreen3()).thenReturn(false);
     when(() => cubit.canProceedFromScreen4()).thenReturn(false);
     when(() => cubit.formattedEventTime).thenReturn(null);
+    when(() => cubit.formattedJoinDeadlineTime).thenReturn(null);
     when(() => cubit.effects).thenAnswer((_) => const Stream.empty());
     when(() => cubit.initializeEventDate()).thenReturn(null);
     when(() => cubit.currentDate).thenReturn(DateTime(2026, 2, 16));
@@ -87,7 +88,7 @@ void main() {
     return BlocProvider<CreateEventCubit>(
       create: (_) => cubit,
       child: CreateEventDateScreen(
-        onNavigateToNextStep: (_, __, ___, ____) {},
+        onNavigateToNextStep: (_) {},
         onBackClicked: () {},
       ),
     );
@@ -175,6 +176,71 @@ void main() {
         eventType: EventType.party,
         eventDate: DateTime(2030, 3, 15),
         eventTime: const TimeOfDay(hour: 18, minute: 30),
+      ));
+      when(() => cubit.canProceedFromScreen3()).thenReturn(true);
+      when(() => cubit.formattedEventTime).thenReturn('18:30');
+    },
+  );
+
+  screenshotGolden(
+    'create_event_date_deadline_enabled',
+    theme: lightTheme,
+    screenshotPath: 'event_create',
+    buildHome: () => buildEventDateScreen(),
+    beforeScreenshot: (tester) async {
+      when(() => cubit.state).thenReturn(CreateEventState(
+        eventName: 'Test Event',
+        description: 'Test Description',
+        eventType: EventType.party,
+        eventDate: DateTime(2030, 3, 15),
+        eventTime: const TimeOfDay(hour: 18, minute: 30),
+        joinDeadlineEnabled: true,
+        joinDeadlineDate: DateTime(2030, 3, 15),
+        joinDeadlineTime: const TimeOfDay(hour: 23, minute: 59),
+      ));
+      when(() => cubit.canProceedFromScreen3()).thenReturn(true);
+      when(() => cubit.formattedEventTime).thenReturn('18:30');
+      when(() => cubit.formattedJoinDeadlineTime).thenReturn('23:59');
+    },
+  );
+
+  screenshotGolden(
+    'create_event_date_deadline_exceeded_error',
+    theme: lightTheme,
+    screenshotPath: 'event_create',
+    buildHome: () => buildEventDateScreen(),
+    beforeScreenshot: (tester) async {
+      final l10n = AppLocalizationsEn();
+      when(() => cubit.state).thenReturn(CreateEventState(
+        eventName: 'Test Event',
+        description: 'Test Description',
+        eventType: EventType.party,
+        eventDate: DateTime(2030, 3, 15),
+        eventTime: const TimeOfDay(hour: 10, minute: 0),
+        joinDeadlineEnabled: true,
+        joinDeadlineDate: DateTime(2030, 3, 16),
+        joinDeadlineTime: const TimeOfDay(hour: 23, minute: 59),
+        joinDeadlineError: l10n.inlineErrorJoinDeadlineExceeded,
+      ));
+      when(() => cubit.canProceedFromScreen3()).thenReturn(false);
+      when(() => cubit.formattedEventTime).thenReturn('10:00');
+      when(() => cubit.formattedJoinDeadlineTime).thenReturn('23:59');
+    },
+  );
+
+  screenshotGolden(
+    'create_event_date_deadline_disabled',
+    theme: lightTheme,
+    screenshotPath: 'event_create',
+    buildHome: () => buildEventDateScreen(),
+    beforeScreenshot: (tester) async {
+      when(() => cubit.state).thenReturn(CreateEventState(
+        eventName: 'Test Event',
+        description: 'Test Description',
+        eventType: EventType.party,
+        eventDate: DateTime(2030, 3, 15),
+        eventTime: const TimeOfDay(hour: 18, minute: 30),
+        joinDeadlineEnabled: false,
       ));
       when(() => cubit.canProceedFromScreen3()).thenReturn(true);
       when(() => cubit.formattedEventTime).thenReturn('18:30');

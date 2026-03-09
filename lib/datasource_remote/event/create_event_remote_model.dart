@@ -11,6 +11,7 @@ class CreateEventRemoteModel {
   final double? locationLat;
   final double? locationLong;
   final int? maxCapacity;
+  final String? joinDeadline;
 
   const CreateEventRemoteModel({
     required this.eventName,
@@ -22,6 +23,7 @@ class CreateEventRemoteModel {
     this.locationLat,
     this.locationLong,
     this.maxCapacity,
+    this.joinDeadline,
   });
 
   factory CreateEventRemoteModel.fromParams(CreateEventParams params) {
@@ -35,6 +37,7 @@ class CreateEventRemoteModel {
       locationLat: params.locationLat,
       locationLong: params.locationLong,
       maxCapacity: params.maxCapacity,
+      joinDeadline: params.joinDeadline,
     );
   }
 
@@ -63,6 +66,9 @@ class CreateEventRemoteModel {
     }
     if (maxCapacity != null) {
       json['maxCapacity'] = maxCapacity;
+    }
+    if (joinDeadline != null) {
+      json['joinDeadline'] = joinDeadline;
     }
     return json;
   }

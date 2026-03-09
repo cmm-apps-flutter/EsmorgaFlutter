@@ -28,6 +28,7 @@ class EventCreationData {
   final String description;
   final EventType? eventType;
   final String? formattedEventDate;
+  final String? formattedJoinDeadline;
   final String? location;
   final String? coordinates;
   final int? maxCapacity;
@@ -38,6 +39,7 @@ class EventCreationData {
     required this.description,
     this.eventType,
     this.formattedEventDate,
+    this.formattedJoinDeadline,
     this.location,
     this.coordinates,
     this.maxCapacity,
@@ -47,6 +49,7 @@ class EventCreationData {
   factory EventCreationData.fromState(
     CreateEventState state, {
     String? formattedEventDate,
+    String? formattedJoinDeadline,
   }) {
     final parsedMaxCapacity = int.tryParse(state.maxCapacity);
     return EventCreationData(
@@ -54,6 +57,7 @@ class EventCreationData {
       description: state.description,
       eventType: state.eventType,
       formattedEventDate: formattedEventDate ?? state.formattedEventDate,
+      formattedJoinDeadline: formattedJoinDeadline ?? state.formattedJoinDeadline,
       location: state.location.isEmpty ? null : state.location,
       coordinates: state.coordinates.isEmpty ? null : state.coordinates,
       maxCapacity: parsedMaxCapacity,
@@ -93,6 +97,7 @@ class CreateEventGenericErrorEffect extends CreateEventEffect {}
 class CreateEventNoInternetEffect extends CreateEventEffect {}
 
 class CreateEventCubit extends Cubit<CreateEventState> {
+  static const _defaultEndOfDayTime = TimeOfDay(hour: 23, minute: 59);
   final AppLocalizations l10n;
   final EsmorgaDateTimeFormatter dateTimeFormatter;
   final EsmorgaClock clock;
@@ -111,6 +116,7 @@ class CreateEventCubit extends Cubit<CreateEventState> {
   }) : super(const CreateEventState());
 
   void initFromEventData(EventCreationData eventData) {
+    final hasDeadline = eventData.formattedJoinDeadline != null;
     final rawCoordinates = eventData.coordinates ?? '';
     final parsed = rawCoordinates.isNotEmpty ? _parseCoordinates(rawCoordinates) : null;
     emit(state.copyWith(
@@ -118,6 +124,8 @@ class CreateEventCubit extends Cubit<CreateEventState> {
       description: eventData.description,
       eventType: eventData.eventType,
       formattedEventDate: eventData.formattedEventDate,
+      joinDeadlineEnabled: hasDeadline,
+      formattedJoinDeadline: eventData.formattedJoinDeadline,
       location: eventData.location ?? '',
       coordinates: rawCoordinates,
       parsedLatitude: parsed?.lat,
@@ -175,6 +183,9 @@ class CreateEventCubit extends Cubit<CreateEventState> {
       eventDateError: dateTimeError,
       clearDateError: dateTimeError == null,
     ));
+    if (state.joinDeadlineEnabled && state.joinDeadlineDate != null) {
+      _revalidateJoinDeadline();
+    }
   }
 
   void updateEventTime(TimeOfDay time) {
@@ -184,6 +195,9 @@ class CreateEventCubit extends Cubit<CreateEventState> {
       eventDateError: timeError,
       clearDateError: timeError == null,
     ));
+    if (state.joinDeadlineEnabled && state.joinDeadlineDate != null) {
+      _revalidateJoinDeadline();
+    }
   }
 
   String? _validateDateTimeInPast(DateTime? date, TimeOfDay? time) {
@@ -205,17 +219,120 @@ class CreateEventCubit extends Cubit<CreateEventState> {
     return null;
   }
 
-  void clearDateAndTime() {
-    emit(state.copyWith(clearDate: true, clearTime: true));
+  void toggleJoinDeadline(bool enabled) {
+    if (enabled) {
+      final defaultDate = state.eventDate ?? clock.now();
+      const defaultTime = _defaultEndOfDayTime;
+      final error = _validateJoinDeadline(defaultDate, defaultTime);
+      emit(state.copyWith(
+        joinDeadlineEnabled: true,
+        joinDeadlineDate: defaultDate,
+        joinDeadlineTime: defaultTime,
+        joinDeadlineError: error,
+        clearJoinDeadlineError: error == null,
+      ));
+    } else {
+      emit(state.copyWith(
+        joinDeadlineEnabled: false,
+        clearJoinDeadline: true,
+      ));
+    }
   }
 
-  String? get formattedEventTime {
-    if (state.eventTime == null) return null;
-    final time = state.eventTime!;
+  void updateJoinDeadlineDate(DateTime date) {
+    final error = _validateJoinDeadline(date, state.joinDeadlineTime);
+    emit(state.copyWith(
+      joinDeadlineDate: date,
+      joinDeadlineError: error,
+      clearJoinDeadlineError: error == null,
+    ));
+  }
+
+  void updateJoinDeadlineTime(TimeOfDay time) {
+    final error = _validateJoinDeadline(state.joinDeadlineDate, time);
+    emit(state.copyWith(
+      joinDeadlineTime: time,
+      joinDeadlineError: error,
+      clearJoinDeadlineError: error == null,
+    ));
+  }
+
+  String? _validateJoinDeadline(DateTime? deadlineDate, TimeOfDay? deadlineTime) {
+    if (deadlineDate == null || deadlineTime == null) return null;
+
+    final now = clock.now();
+    final startOfToday = DateTime(now.year, now.month, now.day);
+    if (deadlineDate.isBefore(startOfToday)) {
+      return l10n.inlineErrorEventDatePast;
+    }
+
+    if (state.eventDate == null) return null;
+
+    final deadlineDateTime = DateTime(
+      deadlineDate.year,
+      deadlineDate.month,
+      deadlineDate.day,
+      deadlineTime.hour,
+      deadlineTime.minute,
+    );
+
+    DateTime eventDateTime;
+    if (state.eventTime != null) {
+      eventDateTime = DateTime(
+        state.eventDate!.year,
+        state.eventDate!.month,
+        state.eventDate!.day,
+        state.eventTime!.hour,
+        state.eventTime!.minute,
+      );
+    } else {
+      eventDateTime = DateTime(
+        state.eventDate!.year,
+        state.eventDate!.month,
+        state.eventDate!.day,
+        _defaultEndOfDayTime.hour,
+        _defaultEndOfDayTime.minute,
+      );
+    }
+
+    if (deadlineDateTime.isAfter(eventDateTime)) {
+      return l10n.inlineErrorJoinDeadlineExceeded;
+    }
+
+    return null;
+  }
+
+  void _revalidateJoinDeadline() {
+    final error = _validateJoinDeadline(state.joinDeadlineDate, state.joinDeadlineTime);
+    emit(state.copyWith(
+      joinDeadlineError: error,
+      clearJoinDeadlineError: error == null,
+    ));
+  }
+
+  String? _formatTime(TimeOfDay? time) {
+    if (time == null) return null;
     final hourString = time.hour.toString().padLeft(2, '0');
     final minuteString = time.minute.toString().padLeft(2, '0');
     return '$hourString:$minuteString';
   }
+
+  String? get formattedJoinDeadlineTime => _formatTime(state.joinDeadlineTime);
+
+  String? getFormattedJoinDeadline() {
+    if (state.joinDeadlineDate == null || state.joinDeadlineTime == null) return null;
+    final time = dateTimeFormatter.formatTimeWithMillisUtcSuffix(
+      state.joinDeadlineTime!.hour,
+      state.joinDeadlineTime!.minute,
+    );
+    return dateTimeFormatter.formatIsoDateTime(state.joinDeadlineDate!, time);
+  }
+
+  void clearDateAndTime() {
+    emit(state.copyWith(clearDate: true, clearTime: true));
+  }
+
+  String? get formattedEventTime => _formatTime(state.eventTime);
 
   String? getFormattedEventDate() {
     if (state.eventDate == null || state.eventTime == null) return null;
@@ -238,9 +355,16 @@ class CreateEventCubit extends Cubit<CreateEventState> {
   }
 
   bool canProceedFromScreen3() {
-    return state.eventDate != null &&
+    final eventDateValid = state.eventDate != null &&
         state.eventTime != null &&
         state.eventDateError == null;
+    if (!eventDateValid) return false;
+    if (state.joinDeadlineEnabled) {
+      return state.joinDeadlineDate != null &&
+          state.joinDeadlineTime != null &&
+          state.joinDeadlineError == null;
+    }
+    return true;
   }
 
   bool canProceedFromScreen4() {
@@ -262,7 +386,11 @@ class CreateEventCubit extends Cubit<CreateEventState> {
       state.location.isNotEmpty &&
       state.locationError == null &&
       state.coordinatesError == null &&
-      state.maxCapacityError == null;
+      state.maxCapacityError == null &&
+      (!state.joinDeadlineEnabled ||
+          (state.joinDeadlineDate != null &&
+              state.joinDeadlineTime != null &&
+              state.joinDeadlineError == null));
 
   void submit() {
     _effectController.add(CreateEventNavigateToEventTypeEffect(
@@ -273,11 +401,22 @@ class CreateEventCubit extends Cubit<CreateEventState> {
   void submitDateStep() {
     final formattedDate = getFormattedEventDate();
     if (formattedDate == null) return;
-    emit(state.copyWith(formattedEventDate: formattedDate));
+
+    String? formattedDeadline;
+    if (state.joinDeadlineEnabled) {
+      formattedDeadline = getFormattedJoinDeadline();
+    }
+
+    emit(state.copyWith(
+      formattedEventDate: formattedDate,
+      formattedJoinDeadline: formattedDeadline,
+    ));
+
     _effectController.add(CreateEventDateConfirmedEffect(
       eventData: EventCreationData.fromState(
         state,
         formattedEventDate: formattedDate,
+        formattedJoinDeadline: formattedDeadline,
       ),
     ));
   }
@@ -426,6 +565,7 @@ class CreateEventCubit extends Cubit<CreateEventState> {
       locationLat: state.parsedLatitude,
       locationLong: state.parsedLongitude,
       maxCapacity: int.tryParse(state.maxCapacity),
+      joinDeadline: state.formattedJoinDeadline,
     );
 
     try {

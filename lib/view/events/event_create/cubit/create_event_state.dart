@@ -10,6 +10,11 @@ class CreateEventState extends Equatable {
   final TimeOfDay? eventTime;
   final String? eventDateError;
   final String? formattedEventDate;
+  final bool joinDeadlineEnabled;
+  final DateTime? joinDeadlineDate;
+  final TimeOfDay? joinDeadlineTime;
+  final String? joinDeadlineError;
+  final String? formattedJoinDeadline;
   final String location;
   final String coordinates;
   final String maxCapacity;
@@ -32,6 +37,11 @@ class CreateEventState extends Equatable {
     this.eventTime,
     this.eventDateError,
     this.formattedEventDate,
+    this.joinDeadlineEnabled = false,
+    this.joinDeadlineDate,
+    this.joinDeadlineTime,
+    this.joinDeadlineError,
+    this.formattedJoinDeadline,
     this.location = '',
     this.coordinates = '',
     this.maxCapacity = '',
@@ -55,6 +65,11 @@ class CreateEventState extends Equatable {
     TimeOfDay? eventTime,
     String? eventDateError,
     String? formattedEventDate,
+    bool? joinDeadlineEnabled,
+    DateTime? joinDeadlineDate,
+    TimeOfDay? joinDeadlineTime,
+    String? joinDeadlineError,
+    String? formattedJoinDeadline,
     String? location,
     String? coordinates,
     String? maxCapacity,
@@ -76,6 +91,8 @@ class CreateEventState extends Equatable {
     bool clearParsedCoordinates = false,
     bool clearMaxCapacityError = false,
     bool clearEventImageUrlError = false,
+    bool clearJoinDeadline = false,
+    bool clearJoinDeadlineError = false,
   }) {
     return CreateEventState(
       eventName: eventName ?? this.eventName,
@@ -87,6 +104,11 @@ class CreateEventState extends Equatable {
       eventTime: clearTime ? null : (eventTime ?? this.eventTime),
       eventDateError: clearDateError ? null : (eventDateError ?? this.eventDateError),
       formattedEventDate: formattedEventDate ?? this.formattedEventDate,
+      joinDeadlineEnabled: joinDeadlineEnabled ?? this.joinDeadlineEnabled,
+      joinDeadlineDate: clearJoinDeadline ? null : (joinDeadlineDate ?? this.joinDeadlineDate),
+      joinDeadlineTime: clearJoinDeadline ? null : (joinDeadlineTime ?? this.joinDeadlineTime),
+      joinDeadlineError: clearJoinDeadlineError ? null : (joinDeadlineError ?? this.joinDeadlineError),
+      formattedJoinDeadline: clearJoinDeadline ? null : (formattedJoinDeadline ?? this.formattedJoinDeadline),
       location: location ?? this.location,
       coordinates: coordinates ?? this.coordinates,
       maxCapacity: maxCapacity ?? this.maxCapacity,
@@ -102,5 +124,5 @@ class CreateEventState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [eventName, description, eventType, eventNameError, descriptionError, eventDate, eventTime, eventDateError, formattedEventDate, location, coordinates, maxCapacity, locationError, coordinatesError, parsedLatitude, parsedLongitude, maxCapacityError, eventImageUrl, eventImageUrlError, submitting];
+  List<Object?> get props => [eventName, description, eventType, eventNameError, descriptionError, eventDate, eventTime, eventDateError, formattedEventDate, joinDeadlineEnabled, joinDeadlineDate, joinDeadlineTime, joinDeadlineError, formattedJoinDeadline, location, coordinates, maxCapacity, locationError, coordinatesError, parsedLatitude, parsedLongitude, maxCapacityError, eventImageUrl, eventImageUrlError, submitting];
 }

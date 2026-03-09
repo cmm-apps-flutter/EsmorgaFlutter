@@ -207,15 +207,10 @@ class AppRoutes {
               create: (_) => getIt<CreateEventCubit>()
                 ..initFromEventData(eventData),
               child: CreateEventDateScreen(
-                onNavigateToNextStep: (eventName, description, eventType, eventDate) {
+                onNavigateToNextStep: (eventData) {
                   context.push(
                     createEventLocation,
-                    extra: EventCreationData(
-                      eventName: eventName,
-                      description: description,
-                      eventType: eventType,
-                      formattedEventDate: eventDate,
-                    ),
+                    extra: eventData,
                   );
                 },
                 onBackClicked: () => context.pop(),
