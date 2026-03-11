@@ -10,6 +10,7 @@ class CreateEventParams {
   final double? locationLat;
   final double? locationLong;
   final int? maxCapacity;
+  final String? joinDeadline;
 
   const CreateEventParams({
     required this.eventName,
@@ -21,5 +22,6 @@ class CreateEventParams {
     this.locationLat,
     this.locationLong,
     this.maxCapacity,
+    this.joinDeadline,
   });
 }

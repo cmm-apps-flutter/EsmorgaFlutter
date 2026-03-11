@@ -849,5 +849,169 @@ void main() {
       );
       expect(data.eventImageUrl, isNull);
     });
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'toggleJoinDeadline(true) sets defaults with event date and 23:59',
+      build: () => cubit,
+      seed: () => CreateEventState(eventDate: DateTime(2030, 6, 15)),
+      act: (cubit) => cubit.toggleJoinDeadline(true),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.joinDeadlineEnabled, 'joinDeadlineEnabled', true)
+            .having((s) => s.joinDeadlineDate, 'joinDeadlineDate', DateTime(2030, 6, 15))
+            .having((s) => s.joinDeadlineTime, 'joinDeadlineTime', const TimeOfDay(hour: 23, minute: 59))
+            .having((s) => s.joinDeadlineError, 'joinDeadlineError', isNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'toggleJoinDeadline(false) clears all deadline state',
+      build: () => cubit,
+      seed: () => CreateEventState(
+        joinDeadlineEnabled: true,
+        joinDeadlineDate: DateTime(2030, 6, 15),
+        joinDeadlineTime: const TimeOfDay(hour: 23, minute: 59),
+      ),
+      act: (cubit) => cubit.toggleJoinDeadline(false),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.joinDeadlineEnabled, 'joinDeadlineEnabled', false)
+            .having((s) => s.joinDeadlineDate, 'joinDeadlineDate', isNull)
+            .having((s) => s.joinDeadlineTime, 'joinDeadlineTime', isNull)
+            .having((s) => s.joinDeadlineError, 'joinDeadlineError', isNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'updateJoinDeadlineDate with date after event sets exceeded error',
+      build: () => cubit,
+      seed: () => CreateEventState(
+        eventDate: DateTime(2030, 6, 15),
+        eventTime: const TimeOfDay(hour: 10, minute: 0),
+        joinDeadlineEnabled: true,
+        joinDeadlineTime: const TimeOfDay(hour: 23, minute: 59),
+      ),
+      act: (cubit) => cubit.updateJoinDeadlineDate(DateTime(2030, 6, 16)),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.joinDeadlineDate, 'joinDeadlineDate', DateTime(2030, 6, 16))
+            .having((s) => s.joinDeadlineError, 'joinDeadlineError', l10n.inlineErrorJoinDeadlineExceeded),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'updateJoinDeadlineDate with valid date clears error',
+      build: () => cubit,
+      seed: () => CreateEventState(
+        eventDate: DateTime(2030, 6, 15),
+        eventTime: const TimeOfDay(hour: 18, minute: 0),
+        joinDeadlineEnabled: true,
+        joinDeadlineTime: const TimeOfDay(hour: 10, minute: 0),
+        joinDeadlineError: l10n.inlineErrorJoinDeadlineExceeded,
+      ),
+      act: (cubit) => cubit.updateJoinDeadlineDate(DateTime(2030, 6, 14)),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.joinDeadlineDate, 'joinDeadlineDate', DateTime(2030, 6, 14))
+            .having((s) => s.joinDeadlineError, 'joinDeadlineError', isNull),
+      ],
+    );
+
+    blocTest<CreateEventCubit, CreateEventState>(
+      'updateJoinDeadlineTime with time after event on same day sets error',
+      build: () => cubit,
+      seed: () => CreateEventState(
+        eventDate: DateTime(2030, 6, 15),
+        eventTime: const TimeOfDay(hour: 10, minute: 0),
+        joinDeadlineEnabled: true,
+        joinDeadlineDate: DateTime(2030, 6, 15),
+      ),
+      act: (cubit) => cubit.updateJoinDeadlineTime(const TimeOfDay(hour: 11, minute: 0)),
+      expect: () => [
+        isA<CreateEventState>()
+            .having((s) => s.joinDeadlineTime, 'joinDeadlineTime', const TimeOfDay(hour: 11, minute: 0))
+            .having((s) => s.joinDeadlineError, 'joinDeadlineError', l10n.inlineErrorJoinDeadlineExceeded),
+      ],
+    );
+
+    test('canProceedFromScreen3 false when deadline enabled with error', () {
+      cubit.updateEventDate(DateTime(2030, 6, 15));
+      cubit.updateEventTime(const TimeOfDay(hour: 18, minute: 30));
+      cubit.toggleJoinDeadline(true);
+      cubit.updateJoinDeadlineDate(DateTime(2030, 6, 16));
+      expect(cubit.canProceedFromScreen3(), isFalse);
+    });
+
+    test('canProceedFromScreen3 true when deadline enabled and valid', () {
+      cubit.updateEventDate(DateTime(2030, 6, 15));
+      cubit.updateEventTime(const TimeOfDay(hour: 18, minute: 30));
+      cubit.toggleJoinDeadline(true);
+      cubit.updateJoinDeadlineDate(DateTime(2030, 6, 14));
+      expect(cubit.canProceedFromScreen3(), isTrue);
+    });
+
+    test('canProceedFromScreen3 true when deadline disabled', () {
+      cubit.updateEventDate(DateTime(2030, 6, 15));
+      cubit.updateEventTime(const TimeOfDay(hour: 18, minute: 30));
+      expect(cubit.canProceedFromScreen3(), isTrue);
+    });
+
+    test('submitDateStep includes formattedJoinDeadline when enabled', () async {
+      when(() => mockFormatter.formatTimeWithMillisUtcSuffix(18, 30))
+          .thenReturn('18:30:00.000Z');
+      when(() => mockFormatter.formatIsoDateTime(any(), any()))
+          .thenReturn('2030-06-15T18:30:00.000Z');
+      when(() => mockFormatter.formatTimeWithMillisUtcSuffix(23, 59))
+          .thenReturn('23:59:00.000Z');
+
+      cubit.updateEventName('Test Event');
+      cubit.updateDescription('A valid test description text');
+      cubit.updateEventType(EventType.party);
+      cubit.updateEventDate(DateTime(2030, 6, 15));
+      cubit.updateEventTime(const TimeOfDay(hour: 18, minute: 30));
+      cubit.toggleJoinDeadline(true);
+
+      final effectFuture = expectLater(
+        cubit.effects,
+        emits(isA<CreateEventDateConfirmedEffect>()
+            .having((e) => e.eventData.formattedJoinDeadline, 'formattedJoinDeadline', '2030-06-15T18:30:00.000Z')),
+      );
+
+      cubit.submitDateStep();
+      await effectFuture;
+    });
+
+    test('submitDateStep has null formattedJoinDeadline when disabled', () async {
+      when(() => mockFormatter.formatTimeWithMillisUtcSuffix(18, 30))
+          .thenReturn('18:30:00.000Z');
+      when(() => mockFormatter.formatIsoDateTime(any(), any()))
+          .thenReturn('2030-06-15T18:30:00.000Z');
+
+      cubit.updateEventName('Test Event');
+      cubit.updateDescription('A valid test description text');
+      cubit.updateEventType(EventType.party);
+      cubit.updateEventDate(DateTime(2030, 6, 15));
+      cubit.updateEventTime(const TimeOfDay(hour: 18, minute: 30));
+
+      final effectFuture = expectLater(
+        cubit.effects,
+        emits(isA<CreateEventDateConfirmedEffect>()
+            .having((e) => e.eventData.formattedJoinDeadline, 'formattedJoinDeadline', isNull)),
+      );
+
+      cubit.submitDateStep();
+      await effectFuture;
+    });
+
+    test('updateEventDate re-validates deadline when enabled', () {
+      cubit.updateEventDate(DateTime(2030, 6, 20));
+      cubit.updateEventTime(const TimeOfDay(hour: 18, minute: 0));
+      cubit.toggleJoinDeadline(true);
+      cubit.updateJoinDeadlineDate(DateTime(2030, 6, 18));
+      expect(cubit.state.joinDeadlineError, isNull);
+
+      cubit.updateEventDate(DateTime(2030, 6, 17));
+      expect(cubit.state.joinDeadlineError, l10n.inlineErrorJoinDeadlineExceeded);
+    });
   });
 }
