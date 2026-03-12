@@ -14,8 +14,7 @@ class ShowGenericErrorEffect extends EventDetailEffect {}
 class OpenMapsEffect extends EventDetailEffect {
   final double lat;
   final double lng;
-  final String name;
-  OpenMapsEffect({required this.lat, required this.lng, required this.name});
+  OpenMapsEffect({required this.lat, required this.lng});
 }
 class ShowEventFullSnackbarEffect extends EventDetailEffect {}
 class ShowJoinClosedEffect extends EventDetailEffect {}

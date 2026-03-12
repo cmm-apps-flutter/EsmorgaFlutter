@@ -130,7 +130,6 @@ class EventDetailCubit extends Cubit<EventDetailState> {
       _emitEffect(OpenMapsEffect(
         lat: loc.lat!,
         lng: loc.long!,
-        name: loc.name,
       ));
     }
   }

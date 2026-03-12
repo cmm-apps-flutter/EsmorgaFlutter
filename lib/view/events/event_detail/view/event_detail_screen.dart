@@ -74,7 +74,7 @@ class _EventDetailFormState extends State<_EventDetailForm> {
       } else if (effect is ShowGenericErrorEffect) {
         _showSnack(l10n.defaultErrorTitle);
       } else if (effect is OpenMapsEffect) {
-        _openMaps(effect.lat, effect.lng, effect.name);
+        _openMaps(effect.lat, effect.lng);
       }
     });
   }
@@ -234,9 +234,8 @@ class _EventDetailFormState extends State<_EventDetailForm> {
     ScaffoldMessenger.of(context).showSnackBar(EsmorgaSnackbar(msg));
   }
 
-  void _openMaps(double lat, double lng, String name) async {
-    final query = Uri.encodeComponent(name);
-    final uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng($query)');
+  void _openMaps(double lat, double lng) async {
+    final uri = Uri.parse('https://www.google.com/maps?q=$lat,$lng');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else if (mounted) {
