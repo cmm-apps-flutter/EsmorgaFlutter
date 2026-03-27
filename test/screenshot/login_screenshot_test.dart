@@ -79,7 +79,7 @@ void main() {
     afterBuild: (tester) async {
       await tester.pumpAndSettle();
       await tester.enterText(find.byKey(const Key('login_email_input')), 'test@example.com');
-      await tester.enterText(find.byKey(const Key('login_password_input')), 'password123');
+      await tester.enterText(find.byKey(const Key('login_password_input')), 'password12!');
       await tester.pumpAndSettle();
     },
   );

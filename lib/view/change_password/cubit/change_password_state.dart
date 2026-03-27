@@ -67,9 +67,9 @@ class ChangePasswordEditing extends ChangePasswordState {
       currentPassword: currentPassword ?? this.currentPassword,
       newPassword: newPassword ?? this.newPassword,
       repeatPassword: repeatPassword ?? this.repeatPassword,
-      currentErrorKey: currentErrorKey,
-      newErrorKey: newErrorKey,
-      repeatErrorKey: repeatErrorKey,
+      currentErrorKey: currentErrorKey ?? this.currentErrorKey,
+      newErrorKey: newErrorKey ?? this.newErrorKey,
+      repeatErrorKey: repeatErrorKey ?? this.repeatErrorKey,
       currentTouched: currentTouched ?? this.currentTouched,
       newTouched: newTouched ?? this.newTouched,
       repeatTouched: repeatTouched ?? this.repeatTouched,
@@ -77,6 +77,28 @@ class ChangePasswordEditing extends ChangePasswordState {
       showCurrentPassword: showCurrentPassword ?? this.showCurrentPassword,
       showNewPassword: showNewPassword ?? this.showNewPassword,
       showRepeatPassword: showRepeatPassword ?? this.showRepeatPassword,
+    );
+  }
+
+  ChangePasswordEditing withValidationResult({
+    required String? currentErrorKey,
+    required String? newErrorKey,
+    required String? repeatErrorKey,
+  }) {
+    return ChangePasswordEditing(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+      repeatPassword: repeatPassword,
+      currentErrorKey: currentErrorKey,
+      newErrorKey: newErrorKey,
+      repeatErrorKey: repeatErrorKey,
+      currentTouched: currentTouched,
+      newTouched: newTouched,
+      repeatTouched: repeatTouched,
+      isSubmitting: isSubmitting,
+      showCurrentPassword: showCurrentPassword,
+      showNewPassword: showNewPassword,
+      showRepeatPassword: showRepeatPassword,
     );
   }
 }

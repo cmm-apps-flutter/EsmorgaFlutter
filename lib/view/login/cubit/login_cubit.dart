@@ -15,7 +15,7 @@ class LoginCubit extends Cubit<LoginState> {
     String? initialMessage,
   }) : super(LoginState(initMessage: initialMessage));
 
-final l10n = getIt<LocalizationService>().current;
+  final l10n = getIt<LocalizationService>().current;
   bool get _validateEmail => state.attemptedSubmit || state.emailBlurred;
   bool get _validatePassword => state.attemptedSubmit || state.passwordBlurred;
 
@@ -23,28 +23,28 @@ final l10n = getIt<LocalizationService>().current;
     final emailError = _validateEmail
         ? validator.validateEmail(email, acceptsEmpty: !state.attemptedSubmit)
         : null;
-    emit(state.copyWith(email: email, emailError: emailError));
+    emit(state.copyWith(email: email).withValidationResult(emailError: emailError, passwordError: state.passwordError));
   }
 
   void changePassword(String password) {
     final passwordError = _validatePassword
         ? validator.validatePassword(password, acceptsEmpty: !state.attemptedSubmit)
         : null;
-    emit(state.copyWith(password: password, passwordError: passwordError));
+    emit(state.copyWith(password: password).withValidationResult(emailError: state.emailError, passwordError: passwordError));
   }
 
   void blurEmail() {
     final error = validator.validateEmail(state.email, acceptsEmpty: false);
-    emit(state.copyWith(emailBlurred: true, emailError: error));
+    emit(state.copyWith(emailBlurred: true).withValidationResult(emailError: error, passwordError: state.passwordError));
   }
 
   void blurPassword() {
     final error = validator.validatePassword(state.password, acceptsEmpty: false);
-    emit(state.copyWith(passwordBlurred: true, passwordError: error));
+    emit(state.copyWith(passwordBlurred: true).withValidationResult(emailError: state.emailError, passwordError: error));
   }
 
   void consumeInitMessage() {
-    emit(state.copyWith(initMessage: null));
+    emit(state.clearInitMessage());
   }
 
   void togglePasswordVisibility() {
@@ -54,13 +54,9 @@ final l10n = getIt<LocalizationService>().current;
   Future<void> submit() async {
     final emailError = validator.validateEmail(state.email, acceptsEmpty: false);
     final passwordError = validator.validatePassword(state.password, acceptsEmpty: false);
-    final validated = state.copyWith(
-      attemptedSubmit: true,
-      emailBlurred: true,
-      passwordBlurred: true,
-      emailError: emailError,
-      passwordError: passwordError,
-    );
+    final validated = state
+        .copyWith(attemptedSubmit: true, emailBlurred: true, passwordBlurred: true)
+        .withValidationResult(emailError: emailError, passwordError: passwordError);
     if (!validated.isFormValid) {
       emit(validated);
       return;

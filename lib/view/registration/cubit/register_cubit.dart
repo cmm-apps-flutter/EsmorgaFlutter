@@ -20,50 +20,149 @@ class RegisterCubit extends Cubit<RegisterState> {
 
   void onNameChanged(String name) {
     final nameError = _shouldValidateName ? validator.validateName(name, acceptsEmpty: !state.attemptedSubmit) : null;
-    emit(state.copyWith(name: name, nameError: nameError, failureMessage: null, successEmail: null));
+    emit(
+      state
+          .clearErrors(failureMessage: true, successEmail: true)
+          .copyWith(name: name)
+          .withValidationResult(
+            nameError: nameError,
+            lastNameError: state.lastNameError,
+            emailError: state.emailError,
+            passwordError: state.passwordError,
+            repeatPasswordError: state.repeatPasswordError,
+          ),
+    );
   }
 
   void onLastNameChanged(String lastName) {
     final error = _shouldValidateLastName ? validator.validateLastName(lastName, acceptsEmpty: !state.attemptedSubmit) : null;
-    emit(state.copyWith(lastName: lastName, lastNameError: error, failureMessage: null, successEmail: null));
+    emit(
+      state
+          .clearErrors(failureMessage: true, successEmail: true)
+          .copyWith(lastName: lastName)
+          .withValidationResult(
+            nameError: state.nameError,
+            lastNameError: error,
+            emailError: state.emailError,
+            passwordError: state.passwordError,
+            repeatPasswordError: state.repeatPasswordError,
+          ),
+    );
   }
 
   void onEmailChanged(String email) {
     final error = _shouldValidateEmail ? validator.validateEmail(email, acceptsEmpty: !state.attemptedSubmit) : null;
-    emit(state.copyWith(email: email, emailError: error, failureMessage: null, successEmail: null));
+    emit(
+      state
+          .clearErrors(failureMessage: true, successEmail: true)
+          .copyWith(email: email)
+          .withValidationResult(
+            nameError: state.nameError,
+            lastNameError: state.lastNameError,
+            emailError: error,
+            passwordError: state.passwordError,
+            repeatPasswordError: state.repeatPasswordError,
+          ),
+    );
   }
 
   void onPasswordChanged(String password) {
     final passError = _shouldValidatePassword ? validator.validatePassword(password, acceptsEmpty: !state.attemptedSubmit) : null;
-    final repeatError = _shouldValidateRepeatPassword ? validator.validateRepeatPassword(state.repeatPassword, password, acceptsEmpty: !state.attemptedSubmit) : null;
-    emit(state.copyWith(password: password, passwordError: passError, repeatPasswordError: repeatError, failureMessage: null, successEmail: null));
+    final repeatError = _shouldValidateRepeatPassword ? validator.validateRepeatPassword(state.repeatPassword, password, acceptsEmpty: !state.attemptedSubmit) : state.repeatPasswordError;
+    emit(
+      state
+          .clearErrors(failureMessage: true, successEmail: true)
+          .copyWith(password: password)
+          .withValidationResult(
+            nameError: state.nameError,
+            lastNameError: state.lastNameError,
+            emailError: state.emailError,
+            passwordError: passError,
+            repeatPasswordError: repeatError,
+          ),
+    );
   }
 
   void onRepeatPasswordChanged(String repeatPassword) {
-    final repeatError = _shouldValidateRepeatPassword ? validator.validateRepeatPassword(repeatPassword, state.password, acceptsEmpty: !state.attemptedSubmit) : null;
-    emit(state.copyWith(repeatPassword: repeatPassword, repeatPasswordError: repeatError, failureMessage: null, successEmail: null));
+    final repeatError = _shouldValidateRepeatPassword ? validator.validateRepeatPassword(repeatPassword, state.password, acceptsEmpty: !state.attemptedSubmit) : state.repeatPasswordError;
+    emit(
+      state
+          .clearErrors(failureMessage: true, successEmail: true)
+          .copyWith(repeatPassword: repeatPassword)
+          .withValidationResult(
+            nameError: state.nameError,
+            lastNameError: state.lastNameError,
+            emailError: state.emailError,
+            passwordError: state.passwordError,
+            repeatPasswordError: repeatError,
+          ),
+    );
   }
 
   void onNameUnfocused() {
     final err = validator.validateName(state.name, acceptsEmpty: false);
-    emit(state.copyWith(nameBlurred: true, nameError: err));
+    emit(
+      state.copyWith(nameBlurred: true).withValidationResult(
+        nameError: err,
+        lastNameError: state.lastNameError,
+        emailError: state.emailError,
+        passwordError: state.passwordError,
+        repeatPasswordError: state.repeatPasswordError,
+      ),
+    );
   }
+
   void onLastNameUnfocused() {
     final err = validator.validateLastName(state.lastName, acceptsEmpty: false);
-    emit(state.copyWith(lastNameBlurred: true, lastNameError: err));
+    emit(
+      state.copyWith(lastNameBlurred: true).withValidationResult(
+        nameError: state.nameError,
+        lastNameError: err,
+        emailError: state.emailError,
+        passwordError: state.passwordError,
+        repeatPasswordError: state.repeatPasswordError,
+      ),
+    );
   }
+
   void onEmailUnfocused() {
     final err = validator.validateEmail(state.email, acceptsEmpty: false);
-    emit(state.copyWith(emailBlurred: true, emailError: err));
+    emit(
+      state.copyWith(emailBlurred: true).withValidationResult(
+        nameError: state.nameError,
+        lastNameError: state.lastNameError,
+        emailError: err,
+        passwordError: state.passwordError,
+        repeatPasswordError: state.repeatPasswordError,
+      ),
+    );
   }
+
   void onPasswordUnfocused() {
     final err = validator.validatePassword(state.password, acceptsEmpty: false);
     final repeatErr = state.repeatPasswordBlurred ? validator.validateRepeatPassword(state.repeatPassword, state.password, acceptsEmpty: false) : state.repeatPasswordError;
-    emit(state.copyWith(passwordBlurred: true, passwordError: err, repeatPasswordError: repeatErr));
+    emit(
+      state.copyWith(passwordBlurred: true).withValidationResult(
+        nameError: state.nameError,
+        lastNameError: state.lastNameError,
+        emailError: state.emailError,
+        passwordError: err,
+        repeatPasswordError: repeatErr,
+      ),
+    );
   }
+
   void onRepeatPasswordUnfocused() {
     final err = validator.validateRepeatPassword(state.repeatPassword, state.password, acceptsEmpty: false);
-    emit(state.copyWith(repeatPasswordBlurred: true, repeatPasswordError: err));
+    emit(
+      state.copyWith(repeatPasswordBlurred: true).withValidationResult(
+        nameError: state.nameError,
+        lastNameError: state.lastNameError,
+        emailError: state.emailError,
+        passwordError: state.passwordError,
+        repeatPasswordError: err,
+      ),
+    );
   }
   
   void togglePasswordVisibility() {
@@ -81,21 +180,23 @@ class RegisterCubit extends Cubit<RegisterState> {
     final passwordError = validator.validatePassword(state.password, acceptsEmpty: false);
     final repeatPasswordError = validator.validateRepeatPassword(state.repeatPassword, state.password, acceptsEmpty: false);
 
-    final withValidation = state.copyWith(
-      attemptedSubmit: true,
-      nameError: nameError,
-      lastNameError: lastNameError,
-      emailError: emailError,
-      passwordError: passwordError,
-      repeatPasswordError: repeatPasswordError,
-      nameBlurred: true,
-      lastNameBlurred: true,
-      emailBlurred: true,
-      passwordBlurred: true,
-      repeatPasswordBlurred: true,
-      failureMessage: null,
-      successEmail: null,
-    );
+    final withValidation = state
+        .clearErrors(failureMessage: true, successEmail: true)
+        .copyWith(
+          attemptedSubmit: true,
+          nameBlurred: true,
+          lastNameBlurred: true,
+          emailBlurred: true,
+          passwordBlurred: true,
+          repeatPasswordBlurred: true,
+        )
+        .withValidationResult(
+          nameError: nameError,
+          lastNameError: lastNameError,
+          emailError: emailError,
+          passwordError: passwordError,
+          repeatPasswordError: repeatPasswordError,
+        );
 
     if (!withValidation.isValid) {
       emit(withValidation);
