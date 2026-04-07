@@ -13,22 +13,20 @@ class RecoverPasswordCubit extends Cubit<RecoverPasswordState> {
   bool get _validateEmail => state.emailBlurred || state.attemptedSubmit;
 
   void onEmailChanged(String email) {
-    final error = _validateEmail ? validator.validateEmail(email, acceptsEmpty: false) : null;
-    emit(state.copyWith(email: email, emailError: error));
+    final error = _validateEmail ? validator.validateEmail(email, acceptsEmpty: false) : state.emailError;
+    emit(state.copyWith(email: email).withValidationResult(emailError: error));
   }
 
   void onEmailUnfocused() {
     final error = validator.validateEmail(state.email, acceptsEmpty: false);
-    emit(state.copyWith(emailBlurred: true, emailError: error));
+    emit(state.copyWith(emailBlurred: true).withValidationResult(emailError: error));
   }
 
   Future<void> submit() async {
     final error = validator.validateEmail(state.email, acceptsEmpty: false);
-    var newState = state.copyWith(
-      attemptedSubmit: true,
-      emailBlurred: true,
-      emailError: error,
-    );
+    var newState = state
+        .copyWith(attemptedSubmit: true, emailBlurred: true)
+        .withValidationResult(emailError: error);
     if (newState.emailError != null) {
       emit(newState);
       return;

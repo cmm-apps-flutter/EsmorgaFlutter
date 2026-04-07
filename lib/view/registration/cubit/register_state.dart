@@ -117,6 +117,72 @@ class RegisterState extends Equatable {
     );
   }
 
+  RegisterState clearErrors({
+    bool nameError = false,
+    bool lastNameError = false,
+    bool emailError = false,
+    bool passwordError = false,
+    bool repeatPasswordError = false,
+    bool failureMessage = false,
+    bool successEmail = false,
+  }) {
+    return RegisterState(
+      name: name,
+      lastName: lastName,
+      email: email,
+      password: password,
+      repeatPassword: repeatPassword,
+      nameError: nameError ? null : this.nameError,
+      lastNameError: lastNameError ? null : this.lastNameError,
+      emailError: emailError ? null : this.emailError,
+      passwordError: passwordError ? null : this.passwordError,
+      repeatPasswordError: repeatPasswordError ? null : this.repeatPasswordError,
+      status: status,
+      attemptedSubmit: attemptedSubmit,
+      failureMessage: failureMessage ? null : this.failureMessage,
+      successEmail: successEmail ? null : this.successEmail,
+      nameBlurred: nameBlurred,
+      lastNameBlurred: lastNameBlurred,
+      emailBlurred: emailBlurred,
+      passwordBlurred: passwordBlurred,
+      repeatPasswordBlurred: repeatPasswordBlurred,
+      showPassword: showPassword,
+      showRepeatPassword: showRepeatPassword,
+    );
+  }
+
+  RegisterState withValidationResult({
+    required String? nameError,
+    required String? lastNameError,
+    required String? emailError,
+    required String? passwordError,
+    required String? repeatPasswordError,
+  }) {
+    return RegisterState(
+      name: name,
+      lastName: lastName,
+      email: email,
+      password: password,
+      repeatPassword: repeatPassword,
+      nameError: nameError,
+      lastNameError: lastNameError,
+      emailError: emailError,
+      passwordError: passwordError,
+      repeatPasswordError: repeatPasswordError,
+      status: status,
+      attemptedSubmit: attemptedSubmit,
+      failureMessage: failureMessage,
+      successEmail: successEmail,
+      nameBlurred: nameBlurred,
+      lastNameBlurred: lastNameBlurred,
+      emailBlurred: emailBlurred,
+      passwordBlurred: passwordBlurred,
+      repeatPasswordBlurred: repeatPasswordBlurred,
+      showPassword: showPassword,
+      showRepeatPassword: showRepeatPassword,
+    );
+  }
+
   @override
   List<Object?> get props => [
         name,

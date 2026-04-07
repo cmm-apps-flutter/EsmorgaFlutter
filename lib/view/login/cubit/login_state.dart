@@ -50,17 +50,48 @@ class LoginState extends Equatable {
     return LoginState(
       email: email ?? this.email,
       password: password ?? this.password,
-      emailError: emailError,
-      passwordError: passwordError,
+      emailError: emailError ?? this.emailError,
+      passwordError: passwordError ?? this.passwordError,
       attemptedSubmit: attemptedSubmit ?? this.attemptedSubmit,
       emailBlurred: emailBlurred ?? this.emailBlurred,
       passwordBlurred: passwordBlurred ?? this.passwordBlurred,
       status: status ?? this.status,
-      failureMessage: failureMessage,
-      initMessage: initMessage,
+      failureMessage: failureMessage ?? this.failureMessage,
+      initMessage: initMessage ?? this.initMessage,
       showPassword: showPassword ?? this.showPassword,
     );
   }
+
+  LoginState clearInitMessage() => LoginState(
+        email: email,
+        password: password,
+        emailError: emailError,
+        passwordError: passwordError,
+        attemptedSubmit: attemptedSubmit,
+        emailBlurred: emailBlurred,
+        passwordBlurred: passwordBlurred,
+        status: status,
+        failureMessage: failureMessage,
+        initMessage: null,
+        showPassword: showPassword,
+      );
+
+  LoginState withValidationResult({
+    required String? emailError,
+    required String? passwordError,
+  }) => LoginState(
+        email: email,
+        password: password,
+        emailError: emailError,
+        passwordError: passwordError,
+        attemptedSubmit: attemptedSubmit,
+        emailBlurred: emailBlurred,
+        passwordBlurred: passwordBlurred,
+        status: status,
+        failureMessage: failureMessage,
+        initMessage: initMessage,
+        showPassword: showPassword,
+      );
 
   @override
   List<Object?> get props => [

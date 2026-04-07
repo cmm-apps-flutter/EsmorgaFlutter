@@ -1,4 +1,3 @@
-
 import 'package:equatable/equatable.dart';
 
 enum RecoverPasswordStatus { idle, submitting, success, failure }
@@ -25,23 +24,29 @@ class RecoverPasswordState extends Equatable {
 
   RecoverPasswordState copyWith({
     String? email,
-    String? emailError = _sentinel,
+    String? emailError,
     bool? emailBlurred,
     bool? attemptedSubmit,
     RecoverPasswordStatus? status,
     bool? networkFailure,
   }) => RecoverPasswordState(
     email: email ?? this.email,
-    emailError: emailError == _sentinel ? this.emailError : emailError,
+    emailError: emailError ?? this.emailError,
     emailBlurred: emailBlurred ?? this.emailBlurred,
     attemptedSubmit: attemptedSubmit ?? this.attemptedSubmit,
     status: status ?? this.status,
     networkFailure: networkFailure ?? this.networkFailure,
   );
 
+  RecoverPasswordState withValidationResult({required String? emailError}) => RecoverPasswordState(
+    email: email,
+    emailError: emailError,
+    emailBlurred: emailBlurred,
+    attemptedSubmit: attemptedSubmit,
+    status: status,
+    networkFailure: networkFailure,
+  );
+
   @override
   List<Object?> get props => [email, emailError, emailBlurred, attemptedSubmit, status, networkFailure];
 }
-
-const _sentinel = '__S';
-
