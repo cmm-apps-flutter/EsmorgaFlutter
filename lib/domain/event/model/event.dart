@@ -27,6 +27,24 @@ class Event {
     required this.joinDeadline,
   });
 
+    factory Event.fromJson(Map<String, dynamic> json) {
+    return Event(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      date: json['date'] as int,
+      description: json['description'] as String,
+      imageUrl: json['imageUrl'] as String?,
+      location: EventLocation.fromJson(
+        Map<String, dynamic>.from(json['location']),
+      ),
+      tags: List<String>.from(json['tags'] ?? []),
+      userJoined: json['userJoined'] as bool,
+      currentAttendeeCount: json['currentAttendeeCount'] as int,
+      maxCapacity: json['maxCapacity'] as int?,
+      joinDeadline: json['joinDeadline'] as int,
+    );
+  }
+
   Event copyWith({
     String? id,
     String? name,

@@ -29,6 +29,8 @@ import 'package:esmorga_flutter/view/events/event_create/view/create_event_image
 import 'package:esmorga_flutter/view/events/event_create/cubit/create_event_cubit.dart';
 import 'package:esmorga_flutter/view/splash/cubit/splash_cubit.dart';
 import 'package:esmorga_flutter/view/splash/view/splash_screen.dart';
+import 'package:esmorga_flutter/view/navigation/native_navigation.dart';
+
 
 enum HomeTabMessage { eventCreated }
 
@@ -54,7 +56,8 @@ class AppRoutes {
   static const String createEventImage = '/create-event-image';
 
   static GoRouter createRouter() {
-    return GoRouter(
+
+    final router = GoRouter(
       initialLocation: splash,
       routes: [
         GoRoute(
@@ -319,5 +322,9 @@ class AppRoutes {
         ),
       ],
     );
+  
+  NativeNavigation.setup(router);
+  
+  return router;
   }
 }
