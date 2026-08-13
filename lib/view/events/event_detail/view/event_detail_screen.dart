@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:esmorga_flutter/view/navigation/native_navigation.dart';
 
 class EventDetailScreen extends StatelessWidget {
   final Function() goToLogin;
@@ -164,6 +165,12 @@ class _EventDetailFormState extends State<_EventDetailForm> {
             ),
           ),
           const SizedBox(height: 24),
+          ElevatedButton(
+  onPressed: () {
+    NativeNavigation.openNativeScreen();
+  },
+  child: const Text('Open native screen'),
+),
           EsmorgaText(
             text: ui.title,
             style: EsmorgaTextStyle.heading1,

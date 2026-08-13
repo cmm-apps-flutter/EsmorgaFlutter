@@ -20,4 +20,8 @@ class NativeNavigation {
       }
     });
   }
+
+  static Future<void> openNativeScreen() async {
+    await channel.invokeMethod('openNativeScreen');
+  }
 }
