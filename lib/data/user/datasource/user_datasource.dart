@@ -11,5 +11,7 @@ abstract class UserDatasource {
   Future<UserDataModel> activateAccount(String verificationCode);
   Future<void> resetPassword(String code, String password);
   Future<void> changePassword(String currentPassword, String newPassword);
+  Future<void> saveTokens(String accessToken, String refreshToken, int expirationDate);
+  Future<void> clearTokens();
 }
 

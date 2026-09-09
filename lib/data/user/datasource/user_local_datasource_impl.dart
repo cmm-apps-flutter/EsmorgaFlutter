@@ -62,5 +62,14 @@ class UserLocalDatasourceImpl implements UserDatasource {
   Future<void> changePassword(String currentPassword, String newPassword) async {
     throw UnimplementedError('Local datasource does not support changePassword');
   }
+
+    @override
+  Future<void> saveTokens(String accessToken, String refreshToken, int expirationDate) async {
+    throw UnimplementedError('Local datasource does not support saveTokens');
+  }
+  @override
+  Future<void> clearTokens() async {
+    throw UnimplementedError('Local datasource does not support clearTokens');
+  }
 }
 

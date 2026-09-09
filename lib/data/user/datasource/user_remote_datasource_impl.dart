@@ -85,4 +85,13 @@ class UserRemoteDatasourceImpl implements UserDatasource {
   Future<void> changePassword(String currentPassword, String newPassword) async {
     await api.changePassword(currentPassword, newPassword);
   }
+
+  @override
+  Future<void> saveTokens(String accessToken, String refreshToken, int expirationDate) async {
+    await authDatasource.saveTokens(accessToken, refreshToken, expirationDate);
+  }
+  @override
+  Future<void> clearTokens() async {
+    await authDatasource.clearTokens();
+  }
 }

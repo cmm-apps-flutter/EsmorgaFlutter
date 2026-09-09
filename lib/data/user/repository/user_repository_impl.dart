@@ -75,5 +75,15 @@ class UserRepositoryImpl implements UserRepository {
   Future<void> changePassword(String currentPassword, String newPassword) async {
     await remoteDatasource.changePassword(currentPassword, newPassword);
   }
+
+  @override
+  Future<void> saveTokens(String accessToken, String refreshToken, int expirationDate) async {
+    await authDatasource.saveTokens(accessToken, refreshToken, expirationDate);
+  }
+  
+  @override
+  Future<void> clearTokens() async {
+    await authDatasource.clearTokens();
+  }
 }
 
