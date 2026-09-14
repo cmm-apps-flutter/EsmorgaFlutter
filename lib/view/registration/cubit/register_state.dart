@@ -2,24 +2,23 @@ import 'package:equatable/equatable.dart';
 
 enum RegisterStatus { idle, submitting, success, failure }
 
+const _notProvided = Object();
+
 class RegisterState extends Equatable {
   final String name;
   final String lastName;
   final String email;
   final String password;
   final String repeatPassword;
-
   final String? nameError;
   final String? lastNameError;
   final String? emailError;
   final String? passwordError;
   final String? repeatPasswordError;
-
   final RegisterStatus status;
   final bool attemptedSubmit;
   final String? failureMessage;
   final String? successEmail;
-
   final bool nameBlurred;
   final bool lastNameBlurred;
   final bool emailBlurred;
@@ -53,19 +52,20 @@ class RegisterState extends Equatable {
   });
 
   bool get isSubmitting => status == RegisterStatus.submitting;
+
   bool get isSuccess => status == RegisterStatus.success;
+
   bool get isFailure => status == RegisterStatus.failure;
 
-  bool get isValid => [
-        nameError,
-        lastNameError,
-        emailError,
-        passwordError,
-        repeatPasswordError,
-      ].every((e) => e == null) &&
-      name.isNotEmpty &&
-      lastName.isNotEmpty &&
-      email.isNotEmpty &&
+  bool get isValid =>
+      nameError == null &&
+      lastNameError == null &&
+      emailError == null &&
+      passwordError == null &&
+      repeatPasswordError == null &&
+      name.trim().isNotEmpty &&
+      lastName.trim().isNotEmpty &&
+      email.trim().isNotEmpty &&
       password.isNotEmpty &&
       repeatPassword.isNotEmpty;
 
@@ -75,15 +75,15 @@ class RegisterState extends Equatable {
     String? email,
     String? password,
     String? repeatPassword,
-    String? nameError,
-    String? lastNameError,
-    String? emailError,
-    String? passwordError,
-    String? repeatPasswordError,
+    Object? nameError = _notProvided,
+    Object? lastNameError = _notProvided,
+    Object? emailError = _notProvided,
+    Object? passwordError = _notProvided,
+    Object? repeatPasswordError = _notProvided,
     RegisterStatus? status,
     bool? attemptedSubmit,
-    String? failureMessage,
-    String? successEmail,
+    Object? failureMessage = _notProvided,
+    Object? successEmail = _notProvided,
     bool? nameBlurred,
     bool? lastNameBlurred,
     bool? emailBlurred,
@@ -98,22 +98,44 @@ class RegisterState extends Equatable {
       email: email ?? this.email,
       password: password ?? this.password,
       repeatPassword: repeatPassword ?? this.repeatPassword,
-      nameError: nameError ?? this.nameError,
-      lastNameError: lastNameError ?? this.lastNameError,
-      emailError: emailError ?? this.emailError,
-      passwordError: passwordError ?? this.passwordError,
-      repeatPasswordError: repeatPasswordError ?? this.repeatPasswordError,
+
+      nameError: identical(nameError, _notProvided)
+          ? this.nameError
+          : nameError as String?,
+      lastNameError: identical(lastNameError, _notProvided)
+          ? this.lastNameError
+          : lastNameError as String?,
+      emailError: identical(emailError, _notProvided)
+          ? this.emailError
+          : emailError as String?,
+      passwordError: identical(passwordError, _notProvided)
+          ? this.passwordError
+          : passwordError as String?,
+      repeatPasswordError: identical(
+        repeatPasswordError,
+        _notProvided,
+      )
+          ? this.repeatPasswordError
+          : repeatPasswordError as String?,
+
       status: status ?? this.status,
       attemptedSubmit: attemptedSubmit ?? this.attemptedSubmit,
-      failureMessage: failureMessage ?? this.failureMessage,
-      successEmail: successEmail ?? this.successEmail,
+      failureMessage: identical(failureMessage, _notProvided)
+          ? this.failureMessage
+          : failureMessage as String?,
+      successEmail: identical(successEmail, _notProvided)
+          ? this.successEmail
+          : successEmail as String?,
+
       nameBlurred: nameBlurred ?? this.nameBlurred,
       lastNameBlurred: lastNameBlurred ?? this.lastNameBlurred,
       emailBlurred: emailBlurred ?? this.emailBlurred,
       passwordBlurred: passwordBlurred ?? this.passwordBlurred,
-      repeatPasswordBlurred: repeatPasswordBlurred ?? this.repeatPasswordBlurred,
+      repeatPasswordBlurred:
+          repeatPasswordBlurred ?? this.repeatPasswordBlurred,
       showPassword: showPassword ?? this.showPassword,
-      showRepeatPassword: showRepeatPassword ?? this.showRepeatPassword,
+      showRepeatPassword:
+          showRepeatPassword ?? this.showRepeatPassword,
     );
   }
 
@@ -139,6 +161,6 @@ class RegisterState extends Equatable {
         passwordBlurred,
         repeatPasswordBlurred,
         showPassword,
-        showRepeatPassword,
+        showRepeatPassword
       ];
 }
