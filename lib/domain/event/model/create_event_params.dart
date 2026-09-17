@@ -3,7 +3,7 @@ import 'package:esmorga_flutter/domain/event/model/event_type.dart';
 class CreateEventParams {
   final String eventName;
   final String eventDate;
-  final String description;
+  final String? description;
   final EventType eventType;
   final String? imageUrl;
   final String locationName;
