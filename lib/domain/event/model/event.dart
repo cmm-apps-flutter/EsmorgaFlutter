@@ -4,7 +4,7 @@ class Event {
   final String id;
   final String name;
   final int date;
-  final String description;
+  final String? description;
   final String? imageUrl;
   final EventLocation location;
   final List<String> tags;
@@ -17,7 +17,7 @@ class Event {
     required this.id,
     required this.name,
     required this.date,
-    required this.description,
+    this.description,
     this.imageUrl,
     required this.location,
     this.tags = const [],

@@ -14,7 +14,7 @@ class EventLocalModel extends HiveObject {
   final int localDate;
 
   @HiveField(3)
-  final String localDescription;
+  final String? localDescription;
 
   @HiveField(4)
   final String? localImageUrl;
@@ -47,7 +47,7 @@ class EventLocalModel extends HiveObject {
     required this.localId,
     required this.localName,
     required this.localDate,
-    required this.localDescription,
+    this.localDescription,
     this.localImageUrl,
     required this.localLocation,
     required this.localTags,
@@ -57,7 +57,7 @@ class EventLocalModel extends HiveObject {
     required this.localMaxCapacity,
     required this.localJoinDeadline,
     required this.attendees,
-  }){ this.attendees = attendees ?? []; }
+  });
 }
 
 @HiveType(typeId: 1)
@@ -78,7 +78,7 @@ class EventLocationLocalModel {
   });
 }
 
-@HiveType(typeId: 4) 
+@HiveType(typeId: 4)
 class EventAttendeeLocalModel {
   @HiveField(0)
   final String userName;
