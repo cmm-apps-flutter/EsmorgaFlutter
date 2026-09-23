@@ -7,6 +7,7 @@
 		<string>applinks:qa.esmorgaevents.com</string>
 		<string>applinks:esmorgaevents.com</string>
 		<string>applinks:api.esmorgaevents.com</string>
+		<string>applinks:qa.api.esmorgaevents.com</string>
 	</array>
 </dict>
 </plist>
