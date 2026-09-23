@@ -12,16 +12,18 @@ class EventListWrapperRemoteModel {
   factory EventListWrapperRemoteModel.fromJson(Map<String, dynamic> json) {
     return EventListWrapperRemoteModel(
       remoteTotalEvents: json['totalEvents'],
-      remoteEventList: (json['events'] as List).map((e) => EventRemoteModel.fromJson(e)).toList(),
+      remoteEventList: (json['events'] as List)
+          .map((e) => EventRemoteModel.fromJson(e))
+          .toList(),
     );
   }
 }
 
-class EventRemoteModel extends Equatable{
+class EventRemoteModel extends Equatable {
   final String remoteId;
   final String remoteName;
   final String remoteDate;
-  final String remoteDescription;
+  final String? remoteDescription;
   final String remoteType;
   final String? remoteImageUrl;
   final EventLocationRemoteModel remoteLocation;
@@ -34,7 +36,7 @@ class EventRemoteModel extends Equatable{
     required this.remoteId,
     required this.remoteName,
     required this.remoteDate,
-    required this.remoteDescription,
+    this.remoteDescription,
     required this.remoteType,
     this.remoteImageUrl,
     required this.remoteLocation,
@@ -61,10 +63,20 @@ class EventRemoteModel extends Equatable{
   }
 
   @override
-  List<Object?> get props => [remoteId, remoteName, remoteDate, remoteDescription, remoteType, remoteImageUrl, remoteLocation, remoteTags, remoteJoinDeadLine];
+  List<Object?> get props => [
+        remoteId,
+        remoteName,
+        remoteDate,
+        remoteDescription,
+        remoteType,
+        remoteImageUrl,
+        remoteLocation,
+        remoteTags,
+        remoteJoinDeadLine
+      ];
 }
 
-class EventLocationRemoteModel extends Equatable{
+class EventLocationRemoteModel extends Equatable {
   final String remoteLocationName;
   final double? remoteLat;
   final double? remoteLong;
