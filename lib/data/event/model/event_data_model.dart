@@ -4,7 +4,7 @@ class EventDataModel {
   final String dataId;
   final String dataName;
   final int dataDate;
-  final String dataDescription;
+  final String? dataDescription;
   final String? dataImageUrl;
   final EventLocationDataModel dataLocation;
   final List<String> dataTags;
@@ -18,7 +18,7 @@ class EventDataModel {
     required this.dataId,
     required this.dataName,
     required this.dataDate,
-    required this.dataDescription,
+    this.dataDescription,
     this.dataImageUrl,
     required this.dataLocation,
     this.dataTags = const [],
@@ -31,19 +31,19 @@ class EventDataModel {
 
   factory EventDataModel.fromRemoteModel(EventRemoteModel remote) {
     return EventDataModel(
-      dataId: remote.remoteId,
-      dataName: remote.remoteName,
-      dataDate: _parseDateToMillis(remote.remoteDate),
-      dataDescription: remote.remoteDescription,
-      dataImageUrl: remote.remoteImageUrl,
-      dataLocation: EventLocationDataModel.fromRemoteModel(remote.remoteLocation),
-      dataTags: remote.remoteTags,
-      dataCreationTime: DateTime.now().millisecondsSinceEpoch,
-      dataUserJoined: false,
-      dataCurrentAttendeeCount: remote.remoteCurrentAttendeeCount,
-      dataMaxCapacity: remote.remoteMaxCapacity,
-      dataJoinDeadLine: _parseDateToMillis(remote.remoteJoinDeadLine)
-    );
+        dataId: remote.remoteId,
+        dataName: remote.remoteName,
+        dataDate: _parseDateToMillis(remote.remoteDate),
+        dataDescription: remote.remoteDescription,
+        dataImageUrl: remote.remoteImageUrl,
+        dataLocation:
+            EventLocationDataModel.fromRemoteModel(remote.remoteLocation),
+        dataTags: remote.remoteTags,
+        dataCreationTime: DateTime.now().millisecondsSinceEpoch,
+        dataUserJoined: false,
+        dataCurrentAttendeeCount: remote.remoteCurrentAttendeeCount,
+        dataMaxCapacity: remote.remoteMaxCapacity,
+        dataJoinDeadLine: _parseDateToMillis(remote.remoteJoinDeadLine));
   }
 
   EventDataModel copyWith({
@@ -70,7 +70,8 @@ class EventDataModel {
       dataTags: dataTags ?? this.dataTags,
       dataCreationTime: dataCreationTime ?? this.dataCreationTime,
       dataUserJoined: dataUserJoined ?? this.dataUserJoined,
-      dataCurrentAttendeeCount: dataCurrentAttendeeCount ?? this.dataCurrentAttendeeCount,
+      dataCurrentAttendeeCount:
+          dataCurrentAttendeeCount ?? this.dataCurrentAttendeeCount,
       dataMaxCapacity: dataMaxCapacity ?? this.dataMaxCapacity,
       dataJoinDeadLine: dataJoinDeadLine ?? this.dataJoinDeadLine,
     );
@@ -96,7 +97,8 @@ class EventLocationDataModel {
     this.long,
   });
 
-  factory EventLocationDataModel.fromRemoteModel(EventLocationRemoteModel remote) {
+  factory EventLocationDataModel.fromRemoteModel(
+      EventLocationRemoteModel remote) {
     return EventLocationDataModel(
       name: remote.remoteLocationName,
       lat: remote.remoteLat,

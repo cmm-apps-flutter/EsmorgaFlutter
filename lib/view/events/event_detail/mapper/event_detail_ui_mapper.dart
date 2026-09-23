@@ -14,10 +14,10 @@ class EventDetailUiMapper {
 
     bool isDeadlinePassed = false;
     try {
-      isDeadlinePassed = DateTime.now().millisecondsSinceEpoch >
-          event.joinDeadline;
+      isDeadlinePassed =
+          DateTime.now().millisecondsSinceEpoch > event.joinDeadline;
     } catch (_) {}
-  
+
     final isFull = event.maxCapacity != null &&
         event.currentAttendeeCount >= event.maxCapacity!;
 
@@ -48,12 +48,11 @@ class EventDetailUiMapper {
     return EventDetailUiModel(
       id: event.id,
       title: event.name,
-      description: event.description,
+      description: event.description ?? '',
       date: dateFormatter.formatEventDate(event.date),
       locationName: event.location.name,
-      imageUrl: event.imageUrl != null
-          ? Uri.decodeComponent(event.imageUrl!)
-          : null,
+      imageUrl:
+          event.imageUrl != null ? Uri.decodeComponent(event.imageUrl!) : null,
       userJoined: event.userJoined,
       showNavigateButton:
           event.location.lat != null && event.location.long != null,
