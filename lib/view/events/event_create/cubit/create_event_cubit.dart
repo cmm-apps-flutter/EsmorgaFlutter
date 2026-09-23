@@ -57,7 +57,8 @@ class EventCreationData {
       description: state.description,
       eventType: state.eventType,
       formattedEventDate: formattedEventDate ?? state.formattedEventDate,
-      formattedJoinDeadline: formattedJoinDeadline ?? state.formattedJoinDeadline,
+      formattedJoinDeadline:
+          formattedJoinDeadline ?? state.formattedJoinDeadline,
       location: state.location.isEmpty ? null : state.location,
       coordinates: state.coordinates.isEmpty ? null : state.coordinates,
       maxCapacity: parsedMaxCapacity,
@@ -118,7 +119,8 @@ class CreateEventCubit extends Cubit<CreateEventState> {
   void initFromEventData(EventCreationData eventData) {
     final hasDeadline = eventData.formattedJoinDeadline != null;
     final rawCoordinates = eventData.coordinates ?? '';
-    final parsed = rawCoordinates.isNotEmpty ? _parseCoordinates(rawCoordinates) : null;
+    final parsed =
+        rawCoordinates.isNotEmpty ? _parseCoordinates(rawCoordinates) : null;
     emit(state.copyWith(
       eventName: eventData.eventName,
       description: eventData.description,
@@ -146,7 +148,8 @@ class CreateEventCubit extends Cubit<CreateEventState> {
     String? error;
     if (name.isEmpty) {
       error = l10n.inlineErrorEmptyField;
-    } else if (name.length < minimumEventNameLength || name.length > maximumEventNameLength) {
+    } else if (name.length < minimumEventNameLength ||
+        name.length > maximumEventNameLength) {
       error = l10n.inlineErrorInvalidLengthName;
     }
 
@@ -159,9 +162,9 @@ class CreateEventCubit extends Cubit<CreateEventState> {
 
   void updateDescription(String desc) {
     String? error;
-    if (desc.isEmpty) {
-      error = l10n.inlineErrorEmptyField;
-    } else if (desc.length < minimumDescriptionLength || desc.length > maximumDescriptionLength) {
+    if (desc.isNotEmpty &&
+        (desc.length < minimumDescriptionLength ||
+            desc.length > maximumDescriptionLength)) {
       error = l10n.inlineErrorInvalidLengthDescription;
     }
 
@@ -212,7 +215,8 @@ class CreateEventCubit extends Cubit<CreateEventState> {
         date.month == startOfToday.month &&
         date.day == startOfToday.day;
     if (!isToday) return null;
-    final selectedDateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    final selectedDateTime =
+        DateTime(date.year, date.month, date.day, time.hour, time.minute);
     if (selectedDateTime.isBefore(now)) {
       return l10n.inlineErrorEventTimePast;
     }
@@ -257,7 +261,8 @@ class CreateEventCubit extends Cubit<CreateEventState> {
     ));
   }
 
-  String? _validateJoinDeadline(DateTime? deadlineDate, TimeOfDay? deadlineTime) {
+  String? _validateJoinDeadline(
+      DateTime? deadlineDate, TimeOfDay? deadlineTime) {
     if (deadlineDate == null || deadlineTime == null) return null;
 
     final now = clock.now();
@@ -303,7 +308,8 @@ class CreateEventCubit extends Cubit<CreateEventState> {
   }
 
   void _revalidateJoinDeadline() {
-    final error = _validateJoinDeadline(state.joinDeadlineDate, state.joinDeadlineTime);
+    final error =
+        _validateJoinDeadline(state.joinDeadlineDate, state.joinDeadlineTime);
     emit(state.copyWith(
       joinDeadlineError: error,
       clearJoinDeadlineError: error == null,
@@ -320,7 +326,8 @@ class CreateEventCubit extends Cubit<CreateEventState> {
   String? get formattedJoinDeadlineTime => _formatTime(state.joinDeadlineTime);
 
   String? getFormattedJoinDeadline() {
-    if (state.joinDeadlineDate == null || state.joinDeadlineTime == null) return null;
+    if (state.joinDeadlineDate == null || state.joinDeadlineTime == null)
+      return null;
     final time = dateTimeFormatter.formatTimeWithMillisUtcSuffix(
       state.joinDeadlineTime!.hour,
       state.joinDeadlineTime!.minute,
@@ -346,7 +353,6 @@ class CreateEventCubit extends Cubit<CreateEventState> {
   bool canProceedFromScreen1() {
     return state.eventName.isNotEmpty &&
         state.eventNameError == null &&
-        state.description.isNotEmpty &&
         state.descriptionError == null;
   }
 
@@ -377,7 +383,6 @@ class CreateEventCubit extends Cubit<CreateEventState> {
   bool get isFormValid =>
       state.eventName.isNotEmpty &&
       state.eventNameError == null &&
-      state.description.isNotEmpty &&
       state.descriptionError == null &&
       state.eventType != null &&
       state.eventDate != null &&
@@ -421,8 +426,10 @@ class CreateEventCubit extends Cubit<CreateEventState> {
     ));
   }
 
-  static final _coordinatesRegExp = RegExp(r'^\s*-?\d+\.?\d*\s*,\s*-?\d+\.?\d*\s*$');
-  static final _locationCharsRegExp = RegExp(r"^[\p{L}\p{N}\s.,\-'\/#ºª°]+$", unicode: true);
+  static final _coordinatesRegExp =
+      RegExp(r'^\s*-?\d+\.?\d*\s*,\s*-?\d+\.?\d*\s*$');
+  static final _locationCharsRegExp =
+      RegExp(r"^[\p{L}\p{N}\s.,\-'\/#ºª°]+$", unicode: true);
 
   void updateLocation(String value) {
     final trimmedValue = value.trim();
@@ -466,7 +473,9 @@ class CreateEventCubit extends Cubit<CreateEventState> {
     String? error;
     if (value.isNotEmpty) {
       final parsed = int.tryParse(value);
-      if (parsed == null || parsed < minimumMaxCapacity || parsed > maximumMaxCapacity) {
+      if (parsed == null ||
+          parsed < minimumMaxCapacity ||
+          parsed > maximumMaxCapacity) {
         error = l10n.inlineErrorMaxCapacityInvalid;
       }
     }
@@ -500,11 +509,13 @@ class CreateEventCubit extends Cubit<CreateEventState> {
   Future<void> validateAndPreviewImageUrl(String url) async {
     final trimmedUrl = url.trim();
     if (trimmedUrl.isEmpty) {
-      emit(state.copyWith(eventImageUrlError: l10n.inlineErrorImageUrlRequired));
+      emit(
+          state.copyWith(eventImageUrlError: l10n.inlineErrorImageUrlRequired));
       return;
     }
     if (!_imageUrlRegExp.hasMatch(trimmedUrl)) {
-      emit(state.copyWith(eventImageUrlError: l10n.inlineErrorImageUrlRequired));
+      emit(
+          state.copyWith(eventImageUrlError: l10n.inlineErrorImageUrlRequired));
       return;
     }
     final bool imageLoaded;
@@ -512,12 +523,14 @@ class CreateEventCubit extends Cubit<CreateEventState> {
       imageLoaded = await imageLoader(trimmedUrl);
     } catch (_) {
       if (isClosed) return;
-      emit(state.copyWith(eventImageUrlError: l10n.inlineErrorImageUrlRequired));
+      emit(
+          state.copyWith(eventImageUrlError: l10n.inlineErrorImageUrlRequired));
       return;
     }
     if (isClosed) return;
     if (!imageLoaded) {
-      emit(state.copyWith(eventImageUrlError: l10n.inlineErrorImageUrlRequired));
+      emit(
+          state.copyWith(eventImageUrlError: l10n.inlineErrorImageUrlRequired));
       return;
     }
     emit(state.copyWith(
@@ -558,7 +571,8 @@ class CreateEventCubit extends Cubit<CreateEventState> {
     final eventParams = CreateEventParams(
       eventName: state.eventName.trim(),
       eventDate: eventDate,
-      description: state.description.trim(),
+      description:
+          state.description.trim().isEmpty ? null : state.description.trim(),
       eventType: state.eventType!,
       imageUrl: state.eventImageUrl.isNotEmpty ? state.eventImageUrl : null,
       locationName: state.location.trim(),

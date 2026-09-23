@@ -83,9 +83,11 @@ void main() {
       expect: () => [
         isA<CreateEventState>()
             .having((s) => s.eventName, 'eventName', 'My Event')
-            .having((s) => s.description, 'description', 'A long enough description')
+            .having((s) => s.description, 'description',
+                'A long enough description')
             .having((s) => s.eventType, 'eventType', EventType.party)
-            .having((s) => s.formattedEventDate, 'formattedEventDate', '2030-06-15T18:30:00.000Z')
+            .having((s) => s.formattedEventDate, 'formattedEventDate',
+                '2030-06-15T18:30:00.000Z')
             .having((s) => s.eventNameError, 'eventNameError', isNull)
             .having((s) => s.descriptionError, 'descriptionError', isNull),
       ],
@@ -153,10 +155,11 @@ void main() {
     blocTest<CreateEventCubit, CreateEventState>(
       'updateEventTime sets time correctly',
       build: () => cubit,
-      act: (cubit) => cubit.updateEventTime(const TimeOfDay(hour: 18, minute: 30)),
+      act: (cubit) =>
+          cubit.updateEventTime(const TimeOfDay(hour: 18, minute: 30)),
       expect: () => [
-        isA<CreateEventState>()
-            .having((s) => s.eventTime, 'eventTime', const TimeOfDay(hour: 18, minute: 30)),
+        isA<CreateEventState>().having((s) => s.eventTime, 'eventTime',
+            const TimeOfDay(hour: 18, minute: 30)),
       ],
     );
 
@@ -164,7 +167,33 @@ void main() {
       expect(cubit.formattedEventTime, isNull);
     });
 
-    test('formattedEventTime returns locale formatted string when time is set', () {
+    test('empty description is valid and allows proceeding from screen 1', () {
+      cubit.updateEventName('Test Event');
+      cubit.updateDescription('');
+
+      expect(cubit.state.descriptionError, isNull);
+      expect(cubit.canProceedFromScreen1(), isTrue);
+    });
+
+    test('description requires between 20 and 5000 characters when non-empty',
+        () {
+      cubit.updateDescription('a' * 19);
+      expect(cubit.state.descriptionError,
+          l10n.inlineErrorInvalidLengthDescription);
+
+      cubit.updateDescription('a' * 20);
+      expect(cubit.state.descriptionError, isNull);
+
+      cubit.updateDescription('a' * 5001);
+      expect(cubit.state.descriptionError,
+          l10n.inlineErrorInvalidLengthDescription);
+
+      cubit.updateDescription('a' * 5000);
+      expect(cubit.state.descriptionError, isNull);
+    });
+
+    test('formattedEventTime returns locale formatted string when time is set',
+        () {
       cubit.updateEventTime(const TimeOfDay(hour: 14, minute: 30));
       expect(cubit.formattedEventTime, isNotNull);
       expect(cubit.formattedEventTime, contains('14:30'));
@@ -187,8 +216,10 @@ void main() {
       final result = cubit.getFormattedEventDate();
 
       expect(result, '2030-06-15T18:30:00.000Z');
-      verify(() => mockFormatter.formatTimeWithMillisUtcSuffix(18, 30)).called(1);
-      verify(() => mockFormatter.formatIsoDateTime(DateTime(2030, 6, 15), '18:30:00.000Z')).called(1);
+      verify(() => mockFormatter.formatTimeWithMillisUtcSuffix(18, 30))
+          .called(1);
+      verify(() => mockFormatter.formatIsoDateTime(
+          DateTime(2030, 6, 15), '18:30:00.000Z')).called(1);
     });
 
     test('canProceedFromScreen3 requires date, time, and no date error', () {
@@ -223,9 +254,11 @@ void main() {
         cubit.effects,
         emits(isA<CreateEventDateConfirmedEffect>()
             .having((e) => e.eventData.eventName, 'eventName', 'Test Event')
-            .having((e) => e.eventData.description, 'description', 'A valid test description text')
+            .having((e) => e.eventData.description, 'description',
+                'A valid test description text')
             .having((e) => e.eventData.eventType, 'eventType', EventType.party)
-            .having((e) => e.eventData.formattedEventDate, 'formattedEventDate', '2030-06-15T18:30:00.000Z')),
+            .having((e) => e.eventData.formattedEventDate, 'formattedEventDate',
+                '2030-06-15T18:30:00.000Z')),
       );
 
       cubit.submitDateStep();
@@ -256,7 +289,8 @@ void main() {
         cubit.effects,
         emits(isA<CreateEventNavigateToEventTypeEffect>()
             .having((e) => e.eventData.eventName, 'eventName', 'Test Event')
-            .having((e) => e.eventData.description, 'description', 'A valid test description text')),
+            .having((e) => e.eventData.description, 'description',
+                'A valid test description text')),
       );
 
       cubit.submit();
@@ -340,11 +374,13 @@ void main() {
       expect: () => [
         isA<CreateEventState>()
             .having((s) => s.location, 'location', '')
-            .having((s) => s.locationError, 'locationError', l10n.inlineErrorLocationRequired),
+            .having((s) => s.locationError, 'locationError',
+                l10n.inlineErrorLocationRequired),
       ],
     );
 
-    test('canProceedFromScreen4 returns false for whitespace-only location', () {
+    test('canProceedFromScreen4 returns false for whitespace-only location',
+        () {
       cubit.updateLocation('   ');
       expect(cubit.state.location, '');
       expect(cubit.canProceedFromScreen4(), isFalse);
@@ -544,7 +580,8 @@ void main() {
       expect(cubit.canProceedFromScreen4(), isTrue);
     });
 
-    test('submitLocationStep emits CreateEventLocationConfirmedEffect', () async {
+    test('submitLocationStep emits CreateEventLocationConfirmedEffect',
+        () async {
       when(() => mockFormatter.formatTimeWithMillisUtcSuffix(18, 30))
           .thenReturn('18:30:00.000Z');
       when(() => mockFormatter.formatIsoDateTime(any(), any()))
@@ -563,9 +600,11 @@ void main() {
         cubit.effects,
         emits(isA<CreateEventLocationConfirmedEffect>()
             .having((e) => e.eventData.eventName, 'eventName', 'Test Event')
-            .having((e) => e.eventData.formattedEventDate, 'formattedEventDate', '2030-06-15T18:30:00.000Z')
+            .having((e) => e.eventData.formattedEventDate, 'formattedEventDate',
+                '2030-06-15T18:30:00.000Z')
             .having((e) => e.eventData.location, 'location', 'Barcelona')
-            .having((e) => e.eventData.coordinates, 'coordinates', '41.3879, 2.16992')
+            .having((e) => e.eventData.coordinates, 'coordinates',
+                '41.3879, 2.16992')
             .having((e) => e.eventData.maxCapacity, 'maxCapacity', 200)),
       );
 
@@ -596,7 +635,8 @@ void main() {
       expect: () => [
         isA<CreateEventState>()
             .having((s) => s.eventImageUrl, 'eventImageUrl', '')
-            .having((s) => s.eventImageUrlError, 'eventImageUrlError', l10n.inlineErrorImageUrlRequired),
+            .having((s) => s.eventImageUrlError, 'eventImageUrlError',
+                l10n.inlineErrorImageUrlRequired),
       ],
     );
 
@@ -607,7 +647,8 @@ void main() {
       expect: () => [
         isA<CreateEventState>()
             .having((s) => s.eventImageUrl, 'eventImageUrl', '')
-            .having((s) => s.eventImageUrlError, 'eventImageUrlError', l10n.inlineErrorImageUrlRequired),
+            .having((s) => s.eventImageUrlError, 'eventImageUrlError',
+                l10n.inlineErrorImageUrlRequired),
       ],
     );
 
@@ -619,7 +660,8 @@ void main() {
       expect: () => [
         isA<CreateEventState>()
             .having((s) => s.eventImageUrl, 'eventImageUrl', '')
-            .having((s) => s.eventImageUrlError, 'eventImageUrlError', l10n.inlineErrorImageUrlRequired),
+            .having((s) => s.eventImageUrlError, 'eventImageUrlError',
+                l10n.inlineErrorImageUrlRequired),
       ],
     );
 
@@ -632,11 +674,12 @@ void main() {
         imageLoader: (_) async => true,
         createEventUseCase: mockCreateEventUseCase,
       ),
-      act: (cubit) async =>
-          cubit.validateAndPreviewImageUrl('https://example.com/photo.jpg?w=400&h=300'),
+      act: (cubit) async => cubit.validateAndPreviewImageUrl(
+          'https://example.com/photo.jpg?w=400&h=300'),
       expect: () => [
         isA<CreateEventState>()
-            .having((s) => s.eventImageUrl, 'eventImageUrl', 'https://example.com/photo.jpg?w=400&h=300')
+            .having((s) => s.eventImageUrl, 'eventImageUrl',
+                'https://example.com/photo.jpg?w=400&h=300')
             .having((s) => s.eventImageUrlError, 'eventImageUrlError', isNull),
       ],
     );
@@ -655,7 +698,8 @@ void main() {
       expect: () => [
         isA<CreateEventState>()
             .having((s) => s.eventImageUrl, 'eventImageUrl', '')
-            .having((s) => s.eventImageUrlError, 'eventImageUrlError', l10n.inlineErrorImageUrlRequired),
+            .having((s) => s.eventImageUrlError, 'eventImageUrlError',
+                l10n.inlineErrorImageUrlRequired),
       ],
     );
 
@@ -665,8 +709,8 @@ void main() {
       act: (cubit) async =>
           cubit.validateAndPreviewImageUrl('https://example.com/image'),
       expect: () => [
-        isA<CreateEventState>()
-            .having((s) => s.eventImageUrlError, 'eventImageUrlError', l10n.inlineErrorImageUrlRequired),
+        isA<CreateEventState>().having((s) => s.eventImageUrlError,
+            'eventImageUrlError', l10n.inlineErrorImageUrlRequired),
       ],
     );
 
@@ -676,8 +720,8 @@ void main() {
       act: (cubit) async =>
           cubit.validateAndPreviewImageUrl('http://example.com/image.jpg'),
       expect: () => [
-        isA<CreateEventState>()
-            .having((s) => s.eventImageUrlError, 'eventImageUrlError', l10n.inlineErrorImageUrlRequired),
+        isA<CreateEventState>().having((s) => s.eventImageUrlError,
+            'eventImageUrlError', l10n.inlineErrorImageUrlRequired),
       ],
     );
 
@@ -695,7 +739,8 @@ void main() {
       expect: () => [
         isA<CreateEventState>()
             .having((s) => s.eventImageUrl, 'eventImageUrl', '')
-            .having((s) => s.eventImageUrlError, 'eventImageUrlError', l10n.inlineErrorImageUrlRequired),
+            .having((s) => s.eventImageUrlError, 'eventImageUrlError',
+                l10n.inlineErrorImageUrlRequired),
       ],
     );
 
@@ -712,7 +757,8 @@ void main() {
           cubit.validateAndPreviewImageUrl('  https://example.com/photo.png  '),
       expect: () => [
         isA<CreateEventState>()
-            .having((s) => s.eventImageUrl, 'eventImageUrl', 'https://example.com/photo.png')
+            .having((s) => s.eventImageUrl, 'eventImageUrl',
+                'https://example.com/photo.png')
             .having((s) => s.eventImageUrlError, 'eventImageUrlError', isNull),
       ],
     );
@@ -750,7 +796,8 @@ void main() {
     }
 
     test('submitImageStep emits CreateEventSuccessEffect on success', () async {
-      when(() => mockCreateEventUseCase.execute(any())).thenAnswer((_) async {});
+      when(() => mockCreateEventUseCase.execute(any()))
+          .thenAnswer((_) async {});
 
       await setupCubitForSubmission();
 
@@ -765,8 +812,11 @@ void main() {
       expect(cubit.state.submitting, isFalse);
     });
 
-    test('submitImageStep emits CreateEventNoInternetEffect on NetworkException', () async {
-      when(() => mockCreateEventUseCase.execute(any())).thenThrow(NetworkException());
+    test(
+        'submitImageStep emits CreateEventNoInternetEffect on NetworkException',
+        () async {
+      when(() => mockCreateEventUseCase.execute(any()))
+          .thenThrow(NetworkException());
 
       await setupCubitForSubmission();
 
@@ -781,8 +831,11 @@ void main() {
       expect(cubit.state.submitting, isFalse);
     });
 
-    test('submitImageStep emits CreateEventGenericErrorEffect on unknown exception', () async {
-      when(() => mockCreateEventUseCase.execute(any())).thenThrow(Exception('Server error'));
+    test(
+        'submitImageStep emits CreateEventGenericErrorEffect on unknown exception',
+        () async {
+      when(() => mockCreateEventUseCase.execute(any()))
+          .thenThrow(Exception('Server error'));
 
       await setupCubitForSubmission();
 
@@ -812,7 +865,8 @@ void main() {
       verify(() => mockCreateEventUseCase.execute(any())).called(1);
     });
 
-    test('submitImageStep does nothing when formattedEventDate is null', () async {
+    test('submitImageStep does nothing when formattedEventDate is null',
+        () async {
       cubit.updateEventName('Test Event');
       cubit.updateDescription('A valid test description text');
       cubit.updateEventType(EventType.party);
@@ -829,7 +883,8 @@ void main() {
       await subscription.cancel();
     });
 
-    test('EventCreationData.fromState includes eventImageUrl when non-empty', () {
+    test('EventCreationData.fromState includes eventImageUrl when non-empty',
+        () {
       final data = EventCreationData.fromState(
         const CreateEventState(
           eventName: 'My Event',
@@ -858,8 +913,10 @@ void main() {
       expect: () => [
         isA<CreateEventState>()
             .having((s) => s.joinDeadlineEnabled, 'joinDeadlineEnabled', true)
-            .having((s) => s.joinDeadlineDate, 'joinDeadlineDate', DateTime(2030, 6, 15))
-            .having((s) => s.joinDeadlineTime, 'joinDeadlineTime', const TimeOfDay(hour: 23, minute: 59))
+            .having((s) => s.joinDeadlineDate, 'joinDeadlineDate',
+                DateTime(2030, 6, 15))
+            .having((s) => s.joinDeadlineTime, 'joinDeadlineTime',
+                const TimeOfDay(hour: 23, minute: 59))
             .having((s) => s.joinDeadlineError, 'joinDeadlineError', isNull),
       ],
     );
@@ -894,8 +951,10 @@ void main() {
       act: (cubit) => cubit.updateJoinDeadlineDate(DateTime(2030, 6, 16)),
       expect: () => [
         isA<CreateEventState>()
-            .having((s) => s.joinDeadlineDate, 'joinDeadlineDate', DateTime(2030, 6, 16))
-            .having((s) => s.joinDeadlineError, 'joinDeadlineError', l10n.inlineErrorJoinDeadlineExceeded),
+            .having((s) => s.joinDeadlineDate, 'joinDeadlineDate',
+                DateTime(2030, 6, 16))
+            .having((s) => s.joinDeadlineError, 'joinDeadlineError',
+                l10n.inlineErrorJoinDeadlineExceeded),
       ],
     );
 
@@ -912,7 +971,8 @@ void main() {
       act: (cubit) => cubit.updateJoinDeadlineDate(DateTime(2030, 6, 14)),
       expect: () => [
         isA<CreateEventState>()
-            .having((s) => s.joinDeadlineDate, 'joinDeadlineDate', DateTime(2030, 6, 14))
+            .having((s) => s.joinDeadlineDate, 'joinDeadlineDate',
+                DateTime(2030, 6, 14))
             .having((s) => s.joinDeadlineError, 'joinDeadlineError', isNull),
       ],
     );
@@ -926,11 +986,14 @@ void main() {
         joinDeadlineEnabled: true,
         joinDeadlineDate: DateTime(2030, 6, 15),
       ),
-      act: (cubit) => cubit.updateJoinDeadlineTime(const TimeOfDay(hour: 11, minute: 0)),
+      act: (cubit) =>
+          cubit.updateJoinDeadlineTime(const TimeOfDay(hour: 11, minute: 0)),
       expect: () => [
         isA<CreateEventState>()
-            .having((s) => s.joinDeadlineTime, 'joinDeadlineTime', const TimeOfDay(hour: 11, minute: 0))
-            .having((s) => s.joinDeadlineError, 'joinDeadlineError', l10n.inlineErrorJoinDeadlineExceeded),
+            .having((s) => s.joinDeadlineTime, 'joinDeadlineTime',
+                const TimeOfDay(hour: 11, minute: 0))
+            .having((s) => s.joinDeadlineError, 'joinDeadlineError',
+                l10n.inlineErrorJoinDeadlineExceeded),
       ],
     );
 
@@ -956,7 +1019,8 @@ void main() {
       expect(cubit.canProceedFromScreen3(), isTrue);
     });
 
-    test('submitDateStep includes formattedJoinDeadline when enabled', () async {
+    test('submitDateStep includes formattedJoinDeadline when enabled',
+        () async {
       when(() => mockFormatter.formatTimeWithMillisUtcSuffix(18, 30))
           .thenReturn('18:30:00.000Z');
       when(() => mockFormatter.formatIsoDateTime(any(), any()))
@@ -973,15 +1037,18 @@ void main() {
 
       final effectFuture = expectLater(
         cubit.effects,
-        emits(isA<CreateEventDateConfirmedEffect>()
-            .having((e) => e.eventData.formattedJoinDeadline, 'formattedJoinDeadline', '2030-06-15T18:30:00.000Z')),
+        emits(isA<CreateEventDateConfirmedEffect>().having(
+            (e) => e.eventData.formattedJoinDeadline,
+            'formattedJoinDeadline',
+            '2030-06-15T18:30:00.000Z')),
       );
 
       cubit.submitDateStep();
       await effectFuture;
     });
 
-    test('submitDateStep has null formattedJoinDeadline when disabled', () async {
+    test('submitDateStep has null formattedJoinDeadline when disabled',
+        () async {
       when(() => mockFormatter.formatTimeWithMillisUtcSuffix(18, 30))
           .thenReturn('18:30:00.000Z');
       when(() => mockFormatter.formatIsoDateTime(any(), any()))
@@ -995,8 +1062,10 @@ void main() {
 
       final effectFuture = expectLater(
         cubit.effects,
-        emits(isA<CreateEventDateConfirmedEffect>()
-            .having((e) => e.eventData.formattedJoinDeadline, 'formattedJoinDeadline', isNull)),
+        emits(isA<CreateEventDateConfirmedEffect>().having(
+            (e) => e.eventData.formattedJoinDeadline,
+            'formattedJoinDeadline',
+            isNull)),
       );
 
       cubit.submitDateStep();
@@ -1011,7 +1080,8 @@ void main() {
       expect(cubit.state.joinDeadlineError, isNull);
 
       cubit.updateEventDate(DateTime(2030, 6, 17));
-      expect(cubit.state.joinDeadlineError, l10n.inlineErrorJoinDeadlineExceeded);
+      expect(
+          cubit.state.joinDeadlineError, l10n.inlineErrorJoinDeadlineExceeded);
     });
   });
 }

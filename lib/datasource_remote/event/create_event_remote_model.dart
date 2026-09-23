@@ -4,7 +4,7 @@ import 'package:esmorga_flutter/domain/event/model/event_type.dart';
 class CreateEventRemoteModel {
   final String eventName;
   final String eventDate;
-  final String description;
+  final String? description;
   final String eventType;
   final String? imageUrl;
   final String locationName;
@@ -41,13 +41,14 @@ class CreateEventRemoteModel {
     );
   }
 
-  static String _eventTypeToApiValue(EventType eventType) => switch (eventType) {
-    EventType.party => 'Party',
-    EventType.sport => 'Sport',
-    EventType.food => 'Food',
-    EventType.charity => 'Charity',
-    EventType.games => 'Games',
-  };
+  static String _eventTypeToApiValue(EventType eventType) =>
+      switch (eventType) {
+        EventType.party => 'Party',
+        EventType.sport => 'Sport',
+        EventType.food => 'Food',
+        EventType.charity => 'Charity',
+        EventType.games => 'Games',
+      };
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{
