@@ -20,22 +20,22 @@ class ResetPasswordCubit extends Cubit<ResetPasswordState> {
   void onNewChanged(String value) {
     final err = _validateNew ? _validateNewPassword(value) : null;
     final repeatErr = state.repeatPassword.isEmpty ? state.repeatError : _validateRepeatPassword(state.repeatPassword, value);
-    emit(state.copyWith(newPassword: value, newError: err, repeatError: repeatErr));
+    emit(state.copyWith(newPassword: value).withValidationResult(newError: err, repeatError: repeatErr));
   }
 
   void onRepeatChanged(String value) {
     final err = _validateRepeat ? _validateRepeatPassword(value, state.newPassword) : null;
-    emit(state.copyWith(repeatPassword: value, repeatError: err));
+    emit(state.copyWith(repeatPassword: value).withValidationResult(newError: state.newError, repeatError: err));
   }
 
   void onNewUnfocused() {
     final err = _validateNewPassword(state.newPassword);
-    emit(state.copyWith(newBlurred: true, newError: err));
+    emit(state.copyWith(newBlurred: true).withValidationResult(newError: err, repeatError: state.repeatError));
   }
 
   void onRepeatUnfocused() {
     final err = _validateRepeatPassword(state.repeatPassword, state.newPassword);
-    emit(state.copyWith(repeatBlurred: true, repeatError: err));
+    emit(state.copyWith(repeatBlurred: true).withValidationResult(newError: state.newError, repeatError: err));
   }
 
   void toggleNewPasswordVisibility() {
@@ -49,13 +49,9 @@ class ResetPasswordCubit extends Cubit<ResetPasswordState> {
   Future<void> submit() async {
     final newErr = _validateNewPassword(state.newPassword);
     final repeatErr = _validateRepeatPassword(state.repeatPassword, state.newPassword);
-    var newState = state.copyWith(
-      attemptedSubmit: true,
-      newBlurred: true,
-      repeatBlurred: true,
-      newError: newErr,
-      repeatError: repeatErr,
-    );
+    var newState = state
+        .copyWith(attemptedSubmit: true, newBlurred: true, repeatBlurred: true)
+        .withValidationResult(newError: newErr, repeatError: repeatErr);
     if (!newState.isFormValid || code == null || code!.isEmpty) {
       emit(newState.copyWith(codeInvalid: code == null || code!.isEmpty));
       return;

@@ -43,8 +43,8 @@ class ResetPasswordState extends Equatable {
   ResetPasswordState copyWith({
     String? newPassword,
     String? repeatPassword,
-    String? newError = _sentinel,
-    String? repeatError = _sentinel,
+    String? newError,
+    String? repeatError,
     bool? newBlurred,
     bool? repeatBlurred,
     bool? attemptedSubmit,
@@ -57,8 +57,8 @@ class ResetPasswordState extends Equatable {
       ResetPasswordState(
         newPassword: newPassword ?? this.newPassword,
         repeatPassword: repeatPassword ?? this.repeatPassword,
-        newError: newError == _sentinel ? this.newError : newError,
-        repeatError: repeatError == _sentinel ? this.repeatError : repeatError,
+        newError: newError ?? this.newError,
+        repeatError: repeatError ?? this.repeatError,
         newBlurred: newBlurred ?? this.newBlurred,
         repeatBlurred: repeatBlurred ?? this.repeatBlurred,
         attemptedSubmit: attemptedSubmit ?? this.attemptedSubmit,
@@ -67,6 +67,25 @@ class ResetPasswordState extends Equatable {
         networkFailure: networkFailure ?? this.networkFailure,
         showNewPassword: showNewPassword ?? this.showNewPassword,
         showRepeatPassword: showRepeatPassword ?? this.showRepeatPassword,
+      );
+
+  ResetPasswordState withValidationResult({
+    required String? newError,
+    required String? repeatError,
+  }) =>
+      ResetPasswordState(
+        newPassword: newPassword,
+        repeatPassword: repeatPassword,
+        newError: newError,
+        repeatError: repeatError,
+        newBlurred: newBlurred,
+        repeatBlurred: repeatBlurred,
+        attemptedSubmit: attemptedSubmit,
+        codeInvalid: codeInvalid,
+        status: status,
+        networkFailure: networkFailure,
+        showNewPassword: showNewPassword,
+        showRepeatPassword: showRepeatPassword,
       );
 
   @override
@@ -85,5 +104,3 @@ class ResetPasswordState extends Equatable {
         showRepeatPassword,
       ];
 }
-
-const _sentinel = '__S';

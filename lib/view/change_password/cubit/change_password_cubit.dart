@@ -1,4 +1,3 @@
-// view/change_password/cubit/change_password_cubit.dart
 
 import 'dart:async';
 
@@ -30,14 +29,13 @@ class ChangePasswordCubit extends Cubit<ChangePasswordState> {
     final s = state;
     if (s is! ChangePasswordEditing) return;
 
-    final validated = s.copyWith(
-      currentTouched: true,
-      newTouched: true,
-      repeatTouched: true,
-      currentErrorKey: _validateCurrent(s.currentPassword),
-      newErrorKey: _validateNew(s.newPassword, s.currentPassword),
-      repeatErrorKey: _validateRepeat(s.repeatPassword, s.newPassword),
-    );
+    final validated = s
+        .copyWith(currentTouched: true, newTouched: true, repeatTouched: true)
+        .withValidationResult(
+          currentErrorKey: _validateCurrent(s.currentPassword),
+          newErrorKey: _validateNew(s.newPassword, s.currentPassword),
+          repeatErrorKey: _validateRepeat(s.repeatPassword, s.newPassword),
+        );
     emit(validated);
     if (!validated.isValid) return;
 
@@ -55,42 +53,62 @@ class ChangePasswordCubit extends Cubit<ChangePasswordState> {
     }
   }
 
-  void onCurrentChanged(String v) => _emitEditing((s) => s.copyWith(
-        currentPassword: v,
-        currentErrorKey: s.currentTouched ? _validateCurrent(v) : s.currentErrorKey,
-      ));
+  void onCurrentChanged(String v) => _emitEditing((s) {
+        final currentErrorKey = s.currentTouched ? _validateCurrent(v) : s.currentErrorKey;
+        return s.copyWith(currentPassword: v).withValidationResult(
+          currentErrorKey: currentErrorKey,
+          newErrorKey: s.newErrorKey,
+          repeatErrorKey: s.repeatErrorKey,
+        );
+      });
 
   void onNewChanged(String v) {
     _emitEditing((s) {
-      final newError = s.newTouched ? _validateNew(v, s.currentPassword) : null;
-      final repeatError = s.repeatTouched ? _validateRepeat(s.repeatPassword, v) : s.repeatErrorKey;
-      return s.copyWith(
-        newPassword: v,
-        newErrorKey: newError,
-        repeatErrorKey: repeatError,
+      final newErrorKey = s.newTouched ? _validateNew(v, s.currentPassword) : s.newErrorKey;
+      final repeatErrorKey = s.repeatTouched ? _validateRepeat(s.repeatPassword, v) : s.repeatErrorKey;
+      return s.copyWith(newPassword: v).withValidationResult(
+        currentErrorKey: s.currentErrorKey,
+        newErrorKey: newErrorKey,
+        repeatErrorKey: repeatErrorKey,
       );
     });
   }
 
-  void onRepeatChanged(String v) => _emitEditing((s) => s.copyWith(
-        repeatPassword: v,
-        repeatErrorKey: s.repeatTouched ? _validateRepeat(v, s.newPassword) : null,
-      ));
+  void onRepeatChanged(String v) => _emitEditing((s) {
+        final repeatErrorKey = s.repeatTouched ? _validateRepeat(v, s.newPassword) : s.repeatErrorKey;
+        return s.copyWith(repeatPassword: v).withValidationResult(
+          currentErrorKey: s.currentErrorKey,
+          newErrorKey: s.newErrorKey,
+          repeatErrorKey: repeatErrorKey,
+        );
+      });
 
-  void onCurrentUnfocused() => _touchValidate((s) => s.copyWith(
-        currentTouched: true,
-        currentErrorKey: _validateCurrent(s.currentPassword),
-      ));
+  void onCurrentUnfocused() => _touchValidate((s) {
+        final err = _validateCurrent(s.currentPassword);
+        return s.copyWith(currentTouched: true).withValidationResult(
+          currentErrorKey: err,
+          newErrorKey: s.newErrorKey,
+          repeatErrorKey: s.repeatErrorKey,
+        );
+      });
 
-  void onNewUnfocused() => _touchValidate((s) => s.copyWith(
-        newTouched: true,
-        newErrorKey: _validateNew(s.newPassword, s.currentPassword),
-      ));
+  void onNewUnfocused() => _touchValidate((s) {
+        final err = _validateNew(s.newPassword, s.currentPassword);
+        return s.copyWith(newTouched: true).withValidationResult(
+          currentErrorKey: s.currentErrorKey,
+          newErrorKey: err,
+          repeatErrorKey: s.repeatErrorKey,
+        );
+      });
 
-  void onRepeatUnfocused() => _touchValidate((s) => s.copyWith(
-        repeatTouched: true,
-        repeatErrorKey: _validateRepeat(s.repeatPassword, s.newPassword),
-      ));
+  void onRepeatUnfocused() => _touchValidate((s) {
+        final err = _validateRepeat(s.repeatPassword, s.newPassword);
+        return s.copyWith(repeatTouched: true).withValidationResult(
+          currentErrorKey: s.currentErrorKey,
+          newErrorKey: s.newErrorKey,
+          repeatErrorKey: err,
+        );
+      });
 
   void _emitEditing(ChangePasswordEditing Function(ChangePasswordEditing) fn) {
     final s = state is ChangePasswordEditing ? state as ChangePasswordEditing : const ChangePasswordEditing();
