@@ -140,6 +140,7 @@ class CreateEventCubit extends Cubit<CreateEventState> {
   DateTime get currentDate => clock.now();
 
   void initializeEventDate() {
+    if (state.eventDate != null) return;
     final today = currentDate;
     updateEventDate(DateTime(today.year, today.month, today.day));
   }

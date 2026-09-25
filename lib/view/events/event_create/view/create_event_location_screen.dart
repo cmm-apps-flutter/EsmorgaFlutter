@@ -35,6 +35,9 @@ class _CreateEventLocationScreenState extends State<CreateEventLocationScreen> {
   void initState() {
     super.initState();
     _cubit = context.read<CreateEventCubit>();
+    _locationController.text = _cubit.state.location;
+    _coordinatesController.text = _cubit.state.coordinates;
+    _maxCapacityController.text = _cubit.state.maxCapacity;
     _effectSubscription = _cubit.effects.listen((effect) {
       if (!mounted) return;
       if (effect is CreateEventLocationConfirmedEffect) {
