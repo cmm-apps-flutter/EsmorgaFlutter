@@ -4,7 +4,10 @@ import 'package:esmorga_flutter/datasource_remote/config/environment_config.dart
 import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/ds/esmorga_theme.dart';
 import 'package:esmorga_flutter/view/deeplink/deep_link_service.dart';
+import 'package:esmorga_flutter/view/notifications/onesignal_notification_service.dart';
+import 'package:esmorga_flutter/view/notifications/notification_refresh_intent_service.dart';
 import 'package:esmorga_flutter/view/l10n/app_localizations.dart';
+import 'package:esmorga_flutter/view/navigation/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
@@ -14,12 +17,19 @@ void main() async {
   EnvironmentConfig.initFromDartDefine();
   final ui.Locale deviceLocale = ui.PlatformDispatcher.instance.locale;
   await setupDi(deviceLocale);
+  await getIt<NotificationService>().initialize();
   runApp(const EsmorgaApp());
 
   WidgetsBinding.instance.addPostFrameCallback((_) {
     try {
       final deepLinkService = getIt<DeepLinkService>();
       deepLinkService.init();
+      final refreshIntents = getIt<NotificationRefreshIntentService>();
+      refreshIntents.intents.listen((_) {
+        getIt<GoRouter>().go(AppRoutes.eventList, extra: HomeTabMessage.eventCreated);
+      });
+      refreshIntents.bind();
+      getIt<NotificationService>().requestPermission();
     } catch (_) {
     }
   });

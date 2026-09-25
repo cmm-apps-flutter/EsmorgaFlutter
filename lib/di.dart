@@ -52,6 +52,8 @@ import 'package:esmorga_flutter/view/registration/cubit/registration_confirmatio
 import 'package:esmorga_flutter/view/registration/verify_account/cubit/verify_account_cubit.dart';
 import 'package:esmorga_flutter/view/splash/cubit/splash_cubit.dart';
 import 'package:esmorga_flutter/view/validation/form_validator.dart';
+import 'package:esmorga_flutter/view/notifications/onesignal_notification_service.dart';
+import 'package:esmorga_flutter/view/notifications/notification_refresh_intent_service.dart';
 import 'package:esmorga_flutter/view/util/esmorga_clock.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -74,6 +76,10 @@ Future<void> setupDi(Locale locale) async {
   final router = getIt<GoRouter>();
   final deepLinkService = DeepLinkService(router);
   getIt.registerSingleton<DeepLinkService>(deepLinkService);
+  getIt.registerSingleton<NotificationRefreshIntentService>(NotificationRefreshIntentService());
+  getIt.registerSingleton<NotificationService>(OneSignalNotificationService(
+    refreshIntents: getIt<NotificationRefreshIntentService>(),
+  ));
 
   final locService = LocalizationService();
   await locService.load(locale);

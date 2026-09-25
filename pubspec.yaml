@@ -31,6 +31,8 @@ dependencies:
   logger: ^2.0.2+1
   app_links: ^6.4.1
   http_proxy: ^1.2.3
+  onesignal_flutter: ^5.3.4
+  package_info_plus: ^8.3.0
 
 
 dev_dependencies:

@@ -12,6 +12,8 @@ class EnvironmentConfig {
     required this.baseUrl,
   });
 
+  static const String oneSignalAppId = '0115e97b-297b-4eec-bd1a-130fe1e6a960';
+
   static const EnvironmentConfig qa = EnvironmentConfig(
     environment: Environment.qa,
     baseUrl: 'https://qa.api.esmorgaevents.com/v1/',
