@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:esmorga_flutter/datasource_remote/config/environment_config.dart';
+import 'package:esmorga_flutter/view/notifications/notification_refresh_intent_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -11,9 +12,10 @@ abstract class NotificationService {
 }
 
 class OneSignalNotificationService implements NotificationService {
+  final NotificationRefreshIntentService refreshIntents;
   bool _initialized = false;
 
-  OneSignalNotificationService();
+  OneSignalNotificationService({required this.refreshIntents});
 
   @override
   Future<void> initialize() async {
@@ -22,6 +24,7 @@ class OneSignalNotificationService implements NotificationService {
 
     if (kDebugMode) OneSignal.Debug.setLogLevel(OSLogLevel.warn);
     OneSignal.initialize(EnvironmentConfig.oneSignalAppId);
+    OneSignal.Notifications.addClickListener(_onClick);
     OneSignal.Notifications.addForegroundWillDisplayListener(_onForegroundNotification);
 
     final packageInfo = await PackageInfo.fromPlatform();
@@ -34,6 +37,13 @@ class OneSignalNotificationService implements NotificationService {
 
   @override
   Future<bool> requestPermission() => OneSignal.Notifications.requestPermission(false);
+
+  void _onClick(OSNotificationClickEvent event) {
+    final notification = event.notification;
+    _logNotification('click', notification);
+    final data = notification.additionalData;
+    if (data?['type'] == 'event-created') refreshIntents.add();
+  }
 
   void _onForegroundNotification(OSNotificationWillDisplayEvent event) {
     _logNotification('foreground', event.notification);
