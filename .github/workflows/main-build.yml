@@ -50,11 +50,13 @@ jobs:
           # Set up paths
           CERTIFICATE_PATH="$RUNNER_TEMP/apple_cert.p12"
           PROFILE_ENT_PATH="$RUNNER_TEMP/ent.mobileprovision"
+          PROFILE_EXT_PATH="$RUNNER_TEMP/ent_extension.mobileprovision"
           KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
 
           # Decode secrets into files
           echo -n "${{ secrets.BUILD_CERTIFICATE_BASE64 }}" | base64 --decode -o "$CERTIFICATE_PATH"
           echo -n "${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}" | base64 --decode -o "$PROFILE_ENT_PATH"
+          echo -n "${{ secrets.BUILD_PROVISION_PROFILE_EXTENSION_BASE64 }}" | base64 --decode -o "$PROFILE_EXT_PATH"
 
           # Create and configure a temporary keychain
           security create-keychain -p "${{ secrets.P12_PASSWORD }}" "$KEYCHAIN_PATH"
@@ -73,31 +75,35 @@ jobs:
           # Install provisioning profiles
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp "$PROFILE_ENT_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
+          cp "$PROFILE_EXT_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
 
       - name: Inspect provisioning profile and certificate
         run: |
           set -euo pipefail
           PROFILE_ENT_PATH="$RUNNER_TEMP/ent.mobileprovision"
+          PROFILE_EXT_PATH="$RUNNER_TEMP/ent_extension.mobileprovision"
 
-          echo "=== Provisioning Profile Info ==="
-          security cms -D -i "$PROFILE_ENT_PATH" > "$RUNNER_TEMP/profile.plist"
+          for LABEL_PATH in "App:$PROFILE_ENT_PATH" "Extension:$PROFILE_EXT_PATH"; do
+            LABEL="${LABEL_PATH%%:*}"
+            PATH_TO_PROFILE="${LABEL_PATH#*:}"
 
-          echo "Profile Name:"
-          /usr/libexec/PlistBuddy -c "Print :Name" "$RUNNER_TEMP/profile.plist" || true
+            echo "=== [$LABEL] Provisioning Profile Info ==="
+            security cms -D -i "$PATH_TO_PROFILE" > "$RUNNER_TEMP/profile_$LABEL.plist"
 
-          echo "Profile Type (ProvisionsAllDevices indicates Enterprise):"
-          /usr/libexec/PlistBuddy -c "Print :ProvisionsAllDevices" "$RUNNER_TEMP/profile.plist" 2>/dev/null || echo "Not Enterprise"
+            echo "Profile Name:"
+            /usr/libexec/PlistBuddy -c "Print :Name" "$RUNNER_TEMP/profile_$LABEL.plist" || true
 
-          echo "Provisioned Devices count (0 or not present = App Store/Enterprise):"
-          /usr/libexec/PlistBuddy -c "Print :ProvisionedDevices" "$RUNNER_TEMP/profile.plist" 2>/dev/null | wc -l || echo "0"
+            echo "App ID:"
+            /usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" "$RUNNER_TEMP/profile_$LABEL.plist" || true
 
-          echo "Team Name:"
-          /usr/libexec/PlistBuddy -c "Print :TeamName" "$RUNNER_TEMP/profile.plist" || true
+            echo "Profile Type (ProvisionsAllDevices indicates Enterprise):"
+            /usr/libexec/PlistBuddy -c "Print :ProvisionsAllDevices" "$RUNNER_TEMP/profile_$LABEL.plist" 2>/dev/null || echo "Not Enterprise"
 
-          echo "Entitlements:"
-          /usr/libexec/PlistBuddy -c "Print :Entitlements" "$RUNNER_TEMP/profile.plist" || true
+            echo "Team Name:"
+            /usr/libexec/PlistBuddy -c "Print :TeamName" "$RUNNER_TEMP/profile_$LABEL.plist" || true
+            echo ""
+          done
 
-          echo ""
           echo "=== Certificate Info ==="
           KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
           security find-identity -v -p codesigning "$KEYCHAIN_PATH"
