@@ -10,6 +10,8 @@
     <dict>
         <key>com.mobilestudio.esmorga</key>
         <string>Ent: com.mobilestudio.esmorga</string>
+        <key>com.mobilestudio.esmorga.OneSignalNotificationServiceExtension</key>
+        <string>Ent: com.mobilestudio.esmorga.OneSignalNotificationServiceExtension</string>
     </dict>
     <key>signingStyle</key>
     <string>manual</string>
