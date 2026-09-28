@@ -561,7 +561,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.mobilestudio.esmorga.OneSignalNotificationServiceExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Ent: com.mobilestudio.esmorga.OneSignalNotificationServiceExtension";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Ent: com.mobilestudio.esmorga.OneSignalNotificatio";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
@@ -718,7 +718,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.mobilestudio.esmorga.OneSignalNotificationServiceExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Ent: com.mobilestudio.esmorga.OneSignalNotificationServiceExtension";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Ent: com.mobilestudio.esmorga.OneSignalNotificatio";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
@@ -913,7 +913,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.mobilestudio.esmorga.OneSignalNotificationServiceExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Ent: com.mobilestudio.esmorga.OneSignalNotificationServiceExtension";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Ent: com.mobilestudio.esmorga.OneSignalNotificatio";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;

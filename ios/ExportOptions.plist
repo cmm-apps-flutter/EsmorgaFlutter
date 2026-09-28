@@ -11,7 +11,7 @@
         <key>com.mobilestudio.esmorga</key>
         <string>Ent: com.mobilestudio.esmorga</string>
         <key>com.mobilestudio.esmorga.OneSignalNotificationServiceExtension</key>
-        <string>Ent: com.mobilestudio.esmorga.OneSignalNotificationServiceExtension</string>
+        <string>Ent: com.mobilestudio.esmorga.OneSignalNotificatio</string>
     </dict>
     <key>signingStyle</key>
     <string>manual</string>
