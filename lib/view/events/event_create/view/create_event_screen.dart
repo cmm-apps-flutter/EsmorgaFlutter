@@ -62,6 +62,8 @@ class _CreateEventFormState extends State<_CreateEventForm> {
   void initState() {
     super.initState();
     _cubit = context.read<CreateEventCubit>();
+    _nameController.text = _cubit.state.eventName;
+    _descriptionController.text = _cubit.state.description;
     _effectSubscription = _cubit.effects.listen((effect) {
       if (!mounted) return;
       if (effect is CreateEventNavigateToEventTypeEffect) {

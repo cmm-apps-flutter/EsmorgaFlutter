@@ -39,6 +39,7 @@ class _CreateEventImageScreenState extends State<CreateEventImageScreen> {
   void initState() {
     super.initState();
     _cubit = context.read<CreateEventCubit>();
+    _imageUrlController.text = _cubit.state.eventImageUrl;
     _localizations = getIt<LocalizationService>().current;
     _effectSubscription = _cubit.effects.listen((effect) {
       if (!mounted) return;

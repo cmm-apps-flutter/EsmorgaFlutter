@@ -160,98 +160,61 @@ class AppRoutes {
             );
           },
         ),
-        GoRoute(
-          path: createEvent,
-          builder: (context, state) => CreateEventScreen(
-            onNavigateToNextStep: (eventName, description) {
-              context.push(
-                createEventType,
-                extra: EventCreationData(
-                  eventName: eventName,
-                  description: description,
-                ),
-              );
-            },
-            onBackClicked: () {
-              context.pop();
-            },
+        ShellRoute(
+          // Single cubit shared across all create-event steps so form data
+          // survives back/forward navigation within the flow.
+          builder: (context, state, child) => BlocProvider(
+            create: (_) => getIt<CreateEventCubit>(),
+            child: child,
           ),
-        ),
-        GoRoute(
-          path: createEventType,
-          builder: (context, state) {
-            final eventData = state.extra as EventCreationData;
-            return BlocProvider(
-              create: (_) => getIt<CreateEventCubit>()
-                ..initFromEventData(eventData),
-              child: CreateEventTypeScreen(
+          routes: [
+            GoRoute(
+              path: createEvent,
+              builder: (context, state) => CreateEventScreen(
+                onNavigateToNextStep: (eventName, description) {
+                  context.push(createEventType);
+                },
+                onBackClicked: () {
+                  context.pop();
+                },
+              ),
+            ),
+            GoRoute(
+              path: createEventType,
+              builder: (context, state) => CreateEventTypeScreen(
                 onNavigateToNextStep: (eventName, description, eventType) {
-                  context.push(
-                    createEventDate,
-                    extra: EventCreationData(
-                      eventName: eventName,
-                      description: description,
-                      eventType: eventType,
-                    ),
-                  );
+                  context.push(createEventDate);
                 },
               ),
-            );
-          },
-        ),
-        GoRoute(
-          path: createEventDate,
-          builder: (context, state) {
-            final eventData = state.extra as EventCreationData;
-            return BlocProvider(
-              create: (_) => getIt<CreateEventCubit>()
-                ..initFromEventData(eventData),
-              child: CreateEventDateScreen(
+            ),
+            GoRoute(
+              path: createEventDate,
+              builder: (context, state) => CreateEventDateScreen(
                 onNavigateToNextStep: (eventData) {
-                  context.push(
-                    createEventLocation,
-                    extra: eventData,
-                  );
+                  context.push(createEventLocation);
                 },
                 onBackClicked: () => context.pop(),
               ),
-            );
-          },
-        ),
-        GoRoute(
-          path: createEventLocation,
-          builder: (context, state) {
-            final eventData = state.extra as EventCreationData;
-            return BlocProvider(
-              create: (_) => getIt<CreateEventCubit>()
-                ..initFromEventData(eventData),
-              child: CreateEventLocationScreen(
+            ),
+            GoRoute(
+              path: createEventLocation,
+              builder: (context, state) => CreateEventLocationScreen(
                 onNavigateToNextStep: (eventData) {
-                  context.push(
-                    createEventImage,
-                    extra: eventData,
-                  );
+                  context.push(createEventImage);
                 },
                 onBackClicked: () => context.pop(),
               ),
-            );
-          },
-        ),
-        GoRoute(
-          path: createEventImage,
-          builder: (context, state) {
-            final eventData = state.extra as EventCreationData;
-            return BlocProvider(
-              create: (_) => getIt<CreateEventCubit>()
-                ..initFromEventData(eventData),
-              child: CreateEventImageScreen(
+            ),
+            GoRoute(
+              path: createEventImage,
+              builder: (context, state) => CreateEventImageScreen(
                 onSubmitSuccess: () {
                   context.go(eventList, extra: HomeTabMessage.eventCreated);
                 },
                 onBackClicked: () => context.pop(),
               ),
-            );
-          },
+            ),
+          ],
         ),
         ShellRoute(
           builder: (context, state, child) => HomeScreen(child: child),
