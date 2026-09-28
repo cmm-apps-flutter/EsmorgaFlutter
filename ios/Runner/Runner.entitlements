@@ -11,5 +11,9 @@
 		<string>applinks:api.esmorgaevents.com</string>
 		<string>applinks:qa.api.esmorgaevents.com</string>
 	</array>
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.mobilestudio.esmorga.onesignal</string>
+	</array>
 </dict>
 </plist>
