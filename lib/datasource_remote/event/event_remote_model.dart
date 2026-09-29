@@ -90,8 +90,8 @@ class EventLocationRemoteModel extends Equatable {
   factory EventLocationRemoteModel.fromJson(Map<String, dynamic> json) {
     return EventLocationRemoteModel(
       remoteLocationName: json['name'],
-      remoteLat: json['lat'],
-      remoteLong: json['long'],
+      remoteLat: (json['lat'] as num?)?.toDouble(),
+      remoteLong: (json['long'] as num?)?.toDouble(),
     );
   }
 
