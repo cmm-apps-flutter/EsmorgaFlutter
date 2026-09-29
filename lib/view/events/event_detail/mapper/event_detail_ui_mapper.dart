@@ -51,8 +51,7 @@ class EventDetailUiMapper {
       description: event.description ?? '',
       date: dateFormatter.formatEventDate(event.date),
       locationName: event.location.name,
-      imageUrl:
-          event.imageUrl != null ? Uri.decodeComponent(event.imageUrl!) : null,
+      imageUrl: _safeDecodeImageUrl(event.imageUrl),
       userJoined: event.userJoined,
       showNavigateButton:
           event.location.lat != null && event.location.long != null,
@@ -63,5 +62,15 @@ class EventDetailUiMapper {
       buttonText: buttonText,
       showViewAttendants: isAuthenticated && event.currentAttendeeCount > 0,
     );
+  }
+}
+
+// Falls back to the raw URL if it contains a malformed percent-encoding.
+String? _safeDecodeImageUrl(String? rawUrl) {
+  if (rawUrl == null) return null;
+  try {
+    return Uri.decodeComponent(rawUrl);
+  } catch (_) {
+    return rawUrl;
   }
 }

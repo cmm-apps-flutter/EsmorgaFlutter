@@ -9,7 +9,7 @@ extension HomeTabUiMapper on Event {
 
     return HomeTabUiModel(
       id: id,
-      imageUrl: imageUrl != null ? Uri.decodeComponent(imageUrl!) : null,
+      imageUrl: _safeDecodeImageUrl(imageUrl),
       cardTitle: name,
       cardSubtitle1: formatter.formatEventDate(date),
       cardSubtitle2: location.name,
@@ -20,5 +20,15 @@ extension HomeTabUiMapper on Event {
 extension HomeTabUiMapperList on List<Event> {
   List<HomeTabUiModel> toHomeTabUiList() {
     return map((event) => event.toHomeTabUi()).toList();
+  }
+}
+
+// Falls back to the raw URL if it contains a malformed percent-encoding.
+String? _safeDecodeImageUrl(String? rawUrl) {
+  if (rawUrl == null) return null;
+  try {
+    return Uri.decodeComponent(rawUrl);
+  } catch (_) {
+    return rawUrl;
   }
 }
