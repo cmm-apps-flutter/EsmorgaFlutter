@@ -30,7 +30,7 @@ import 'package:esmorga_flutter/view/events/event_create/cubit/create_event_cubi
 import 'package:esmorga_flutter/view/splash/cubit/splash_cubit.dart';
 import 'package:esmorga_flutter/view/splash/view/splash_screen.dart';
 
-enum HomeTabMessage { eventCreated }
+enum HomeTabMessage { eventCreated, pushRefresh }
 
 class AppRoutes {
   static const String splash = '/splash';
