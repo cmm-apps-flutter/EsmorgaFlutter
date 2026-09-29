@@ -25,12 +25,10 @@ class CreateEventScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => getIt<CreateEventCubit>(),
-      child: _CreateEventForm(
-        onNavigateToNextStep: onNavigateToNextStep,
-        onBackClicked: onBackClicked,
-      ),
+    // Reuses the CreateEventCubit shared across the flow by the ShellRoute.
+    return _CreateEventForm(
+      onNavigateToNextStep: onNavigateToNextStep,
+      onBackClicked: onBackClicked,
     );
   }
 }

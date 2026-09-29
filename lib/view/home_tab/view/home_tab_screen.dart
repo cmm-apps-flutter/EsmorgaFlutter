@@ -69,7 +69,8 @@ class _HomeTabFormState extends State<_HomeTabForm> {
     super.initState();
     _cubit = context.read<HomeTabCubit>();
     _l10n = getIt<LocalizationService>().current;
-    final shouldForceRefresh = widget.homeTabMessage == HomeTabMessage.eventCreated;
+    final shouldForceRefresh = widget.homeTabMessage == HomeTabMessage.eventCreated ||
+        widget.homeTabMessage == HomeTabMessage.pushRefresh;
     _cubit.loadEvents(forceRefresh: shouldForceRefresh);
     _effectSubscription = _cubit.effects.listen((effect) async {
       if (effect is NavigateToEventDetailsEffect) {

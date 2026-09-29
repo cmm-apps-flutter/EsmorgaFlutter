@@ -26,7 +26,7 @@ void main() async {
       deepLinkService.init();
       final refreshIntents = getIt<NotificationRefreshIntentService>();
       refreshIntents.intents.listen((_) {
-        getIt<GoRouter>().go(AppRoutes.eventList, extra: HomeTabMessage.eventCreated);
+        getIt<GoRouter>().go(AppRoutes.eventList, extra: HomeTabMessage.pushRefresh);
       });
       refreshIntents.bind();
       getIt<NotificationService>().requestPermission();
