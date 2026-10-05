@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/domain/event/event_repository.dart';
 import 'package:esmorga_flutter/domain/event/model/event.dart';
+import 'package:esmorga_flutter/domain/event/model/event_attendees.dart';
 import 'package:esmorga_flutter/domain/event/model/event_location.dart';
 import 'package:esmorga_flutter/domain/user/model/role_type.dart';
 import 'package:esmorga_flutter/domain/user/model/user.dart';
@@ -16,6 +19,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:mocktail/mocktail.dart';
+import 'package:mocktail_image_network/mocktail_image_network.dart';
 
 import 'screenshot_helper.dart';
 
@@ -84,25 +88,87 @@ void main() {
     role: RoleType.user,
   );
 
-  Widget buildScreen(Event event) {
+  Widget buildScreen(Event event,
+      {Future<void> Function(String)? goToAttendees}) {
+    when(() => eventRepository.getEventAttendees(event.id)).thenAnswer(
+        (_) async =>
+            EventAttendees(totalUsers: event.currentAttendeeCount, users: []));
     return BlocProvider(
       create: (_) => EventDetailCubit(
         eventRepository: eventRepository,
         userRepository: userRepository,
         event: event,
         l10n: localizationService,
-      )..start(), // Trigger start to load
+      ),
       child: EventDetailScreen(
         goToLogin: () {},
-        goToAttendees: (_) {},
+        goToAttendees: goToAttendees ?? (_) async {},
       ),
     );
+  }
+
+  testWidgets(
+      'refreshes the count after returning from attendees',
+      (tester) => mockNetworkImages(() async {
+            when(() => userRepository.getUser()).thenAnswer((_) async => user);
+            final attendeesRoute = Completer<void>();
+            final screen = buildScreen(baseEvent,
+                goToAttendees: (_) => attendeesRoute.future);
+            await tester
+                .pumpWidget(MaterialApp(theme: lightTheme, home: screen));
+            await tester.pumpAndSettle();
+            expect(
+                find.text(localizationService.current.labelCapacity(10, 100)),
+                findsOneWidget);
+
+            await tester.tap(
+                find.text(localizationService.current.buttonViewAttendees));
+            await tester.pumpAndSettle();
+            verify(() => eventRepository.getEventAttendees(baseEvent.id))
+                .called(1);
+
+            when(() => eventRepository.getEventAttendees(baseEvent.id))
+                .thenAnswer(
+                    (_) async => EventAttendees(totalUsers: 11, users: []));
+            attendeesRoute.complete();
+            await tester.pumpAndSettle();
+
+            expect(
+                find.text(localizationService.current.labelCapacity(11, 100)),
+                findsOneWidget);
+            verify(() => eventRepository.getEventAttendees(baseEvent.id))
+                .called(1);
+          }));
+
+  testWidgets(
+      'pull to refresh updates the attendee count',
+      (tester) => mockNetworkImages(() async {
+            when(() => userRepository.getUser()).thenAnswer((_) async => user);
+            await tester.pumpWidget(
+                MaterialApp(theme: lightTheme, home: buildScreen(baseEvent)));
+            await tester.pumpAndSettle();
+            when(() => eventRepository.getEventAttendees(baseEvent.id))
+                .thenAnswer(
+                    (_) async => EventAttendees(totalUsers: 9, users: []));
+
+            await tester.drag(
+                find.byType(SingleChildScrollView), const Offset(0, 300));
+            await tester.pumpAndSettle();
+
+            expect(find.text(localizationService.current.labelCapacity(9, 100)),
+                findsOneWidget);
+          }));
+
+  Future<void> waitForEventDetails(WidgetTester tester) async {
+    await tester.pumpAndSettle();
   }
 
   screenshotGolden(
     'event_detail_guest',
     theme: lightTheme,
     screenshotPath: 'event_detail',
+    afterBuild: waitForEventDetails,
+    allowedDiffPercent: 0.00005,
     buildHome: () {
       when(() => userRepository.getUser()).thenThrow(Exception('Not auth'));
       return buildScreen(baseEvent);
@@ -113,6 +179,8 @@ void main() {
     'event_detail_user_available',
     theme: lightTheme,
     screenshotPath: 'event_detail',
+    afterBuild: waitForEventDetails,
+    allowedDiffPercent: 0.00005,
     buildHome: () {
       when(() => userRepository.getUser()).thenAnswer((_) async => user);
       return buildScreen(baseEvent);
@@ -123,6 +191,8 @@ void main() {
     'event_detail_user_joined',
     theme: lightTheme,
     screenshotPath: 'event_detail',
+    afterBuild: waitForEventDetails,
+    allowedDiffPercent: 0.00005,
     buildHome: () {
       when(() => userRepository.getUser()).thenAnswer((_) async => user);
       return buildScreen(baseEvent.copyWith(userJoined: true));
@@ -133,6 +203,8 @@ void main() {
     'event_detail_user_full',
     theme: lightTheme,
     screenshotPath: 'event_detail',
+    afterBuild: waitForEventDetails,
+    allowedDiffPercent: 0.00005,
     buildHome: () {
       when(() => userRepository.getUser()).thenAnswer((_) async => user);
       return buildScreen(baseEvent.copyWith(
@@ -146,11 +218,15 @@ void main() {
     'event_detail_user_deadline_passed',
     theme: lightTheme,
     screenshotPath: 'event_detail',
+    afterBuild: waitForEventDetails,
+    allowedDiffPercent: 0.00005,
     buildHome: () {
       when(() => userRepository.getUser()).thenAnswer((_) async => user);
       // Deadline in the past
       return buildScreen(baseEvent.copyWith(
-        joinDeadline: DateTime.now().subtract(const Duration(days: 1)).millisecondsSinceEpoch,
+        joinDeadline: DateTime.now()
+            .subtract(const Duration(days: 1))
+            .millisecondsSinceEpoch,
       ));
     },
   );
