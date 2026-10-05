@@ -53,20 +53,26 @@ class _RegisterFormState extends State<_RegisterForm> {
     _cubit = context.read<RegisterCubit>();
 
     _nameFocusNode.addListener(() {
-      if (!_nameFocusNode.hasFocus) _cubit.onNameUnfocused();
+      _validateOnFocusLoss(_nameFocusNode, _cubit.onNameUnfocused);
     });
     _lastNameFocusNode.addListener(() {
-      if (!_lastNameFocusNode.hasFocus) _cubit.onLastNameUnfocused();
+      _validateOnFocusLoss(_lastNameFocusNode, _cubit.onLastNameUnfocused);
     });
     _emailFocusNode.addListener(() {
-      if (!_emailFocusNode.hasFocus) _cubit.onEmailUnfocused();
+      _validateOnFocusLoss(_emailFocusNode, _cubit.onEmailUnfocused);
     });
     _passwordFocusNode.addListener(() {
-      if (!_passwordFocusNode.hasFocus) _cubit.onPasswordUnfocused();
+      _validateOnFocusLoss(_passwordFocusNode, _cubit.onPasswordUnfocused);
     });
     _repeatPasswordFocusNode.addListener(() {
-      if (!_repeatPasswordFocusNode.hasFocus) _cubit.onRepeatPasswordUnfocused();
+      _validateOnFocusLoss(_repeatPasswordFocusNode, _cubit.onRepeatPasswordUnfocused);
     });
+  }
+
+  void _validateOnFocusLoss(FocusNode focusNode, VoidCallback validate) {
+    if (!focusNode.hasFocus && ModalRoute.of(context)?.isCurrent != false) {
+      validate();
+    }
   }
 
   @override
@@ -93,7 +99,14 @@ class _RegisterFormState extends State<_RegisterForm> {
     return BlocConsumer<RegisterCubit, RegisterState>(
       listener: (context, state) {
         if (state.isSuccess && state.successEmail != null) {
-          context.go('${AppRoutes.registrationConfirmation}?email=${Uri.encodeComponent(state.successEmail!)}');
+          final email = state.successEmail!;
+          _cubit.resetForm();
+          _nameController.clear();
+          _lastNameController.clear();
+          _emailController.clear();
+          _passwordController.clear();
+          _repeatPasswordController.clear();
+          context.push('${AppRoutes.registrationConfirmation}?email=${Uri.encodeComponent(email)}');
         } else if (state.isFailure && state.failureMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(EsmorgaSnackbar(state.failureMessage!));
         }
