@@ -43,6 +43,26 @@ class EventDetailCubit extends Cubit<EventDetailState> {
       isAuth = true;
     } catch (_) {}
 
+    if (isAuth) {
+      try {
+        final attendees = await eventRepository.getEventAttendees(_event.id);
+        if (isClosed) return;
+        if (_event.currentAttendeeCount != attendees.totalUsers) {
+          _event = _event.copyWith(currentAttendeeCount: attendees.totalUsers);
+          _hasChanged = true;
+        }
+      } catch (error) {
+        if (isClosed) return;
+        final message = error.toString().toLowerCase();
+        if (message.contains('network') || message.contains('connection')) {
+          _emitEffect(ShowNoNetworkEffect());
+        } else {
+          _emitEffect(ShowGenericErrorEffect());
+        }
+      }
+    }
+
+    if (isClosed) return;
     final updatedUiModel = EventDetailUiMapper.map(
       _event,
       isAuthenticated: isAuth,
@@ -75,7 +95,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
         await eventRepository.leaveEvent(_event);
         updated = _event.copyWith(
           userJoined: false,
-          currentAttendeeCount:
+            currentAttendeeCount:
               (_event.currentAttendeeCount - 1).clamp(0, _event.maxCapacity ?? _event.currentAttendeeCount),
         );
         _emitEffect(ShowLeaveSuccessEffect());

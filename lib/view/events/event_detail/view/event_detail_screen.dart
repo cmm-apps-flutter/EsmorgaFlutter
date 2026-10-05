@@ -16,7 +16,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 class EventDetailScreen extends StatelessWidget {
   final Function() goToLogin;
-  final void Function(String eventId) goToAttendees;
+  final Future<void> Function(String eventId) goToAttendees;
   const EventDetailScreen({
     Key? key,
     required this.goToLogin,
@@ -34,7 +34,7 @@ class EventDetailScreen extends StatelessWidget {
 
 class _EventDetailForm extends StatefulWidget {
   final Function() goToLogin;
-  final void Function(String eventId) goToAttendees;
+  final Future<void> Function(String eventId) goToAttendees;
   const _EventDetailForm({
     Key? key,
     required this.goToLogin,
@@ -62,7 +62,7 @@ class _EventDetailFormState extends State<_EventDetailForm> {
       } else if (effect is NavigateToLoginEffect) {
         widget.goToLogin();
       } else if (effect is NavigateToAttendeesEffect) {
-        widget.goToAttendees(effect.eventId);
+        _openAttendees(effect.eventId);
       } else if (effect is ShowJoinSuccessEffect) {
         _showSnack(l10n.snackbarEventJoined);
       } else if (effect is ShowEventFullSnackbarEffect) {
@@ -104,7 +104,8 @@ class _EventDetailFormState extends State<_EventDetailForm> {
     );
   }
 
-  Widget _buildBody(BuildContext context, EventDetailState state, AppLocalizations l10n) {
+  Widget _buildBody(
+      BuildContext context, EventDetailState state, AppLocalizations l10n) {
     String safeDecode(String raw) {
       if (!raw.contains('%')) return raw;
       final hasValidPattern = RegExp(r'%[0-9A-Fa-f]{2}').hasMatch(raw);
@@ -137,98 +138,116 @@ class _EventDetailFormState extends State<_EventDetailForm> {
 
     final ui = state.uiModel;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Image.network(
-              ui.imageUrl ?? '',
-              width: double.infinity,
-              height: 200,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
+    return RefreshIndicator(
+      onRefresh: _cubit.start,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.network(
+                ui.imageUrl ?? '',
                 width: double.infinity,
                 height: 200,
-                alignment: Alignment.center,
-                color: Theme.of(context).colorScheme.surfaceVariant,
-                child: Image.asset(
-                  'assets/images/event_list_empty.jpg',
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
                   width: double.infinity,
-                  height: 200.0,
-                  fit: BoxFit.cover,
+                  height: 200,
+                  alignment: Alignment.center,
+                  color: Theme.of(context).colorScheme.surfaceVariant,
+                  child: Image.asset(
+                    'assets/images/event_list_empty.jpg',
+                    width: double.infinity,
+                    height: 200.0,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 24),
-          EsmorgaText(
-            text: ui.title,
-            style: EsmorgaTextStyle.heading1,
-            key: const Key('event_detail_title'),
-          ),
-          const SizedBox(height: 8),
-          EsmorgaText(text: ui.date, style: EsmorgaTextStyle.body1Accent),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              if (ui.maxCapacity != null) ...[
-                const Icon(Icons.people, size: 20),
-                const SizedBox(width: 8),
-                EsmorgaText(
-                  text: l10n.labelCapacity(ui.currentAttendeeCount, ui.maxCapacity!),
-                  style: EsmorgaTextStyle.body1Accent,
-                ),
-                const Spacer(),
-              ],
-              if (ui.showViewAttendants)
-                InkWell(
-                  onTap: () => _cubit.viewAttendeesPressed(),
-                  child: EsmorgaText(
-                    text: l10n.buttonViewAttendees,
-                    style: EsmorgaTextStyle.button,
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          EsmorgaText(
-            text: l10n.screenEventDetailsJoinDeadline(ui.joinDeadLine),
-            style: EsmorgaTextStyle.caption,
-          ),
-          if (ui.description.isNotEmpty) ...[
             const SizedBox(height: 24),
-            EsmorgaText(text: l10n.screenEventDetailsDescription, style: EsmorgaTextStyle.heading2),
+            EsmorgaText(
+              text: ui.title,
+              style: EsmorgaTextStyle.heading1,
+              key: const Key('event_detail_title'),
+            ),
             const SizedBox(height: 8),
-            EsmorgaText(text: safeDecode(ui.description), style: EsmorgaTextStyle.body1),
-          ],
-          const SizedBox(height: 24),
-          EsmorgaText(text: l10n.screenEventDetailsLocation, style: EsmorgaTextStyle.heading2),
-          const SizedBox(height: 8),
-          EsmorgaText(text: ui.locationName, style: EsmorgaTextStyle.body1),
-          if (ui.showNavigateButton) ...[
+            EsmorgaText(text: ui.date, style: EsmorgaTextStyle.body1Accent),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                if (ui.maxCapacity != null) ...[
+                  const Icon(Icons.people, size: 20),
+                  const SizedBox(width: 8),
+                  EsmorgaText(
+                    text: l10n.labelCapacity(
+                        ui.currentAttendeeCount, ui.maxCapacity!),
+                    style: EsmorgaTextStyle.body1Accent,
+                  ),
+                  const Spacer(),
+                ],
+                if (ui.showViewAttendants)
+                  InkWell(
+                    onTap: () => _cubit.viewAttendeesPressed(),
+                    child: EsmorgaText(
+                      text: l10n.buttonViewAttendees,
+                      style: EsmorgaTextStyle.button,
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            EsmorgaText(
+              text: l10n.screenEventDetailsJoinDeadline(ui.joinDeadLine),
+              style: EsmorgaTextStyle.caption,
+            ),
+            if (ui.description.isNotEmpty) ...[
+              const SizedBox(height: 24),
+              EsmorgaText(
+                  text: l10n.screenEventDetailsDescription,
+                  style: EsmorgaTextStyle.heading2),
+              const SizedBox(height: 8),
+              EsmorgaText(
+                  text: safeDecode(ui.description),
+                  style: EsmorgaTextStyle.body1),
+            ],
+            const SizedBox(height: 24),
+            EsmorgaText(
+                text: l10n.screenEventDetailsLocation,
+                style: EsmorgaTextStyle.heading2),
+            const SizedBox(height: 8),
+            EsmorgaText(text: ui.locationName, style: EsmorgaTextStyle.body1),
+            if (ui.showNavigateButton) ...[
+              const SizedBox(height: 24),
+              EsmorgaButton(
+                text: l10n.buttonNavigate,
+                primary: false,
+                onClick: () => _cubit.navigatePressed(),
+                key: const Key('event_detail_navigate_button'),
+              ),
+            ],
             const SizedBox(height: 24),
             EsmorgaButton(
-              text: l10n.buttonNavigate,
-              primary: false,
-              onClick: () => _cubit.navigatePressed(),
-              key: const Key('event_detail_navigate_button'),
+              text: ui.buttonText,
+              isLoading: state.joinLeaving,
+              isEnabled: ui.buttonEnabled,
+              onClick: () => _cubit.primaryPressed(),
+              key: const Key('event_detail_primary_button'),
             ),
+            const SizedBox(height: 48),
           ],
-          const SizedBox(height: 24),
-          EsmorgaButton(
-            text: ui.buttonText,
-            isLoading: state.joinLeaving,
-            isEnabled: ui.buttonEnabled,
-            onClick: () => _cubit.primaryPressed(),
-            key: const Key('event_detail_primary_button'),
-          ),
-          const SizedBox(height: 48),
-        ],
+        ),
       ),
     );
+  }
+
+  Future<void> _openAttendees(String eventId) async {
+    await widget.goToAttendees(eventId);
+    if (mounted) {
+      await _cubit.start();
+    }
   }
 
   void _showSnack(String msg) {
@@ -242,7 +261,8 @@ class _EventDetailFormState extends State<_EventDetailForm> {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        EsmorgaSnackbar(getIt<LocalizationService>().current.snackbarCouldNotOpenMaps),
+        EsmorgaSnackbar(
+            getIt<LocalizationService>().current.snackbarCouldNotOpenMaps),
       );
     }
   }

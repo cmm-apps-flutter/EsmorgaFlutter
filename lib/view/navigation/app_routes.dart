@@ -119,10 +119,13 @@ class AppRoutes {
           builder: (context, state) {
             final event = state.extra as Event;
             return BlocProvider(
-                create: (context) => getIt<EventDetailCubit>(param1: context, param2: event),
+                create: (context) =>
+                    getIt<EventDetailCubit>(param1: context, param2: event),
                 child: EventDetailScreen(
                   goToLogin: () => context.push(login),
-                  goToAttendees: (eventId) => context.push('/event_attendees/$eventId'),
+                  goToAttendees: (eventId) async {
+                    await context.push<void>('/event_attendees/$eventId');
+                  },
                 ));
           },
         ),

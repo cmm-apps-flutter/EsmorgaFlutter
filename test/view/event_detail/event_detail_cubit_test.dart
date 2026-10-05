@@ -3,6 +3,7 @@ import 'package:esmorga_flutter/di.dart';
 import 'package:esmorga_flutter/domain/error/exceptions.dart';
 import 'package:esmorga_flutter/domain/event/event_repository.dart';
 import 'package:esmorga_flutter/domain/event/model/event.dart';
+import 'package:esmorga_flutter/domain/event/model/event_attendees.dart';
 import 'package:esmorga_flutter/domain/event/model/event_location.dart';
 import 'package:esmorga_flutter/domain/user/model/role_type.dart';
 import 'package:esmorga_flutter/domain/user/model/user.dart';
@@ -40,7 +41,11 @@ void main() {
   late _MockUserRepository userRepository;
   late _MockLocalizationService l10n;
 
-  const testUser = User(name: 'John', lastName: 'Doe', email: 'john@doe.com', role: RoleType.user);
+  const testUser = User(
+      name: 'John',
+      lastName: 'Doe',
+      email: 'john@doe.com',
+      role: RoleType.user);
 
   final baseEvent = Event(
     id: 'e1',
@@ -53,7 +58,8 @@ void main() {
     tags: const [],
     currentAttendeeCount: 2,
     maxCapacity: 10,
-    joinDeadline: DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch,
+    joinDeadline:
+        DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch,
   );
 
   final deadlinePassedEvent = baseEvent.copyWith(
@@ -89,6 +95,8 @@ void main() {
     getIt.registerSingleton<EsmorgaDateTimeFormatter>(_FakeFormatter());
     l10n = _MockLocalizationService();
     when(() => l10n.current).thenReturn(AppLocalizationsEn());
+    when(() => eventRepository.getEventAttendees(baseEvent.id))
+        .thenAnswer((_) async => EventAttendees(totalUsers: 2, users: []));
   });
 
   tearDown(() async {
@@ -100,7 +108,10 @@ void main() {
     build: () {
       when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
       return EventDetailCubit(
-          eventRepository: eventRepository, userRepository: userRepository, event: baseEvent, l10n: l10n);
+          eventRepository: eventRepository,
+          userRepository: userRepository,
+          event: baseEvent,
+          l10n: l10n);
     },
     act: (c) => c.start(),
     expect: () => [
@@ -112,15 +123,115 @@ void main() {
   );
 
   blocTest<EventDetailCubit, EventDetailState>(
+    'loads the current attendee count instead of the stale event count',
+    build: () {
+      when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
+      when(() => eventRepository.getEventAttendees(baseEvent.id))
+          .thenAnswer((_) async => EventAttendees(totalUsers: 3, users: []));
+      return EventDetailCubit(
+        eventRepository: eventRepository,
+        userRepository: userRepository,
+        event: baseEvent,
+        l10n: l10n,
+      );
+    },
+    act: (cubit) => cubit.start(),
+    expect: () => [
+      isA<EventDetailState>().having((state) => state.loading, 'loading', true),
+      isA<EventDetailState>()
+          .having((state) => state.loading, 'loading', false)
+          .having((state) => state.uiModel.currentAttendeeCount,
+              'attendee count', 3),
+    ],
+    verify: (_) {
+      verify(() => eventRepository.getEventAttendees(baseEvent.id)).called(1);
+    },
+  );
+
+  blocTest<EventDetailCubit, EventDetailState>(
+    'refresh updates the attendee count when another attendee leaves',
+    build: () {
+      when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
+      var count = 3;
+      when(() => eventRepository.getEventAttendees(baseEvent.id)).thenAnswer(
+          (_) async => EventAttendees(totalUsers: count--, users: []));
+      return EventDetailCubit(
+        eventRepository: eventRepository,
+        userRepository: userRepository,
+        event: baseEvent,
+        l10n: l10n,
+      );
+    },
+    act: (cubit) async {
+      await cubit.start();
+      await cubit.start();
+    },
+    expect: () => [
+      isA<EventDetailState>().having((state) => state.loading, 'loading', true),
+      isA<EventDetailState>()
+          .having((state) => state.loading, 'loading', false)
+          .having((state) => state.uiModel.currentAttendeeCount,
+              'attendee count', 3),
+      isA<EventDetailState>().having((state) => state.loading, 'loading', true),
+      isA<EventDetailState>()
+          .having((state) => state.loading, 'loading', false)
+          .having((state) => state.uiModel.currentAttendeeCount,
+              'attendee count', 2),
+    ],
+  );
+
+  test('failed attendee refresh retains the last known count', () async {
+    when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
+    when(() => eventRepository.getEventAttendees(baseEvent.id))
+        .thenThrow(Exception('network error'));
+    final cubit = EventDetailCubit(
+      eventRepository: eventRepository,
+      userRepository: userRepository,
+      event: baseEvent,
+      l10n: l10n,
+    );
+    addTearDown(cubit.close);
+    final effect = cubit.effects.first;
+
+    await cubit.start();
+
+    expect(cubit.state.loading, false);
+    expect(cubit.state.uiModel.currentAttendeeCount, 2);
+    expect(await effect, isA<ShowNoNetworkEffect>());
+  });
+
+  test('guests do not request the authenticated attendees endpoint', () async {
+    when(() => userRepository.getUser())
+        .thenThrow(Exception('Not authenticated'));
+    final cubit = EventDetailCubit(
+      eventRepository: eventRepository,
+      userRepository: userRepository,
+      event: baseEvent,
+      l10n: l10n,
+    );
+    addTearDown(cubit.close);
+
+    await cubit.start();
+
+    expect(cubit.state.isAuthenticated, false);
+    expect(cubit.state.uiModel.currentAttendeeCount, 2);
+    verifyNever(() => eventRepository.getEventAttendees(any()));
+  });
+
+  blocTest<EventDetailCubit, EventDetailState>(
     'join flow emits submitting, updated event userJoined true and success effect',
     build: () {
       when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
       when(() => eventRepository.joinEvent(any())).thenAnswer((_) async {});
       return EventDetailCubit(
-          eventRepository: eventRepository, userRepository: userRepository, event: baseEvent, l10n: l10n);
+          eventRepository: eventRepository,
+          userRepository: userRepository,
+          event: baseEvent,
+          l10n: l10n);
     },
     act: (c) async {
-      final effectFuture = c.effects.firstWhere((e) => e is ShowJoinSuccessEffect);
+      final effectFuture =
+          c.effects.firstWhere((e) => e is ShowJoinSuccessEffect);
       await c.start();
       await c.primaryPressed();
       await effectFuture;
@@ -142,7 +253,10 @@ void main() {
     build: () {
       when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
       return EventDetailCubit(
-          eventRepository: eventRepository, userRepository: userRepository, event: baseEvent, l10n: l10n);
+          eventRepository: eventRepository,
+          userRepository: userRepository,
+          event: baseEvent,
+          l10n: l10n);
     },
     act: (c) async {
       final effectFuture = c.effects.firstWhere((e) => e is OpenMapsEffect);
@@ -162,14 +276,18 @@ void main() {
     build: () {
       when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
       return EventDetailCubit(
-          eventRepository: eventRepository, userRepository: userRepository, event: baseEvent, l10n: l10n);
+          eventRepository: eventRepository,
+          userRepository: userRepository,
+          event: baseEvent,
+          l10n: l10n);
     },
     act: (cubit) => cubit.start(),
     expect: () => [
       isA<EventDetailState>().having((s) => s.loading, 'loading', true),
       isA<EventDetailState>()
           .having((s) => s.loading, 'loading', false)
-          .having((s) => s.uiModel.currentAttendeeCount, 'currentAttendeeCount', 2)
+          .having(
+              (s) => s.uiModel.currentAttendeeCount, 'currentAttendeeCount', 2)
           .having((s) => s.uiModel.maxCapacity, 'maxCapacity', 10),
     ],
   );
@@ -179,7 +297,10 @@ void main() {
     build: () {
       when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
       return EventDetailCubit(
-          eventRepository: eventRepository, userRepository: userRepository, event: deadlinePassedEvent, l10n: l10n);
+          eventRepository: eventRepository,
+          userRepository: userRepository,
+          event: deadlinePassedEvent,
+          l10n: l10n);
     },
     act: (c) => c.start(),
     expect: () => [
@@ -194,7 +315,10 @@ void main() {
     'isJoinEnabled is true when joinDeadline is in the future',
     build: () {
       return EventDetailCubit(
-          eventRepository: eventRepository, userRepository: userRepository, event: deadlineFutureEvent, l10n: l10n);
+          eventRepository: eventRepository,
+          userRepository: userRepository,
+          event: deadlineFutureEvent,
+          l10n: l10n);
     },
     act: (c) => c.start(),
     expect: () => [
@@ -210,10 +334,14 @@ void main() {
     build: () {
       when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
       return EventDetailCubit(
-          eventRepository: eventRepository, userRepository: userRepository, event: deadlinePassedEvent, l10n: l10n);
+          eventRepository: eventRepository,
+          userRepository: userRepository,
+          event: deadlinePassedEvent,
+          l10n: l10n);
     },
     act: (c) async {
-      final effectFuture = c.effects.firstWhere((e) => e is ShowJoinClosedEffect);
+      final effectFuture =
+          c.effects.firstWhere((e) => e is ShowJoinClosedEffect);
       await c.start();
       c.primaryPressed();
       await effectFuture;
@@ -227,7 +355,10 @@ void main() {
     'isJoinEnabled is true when event is full but deadline is in the future (Cubit logic)',
     build: () {
       return EventDetailCubit(
-          eventRepository: eventRepository, userRepository: userRepository, event: fullEvent, l10n: l10n);
+          eventRepository: eventRepository,
+          userRepository: userRepository,
+          event: fullEvent,
+          l10n: l10n);
     },
     act: (c) => c.start(),
     expect: () => [
@@ -242,12 +373,18 @@ void main() {
     'leave event flow still works when event is full and user has joined (Capacity logic)',
     build: () {
       when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
+      when(() => eventRepository.getEventAttendees(baseEvent.id))
+          .thenAnswer((_) async => EventAttendees(totalUsers: 10, users: []));
       when(() => eventRepository.leaveEvent(any())).thenAnswer((_) async {});
       return EventDetailCubit(
-          eventRepository: eventRepository, userRepository: userRepository, event: fullJoinedEvent, l10n: l10n);
+          eventRepository: eventRepository,
+          userRepository: userRepository,
+          event: fullJoinedEvent,
+          l10n: l10n);
     },
     act: (c) async {
-      final effectFuture = c.effects.firstWhere((e) => e is ShowLeaveSuccessEffect);
+      final effectFuture =
+          c.effects.firstWhere((e) => e is ShowLeaveSuccessEffect);
       await c.start();
       await c.primaryPressed();
       await effectFuture;
@@ -261,7 +398,8 @@ void main() {
       isA<EventDetailState>()
           .having((s) => s.joinLeaving, 'joinLeaving', false)
           .having((s) => s.uiModel.userJoined, 'joined', false)
-          .having((s) => s.uiModel.currentAttendeeCount, 'currentAttendeeCount', 9),
+          .having(
+              (s) => s.uiModel.currentAttendeeCount, 'currentAttendeeCount', 9),
     ],
     verify: (c) {
       verify(() => eventRepository.leaveEvent(any())).called(1);
@@ -272,7 +410,8 @@ void main() {
     'join flow emits ShowEventFullSnackbarEffect and updates the UI with disabled button when repository throws EventFullException',
     build: () {
       when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
-      when(() => eventRepository.joinEvent(any())).thenThrow(EventFullException());
+      when(() => eventRepository.joinEvent(any()))
+          .thenThrow(EventFullException());
       return EventDetailCubit(
         eventRepository: eventRepository,
         userRepository: userRepository,
@@ -281,7 +420,8 @@ void main() {
       );
     },
     act: (c) async {
-      final effectFuture = c.effects.firstWhere((e) => e is ShowEventFullSnackbarEffect);
+      final effectFuture =
+          c.effects.firstWhere((e) => e is ShowEventFullSnackbarEffect);
       await c.start();
       await c.primaryPressed();
       await effectFuture;
@@ -294,8 +434,10 @@ void main() {
       isA<EventDetailState>().having((s) => s.joinLeaving, 'joinLeaving', true),
       isA<EventDetailState>()
           .having((s) => s.joinLeaving, 'joinLeaving', false)
-          .having((s) => s.uiModel.buttonEnabled, 'primary button enabled', false)
-          .having((s) => s.uiModel.buttonText, 'primary button text', l10n.current.buttonJoinEventDisabled)
+          .having(
+              (s) => s.uiModel.buttonEnabled, 'primary button enabled', false)
+          .having((s) => s.uiModel.buttonText, 'primary button text',
+              l10n.current.buttonJoinEventDisabled)
     ],
   );
 
@@ -328,6 +470,8 @@ void main() {
     'View Attendees button hidden when no attendees',
     build: () {
       when(() => userRepository.getUser()).thenAnswer((_) async => testUser);
+      when(() => eventRepository.getEventAttendees(baseEvent.id))
+          .thenAnswer((_) async => EventAttendees(totalUsers: 0, users: []));
       return EventDetailCubit(
         eventRepository: eventRepository,
         userRepository: userRepository,
@@ -338,9 +482,8 @@ void main() {
     act: (c) => c.start(),
     expect: () => [
       isA<EventDetailState>().having((s) => s.loading, 'loading', true),
-      isA<EventDetailState>()
-          .having((s) => s.loading, 'loading', false)
-          .having((s) => s.uiModel.showViewAttendants, 'showViewAttendants', false),
+      isA<EventDetailState>().having((s) => s.loading, 'loading', false).having(
+          (s) => s.uiModel.showViewAttendants, 'showViewAttendants', false),
     ],
   );
 }
