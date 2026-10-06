@@ -15,6 +15,14 @@ on:
         description: 'Build environment (e.g., qa, prod)'
         required: false
         default: 'qa'
+      audience:
+        description: 'Release audience: internal or public (Esmorga Releases)'
+        type: choice
+        required: true
+        default: 'internal'
+        options:
+          - internal
+          - public
 
 jobs:
   build-ios:
@@ -186,6 +194,7 @@ jobs:
           BUILD_USER: ${{ secrets.BUIUSER }}
           BUILD_PASSWORD: ${{ secrets.BUIPASSWORD }}
           BUILD_NUMBER: ${{ github.run_number }}
+          AUDIENCE: ${{ github.event.inputs.audience || 'internal' }}
         run: |
           file="${{ steps.meta_ios.outputs.ipa_file }}"
           BuildENVL="${BUILD_ENVL:-qa}"
@@ -195,6 +204,9 @@ jobs:
           buildHash="${{ steps.meta_ios.outputs.buildHash }}"
           buildType="$BuildENVL"
           project_id=2796
+          if [ "$AUDIENCE" = "public" ]; then
+            project_id=2797
+          fi
           visibleClient=true
 
           echo "==============================================="

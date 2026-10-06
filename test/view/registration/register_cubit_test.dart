@@ -111,5 +111,22 @@ void main() {
       ],
       verify: (_) => verifyNever(() => userRepository.register(any(), any(), any(), any())),
     );
+
+    blocTest<RegisterCubit, RegisterState>(
+      'resetForm clears registration values and state',
+      build: () => RegisterCubit(userRepository: userRepository, validator: validator),
+      seed: () => const RegisterState(
+        name: name,
+        lastName: lastName,
+        email: email,
+        password: password,
+        repeatPassword: password,
+        attemptedSubmit: true,
+        status: RegisterStatus.failure,
+        failureMessage: 'Registration failed',
+      ),
+      act: (cubit) => cubit.resetForm(),
+      expect: () => [const RegisterState()],
+    );
   });
 }

@@ -173,6 +173,10 @@ class RegisterCubit extends Cubit<RegisterState> {
     emit(state.copyWith(showRepeatPassword: !state.showRepeatPassword));
   }
 
+  void resetForm() {
+    emit(const RegisterState());
+  }
+
   Future<void> submit() async {
     final nameError = validator.validateName(state.name, acceptsEmpty: false);
     final lastNameError = validator.validateLastName(state.lastName, acceptsEmpty: false);
